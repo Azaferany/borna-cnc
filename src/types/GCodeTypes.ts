@@ -1,0 +1,57 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+export enum Plane {
+    XY = 0,
+    XZ = 1,
+    YZ = 2
+}
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+export enum MoveType {
+    Rapid,
+    Linear,
+    Arc,
+    Unknown,
+}
+
+export interface Point3D {
+    x: number;
+    y: number;
+    z: number;
+}
+
+export interface GCodeCommand {
+    lineNumber: number;
+    rawCommand: string;
+    commandCode?:string;
+    moveType?:MoveType;
+
+    startPoint: Point3D;
+    endPoint?: Point3D;
+    arcCenter?: Point3D;
+
+    startA: number;
+    startB: number;
+    startC: number;
+
+    endA?: number;
+    endB?: number;
+    endC?: number;
+
+    feedRate?: number;
+    isRapidMove?: boolean;
+    isArcMove?: boolean;
+    isClockwise?: boolean;
+    isIncremental?: boolean;
+    activePlane?: Plane;
+}
+
+export interface GCodePointData {
+    feedMovePoints: {gCodeLineNumber : number , points :Point3D[]}[];
+    rapidMovePoints: {gCodeLineNumber : number , points :Point3D[]}[];
+    arkMovePoints: {gCodeLineNumber : number , points :Point3D[]}[];
+    feedMoveStartPoints: {gCodeLineNumber : number , point :Point3D}[];
+    rapidMoveStartPoints: {gCodeLineNumber : number , point :Point3D}[];
+    arkMoveStartPoints: {gCodeLineNumber : number , point :Point3D}[];
+
+}

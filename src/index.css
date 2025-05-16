@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+.ace_active-line{
+    background:#ff000090 !important
+}
+.ace_gutter-active-line{
+    background:#ff0000 !important;
+    color:#fff
+}
+.gcode-line-highlight{
+    background:aqua !important;
+
+}
