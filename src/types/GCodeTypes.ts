@@ -19,6 +19,19 @@ export interface Point3D {
     y: number;
     z: number;
 }
+export type GRBLState =
+    | "NotConnected"
+    | "Idle"
+    | "Run"
+    | "Hold"
+    | "Alarm"
+    | "Home"
+    | "Door";
+
+export type CargoPricingType =
+    | "Idele"
+    | "BasedOnLegalFeeAgreement"
+    | "BasedOnSuggestAgreement";
 
 export interface GCodeCommand {
     lineNumber: number;

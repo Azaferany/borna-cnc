@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import GRBLSerial from '../../app/GRBLSerial';
+import { useGRBL } from '../../contexts/GRBLContext';
 
 export const Console = () => {
     const [command, setCommand] = useState('');
-    const [history, setHistory] = useState<string[]>([]);
-    const [isConnected, setIsConnected] = useState(false);
     const historyEndRef = useRef<HTMLDivElement>(null);
-    const serialRef = useRef<GRBLSerial | null>(null);
+    const { isConnected, connect, disconnect, sendCommand, history } = useGRBL();
+    
+    // Track command history and current position
+    const [commandHistory, setCommandHistory] = useState<string[]>([]);
+    const [historyIndex, setHistoryIndex] = useState(-1);
+    const [tempCommand, setTempCommand] = useState('');
 
     const scrollToBottom = () => {
         historyEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -18,58 +21,52 @@ export const Console = () => {
         }
     }, [history]);
 
+    // Extract commands from history
     useEffect(() => {
-        // Initialize GRBL Serial
-        serialRef.current = new GRBLSerial();
-        
-        // Set up event listener for incoming data
-        serialRef.current.addEventListener('data', (event: Event) => {
-            const customEvent = event as CustomEvent;
-            setHistory(prev => [...prev, customEvent.detail]);
-        });
+        const commands = history
+            .filter(line => line.startsWith('> '))
+            .map(line => line.substring(2));
+        setCommandHistory(commands);
+    }, [history]);
 
-        return () => {
-            // Cleanup on unmount
-            if (serialRef.current) {
-                serialRef.current.disconnect();
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (historyIndex === -1) {
+                // Save current input before navigating history
+                setTempCommand(command);
             }
-        };
-    }, []);
-
-    const handleConnect = async () => {
-        try {
-            await serialRef.current?.connect();
-            setIsConnected(true);
-            setHistory(prev => [...prev, '> Connected to GRBL device']);
-        } catch (error: any) {
-            setHistory(prev => [...prev, `> Connection error: ${error?.message || 'Unknown error'}`]);
-        }
-    };
-
-    const handleDisconnect = async () => {
-        try {
-            await serialRef.current?.disconnect();
-            setIsConnected(false);
-            setHistory(prev => [...prev, '> Disconnected from GRBL device']);
-        } catch (error: any) {
-            setHistory(prev => [...prev, `> Disconnection error: ${error?.message || 'Unknown error'}`]);
+            if (commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
+                const newIndex = historyIndex + 1;
+                setHistoryIndex(newIndex);
+                setCommand(commandHistory[commandHistory.length - 1 - newIndex]);
+            }
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (historyIndex > 0) {
+                const newIndex = historyIndex - 1;
+                setHistoryIndex(newIndex);
+                setCommand(commandHistory[commandHistory.length - 1 - newIndex]);
+            } else if (historyIndex === 0) {
+                // Restore the temporary command when reaching the bottom
+                setHistoryIndex(-1);
+                setCommand(tempCommand);
+            }
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (command.trim()) {
-            if (!isConnected) {
-                setHistory(prev => [...prev, `> ${command}`, 'Error: Not connected to device']);
-            } else {
-                try {
-                    setHistory(prev => [...prev, `> ${command}`]);
-                    await serialRef.current?.send(command);
-                } catch (error: any) {
-                    setHistory(prev => [...prev, `Error: ${error?.message || 'Unknown error'}`]);
-                }
+            try {
+                await sendCommand(command);
+                setCommand('');
+                setHistoryIndex(-1); // Reset history index after sending command
+                setTempCommand(''); // Clear temporary command
+            } catch {
+                // Error is already handled in the context
+                setCommand('');
             }
-            setCommand('');
         }
     };
 
@@ -79,7 +76,7 @@ export const Console = () => {
                 <h2 className="text-xl font-bold">Console</h2>
                 <div className="flex space-x-2">
                     <button
-                        onClick={isConnected ? handleDisconnect : handleConnect}
+                        onClick={isConnected ? disconnect : connect}
                         className={`px-4 py-1 rounded ${
                             isConnected 
                                 ? 'bg-red-600 hover:bg-red-700' 
@@ -109,8 +106,12 @@ export const Console = () => {
                 <input
                     type="text"
                     value={command}
-                    onChange={(e) => setCommand(e.target.value)}
-                    placeholder="Enter command..."
+                    onChange={(e) => {
+                        setCommand(e.target.value);
+                        setHistoryIndex(-1); // Reset history index when typing
+                    }}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Enter command... (Use ↑↓ for history)"
                     className="flex-1 bg-gray-700 rounded px-3 py-2 text-white"
                 />
                 <button
