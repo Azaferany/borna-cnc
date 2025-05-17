@@ -113,12 +113,12 @@ export const OverrideControls = () => {
                 </span>
             </div>
             <div className="flex items-center space-x-2">
-                <button
+                {!allowedValues &&(<button
                     onClick={() => onChange && onChange(Math.max(min, value - 10))}
                     className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
                 >
                     -10%
-                </button>
+                </button>)}
                 <input
                     type="range"
                     min={min}
@@ -139,12 +139,12 @@ export const OverrideControls = () => {
                     }}
                     className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
                 />
-                <button
+                {!allowedValues && (<button
                     onClick={() => onChange && onChange(Math.min(max, value + 10))}
                     className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
                 >
                     +10%
-                </button>
+                </button>)}
             </div>
         </div>
     );
@@ -157,7 +157,7 @@ export const OverrideControls = () => {
                     label="Rapid Speed Override"
                     value={rapidSpeedOverridePercent}
                     onChange={handleRapidOverride}
-                    min={25}
+                    min={0}
                     max={100}
                     step={25}
                     allowedValues={[25, 50, 100]}
