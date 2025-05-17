@@ -1,9 +1,12 @@
-import {useState} from "react";
+import {useStore} from "../../app/store.ts";
 
 export const OverrideControls = () => {
-    const [rapidOverride, setRapidOverride] = useState(100);
-    const [feedOverride, setFeedOverride] = useState(100);
-    const [spindleOverride, setSpindleOverride] = useState(100);
+
+    const {
+        feedrateOverridePercent,
+        rapidSpeedOverridePercent,
+        spindleSpeedOverridePercent
+    } = useStore();
 
     const SliderControl = ({
                                label,
@@ -12,7 +15,7 @@ export const OverrideControls = () => {
                            }: {
         label: string;
         value: number;
-        onChange: (value: number) => void;
+        onChange?: (value: number) => void;
     }) => (
         <div className="space-y-2">
             <div className="flex justify-between items-center">
@@ -23,7 +26,7 @@ export const OverrideControls = () => {
             </div>
             <div className="flex items-center space-x-2">
                 <button
-                    onClick={() => onChange(Math.max(0, value - 10))}
+                    onClick={() => onChange && onChange(Math.max(0, value - 10))}
                     className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
                 >
                     -10%
@@ -33,11 +36,11 @@ export const OverrideControls = () => {
                     min="0"
                     max="200"
                     value={value}
-                    onChange={(e) => onChange(Number(e.target.value))}
+                    onChange={(e) => onChange && onChange(Number(e.target.value))}
                     className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
                 />
                 <button
-                    onClick={() => onChange(Math.min(200, value + 10))}
+                    onClick={() => onChange && onChange(Math.min(200, value + 10))}
                     className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
                 >
                     +10%
@@ -52,18 +55,15 @@ export const OverrideControls = () => {
             <div className="space-y-4">
                 <SliderControl
                     label="Rapid Speed Override"
-                    value={rapidOverride}
-                    onChange={setRapidOverride}
+                    value={rapidSpeedOverridePercent}
                 />
                 <SliderControl
                     label="Feed Rate Override"
-                    value={feedOverride}
-                    onChange={setFeedOverride}
+                    value={feedrateOverridePercent}
                 />
                 <SliderControl
                     label="Spindle Speed Override"
-                    value={spindleOverride}
-                    onChange={setSpindleOverride}
+                    value={spindleSpeedOverridePercent}
                 />
             </div>
         </div>

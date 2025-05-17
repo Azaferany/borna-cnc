@@ -10,7 +10,7 @@ import {processor} from "./GCodeProcessor.ts";
 import {ToolHead} from "./ToolHead.tsx";
 
 export const findGCodeCommandOrLatestBaseOnLine =
-    (gCodeLine : number,toolPathGCodes:GCodeCommand[],) : GCodeCommand | null => {
+    (gCodeLine : number,toolPathGCodes:GCodeCommand[],) : GCodeCommand | undefined => {
         let toolPathGCodeCommand =
             toolPathGCodes.find(x=>x.lineNumber == gCodeLine)
         if(toolPathGCodeCommand)
@@ -23,21 +23,18 @@ export const findGCodeCommandOrLatestBaseOnLine =
         if(toolPathGCodeCommand)
             return toolPathGCodeCommand;
 
-        return null;
+        return undefined;
     }
 
 export const Scene3D = () => {
 
-    const {toolPathGCodes,selectedGCodeLine} = useStore();
+    const {toolPathGCodes,selectedGCodeLine,machineCoordinate} = useStore();
     const [completeData, setCompleteData] = useState<GCodePointData | null>(null);
     useEffect(() => {
             setCompleteData(processor.processCommands(toolPathGCodes ??[]))
     }, [toolPathGCodes]);
 
-    useEffect(() => {
-        console.log(toolPathGCodes)
-        console.log(completeData)
-    }, [completeData,toolPathGCodes]);
+
     return (
         <div className="w-full h-full min-h-[370px] relative">
             <div className="absolute top-4 left-4 z-10 bg-transparent p-4 rounded text-white shadow-xl">
@@ -85,9 +82,9 @@ export const Scene3D = () => {
                     followCamera={false}
                     infiniteGrid
                 />
-                {(toolPathGCodes && selectedGCodeLine && findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes)) &&(
-                    <ToolHead position={processor.getGCodePoints(findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes)!).points[0]}
-                              gCodeCommand={findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes)!}
+                {machineCoordinate &&(
+                    <ToolHead position={machineCoordinate}
+                              gCodeCommand={selectedGCodeLine && toolPathGCodes ? findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes) : undefined}
                     />
 
                 )}

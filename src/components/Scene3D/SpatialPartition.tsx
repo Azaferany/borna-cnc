@@ -17,8 +17,6 @@ export const SpatialPartition: React.FC<SpatialPartitionProps> = ({ points, colo
        return null;
    }
 
-    console.log(points.filter(x=>!x.x || !x.y || !x.y));
-
     return (
         <Line
             points={points.map((point)  =>  {

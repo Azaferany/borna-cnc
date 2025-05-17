@@ -5,6 +5,7 @@ import {Console} from "../components/Console/Console.tsx";
 import {Scene3D} from "../components/Scene3D/3DViewer.tsx";
 import {JogControls} from "../components/JogControls/JogControls.tsx";
 import {OverrideControls} from "../components/OverrideControls/OverrideControls.tsx";
+import { ConnectButton } from "../components/ConnectButton/ConnectButton.tsx";
 
 function HomePage() {
     return (
@@ -14,37 +15,37 @@ function HomePage() {
                     {/* Left column - 3D view */}
                     <div className="col-span-9 h-[400px]">
                         <div className="grid grid-cols-12 gap-2">
-
-                            <header className="col-span-12 pb-3.5 pl-7 border-b border-gray-700">
+                            <header className="col-span-12 pb-3.5 pl-7 border-b border-gray-700 flex justify-between items-center">
                                 <h1 className="text-3xl font-bold pt-2.5">CNC Control Panel</h1>
+                                <div className="pr-7">
+                                    <ConnectButton />
+                                </div>
                             </header>
                             <div className="col-span-12">
                                 <Scene3D />
                             </div>
-                            <div className="col-span-4 h-[350px]">
+                            <div className="col-span-4 h-[370px]">
                                 <GCodeEditor />
                             </div>
-                            <div className="col-span-4 h-[350px]">
+                            <div className="col-span-4 h-[370px]">
                                 <JogControls />
                             </div>
-                            <div className="col-span-4 h-[350px]">
+                            <div className="col-span-4 h-[370px]">
                                 <ControlButtons />
                             </div>
                         </div>
-
                     </div>
 
                     {/* Right column - Controls */}
-                    <div className="col-span-3 space-y-4 mt-2 mr-2">
+                    <div className="col-span-3 space-y-4">
                         <StatusDisplay />
                         <OverrideControls/>
                         <Console />
-
-
                     </div>
                 </div>
             </div>
-        </div>    );
+        </div>
+    );
 }
 
 export default HomePage;

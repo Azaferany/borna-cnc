@@ -18,9 +18,10 @@ export const GCodeEditor = () => {
 */
 
     if (!editorRef?.current?.editor) return;
-     const c = (editorRef?.current?.editor?.getCursorPosition()?.row??0) +1;
-    if (selectedGCodeLine !== undefined && selectedGCodeLine >= 0 && c!= selectedGCodeLine) {
-      editorRef.current.editor.gotoLine(selectedGCodeLine + 1, 0, true);
+
+    const c = (editorRef?.current?.editor?.getCursorPosition()?.row??0) +1;
+    if (selectedGCodeLine !== undefined && selectedGCodeLine >= 0 && c != selectedGCodeLine) {
+      editorRef.current.editor.gotoLine(selectedGCodeLine, 0, true);
 
     }
   }, [selectedGCodeLine]);
@@ -53,9 +54,10 @@ export const GCodeEditor = () => {
     // Process all lines
     lineLoop : for (let currentLine = 0; currentLine < lines.length; currentLine++) {
       const line = lines[currentLine];
-      const trimmedLine = line.trim().toUpperCase();
+      let trimmedLine = line.trim().toUpperCase();
 
       if (trimmedLine && !trimmedLine.startsWith(';')) {
+        trimmedLine = trimmedLine.split(';')[0]
         const words = trimmedLine.split(/\s+/);
         const command: GCodeCommand = {
           isRapidMove:false,
@@ -205,7 +207,7 @@ export const GCodeEditor = () => {
 
     const parsedCommands = parseGCode(numberedText);
 
-    loadToolPathGCodes(numberedText.split('\n'),
+    loadToolPathGCodes(numberedText.split('\n').filter(x=>!x.startsWith(";")),
         parsedCommands
             .filter(x=>x.commandCode?.includes('G')))
   };

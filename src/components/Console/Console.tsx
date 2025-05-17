@@ -1,25 +1,35 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useGRBL } from '../../contexts/GRBLContext';
+import { ConnectButton } from '../ConnectButton/ConnectButton';
 
 export const Console = () => {
     const [command, setCommand] = useState('');
     const historyEndRef = useRef<HTMLDivElement>(null);
-    const { isConnected, connect, disconnect, sendCommand, history } = useGRBL();
-    
+    const { isConnected, sendCommand, history : rawHistory } = useGRBL();
+    const [history, setHistory] = useState(rawHistory.filter(x=>!x.includes("> ?")))
+
     // Track command history and current position
     const [commandHistory, setCommandHistory] = useState<string[]>([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
     const [tempCommand, setTempCommand] = useState('');
 
     const scrollToBottom = () => {
-        historyEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        historyEndRef.current?.scrollTo({top:historyEndRef.current.firstChild?.clientHeight, behavior: 'smooth' });
     };
 
+
     useEffect(() => {
-        if(history.length > 0) {
+        const h = rawHistory.filter(x=>!x.includes("> ?"));
+
+        if(h.length != history.length) {
             scrollToBottom();
+            setTimeout(scrollToBottom,500)
         }
-    }, [history]);
+
+        setHistory(h)
+    }, [history.length, rawHistory]);
 
     // Extract commands from history
     useEffect(() => {
@@ -74,20 +84,9 @@ export const Console = () => {
         <div className="bg-gray-800 p-4 rounded-lg min-h-[218px] flex flex-col">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Console</h2>
-                <div className="flex space-x-2">
-                    <button
-                        onClick={isConnected ? disconnect : connect}
-                        className={`px-4 py-1 rounded ${
-                            isConnected 
-                                ? 'bg-red-600 hover:bg-red-700' 
-                                : 'bg-green-600 hover:bg-green-700'
-                        }`}
-                    >
-                        {isConnected ? 'Disconnect' : 'Connect'}
-                    </button>
-                </div>
+                <ConnectButton />
             </div>
-            <div className="h-40 max-h-[400px] bg-gray-900 rounded p-2 mb-4 overflow-y-auto custom-scrollbar">
+            <div className="h-40 max-h-[400px] bg-gray-900 rounded p-2 mb-4 overflow-y-auto custom-scrollbar" ref={historyEndRef}>
                 <div className="space-y-1 font-mono text-sm">
                     {history.map((line, index) => (
                         <div
@@ -99,7 +98,6 @@ export const Console = () => {
                             {line}
                         </div>
                     ))}
-                    <div ref={historyEndRef} />
                 </div>
             </div>
             <form onSubmit={handleSubmit} className="flex space-x-2">
