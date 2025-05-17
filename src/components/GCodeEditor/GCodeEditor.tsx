@@ -1,10 +1,11 @@
-import React, {useCallback, useEffect, useRef} from "react";
+import {useCallback, useEffect, useRef} from "react";
 import AceEditor from 'react-ace';
 
 import 'ace-builds/src-noconflict/mode-gcode';
 import 'ace-builds/src-noconflict/theme-monokai';
 import {type GCodeCommand, Plane, type Point3D} from "../../types/GCodeTypes.ts";
 import {useStore} from "../../app/store.ts";
+import {OpenFileButton} from "../OpenFileButton/OpenFileButton.tsx";
 
 export const GCodeEditor = () => {
   const editorRef = useRef<AceEditor>(null);
@@ -212,22 +213,6 @@ export const GCodeEditor = () => {
             .filter(x=>x.commandCode?.includes('G')))
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result;
-        if (typeof text === 'string') {
-          processGcode(text);
-          editorRef?.current?.editor.gotoLine((allGCodes?.findIndex(value => value.includes(`N${selectedGCodeLine}`)) ?? 0))
-
-        }
-      };
-      reader.readAsText(file);
-    }
-  };
-
   const handleSave = () => {
     //const blob = new Blob([gcode], { type: 'text/plain;charset=utf-8' });
     //saveAs(blob, 'program.gcode');
@@ -238,18 +223,10 @@ export const GCodeEditor = () => {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">G-code Editor</h2>
           <div className="space-x-2">
-            <label className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded cursor-pointer">
-              Open File
-              <input
-                  type="file"
-                  accept=".gcode,.nc,.txt"
-                  onChange={handleFileUpload}
-                  className="hidden"
-              />
-            </label>
+            <OpenFileButton />
             <button
                 onClick={handleSave}
-                className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded"
+                className="bg-green-600 hover:bg-green-800 px-4 py-1.5 rounded"
             >
               Save File
             </button>

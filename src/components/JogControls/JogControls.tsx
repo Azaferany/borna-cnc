@@ -37,18 +37,29 @@ export const JogControls = () => {
         }
     };
 
+    const handleJogStart = (axis: string, direction: number) => {
+        if (continuousMode) {
+            handleJog(axis, direction);
+        }
+    };
+
     const handleJogEnd = () => {
         if (continuousMode) {
             stopJog();
         }
     };
 
+    const handleClick = (axis: string, direction: number) => {
+        if (!continuousMode) {
+            handleJog(axis, direction);
+        }
+    };
 
     const renderJogButton = (axis: string, direction: number, label: string) => (
         <button 
             className="p-3 bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed" 
-            onClick={() => handleJog(axis, direction)}
-            onMouseDown={() => handleJog(axis, direction)}
+            onClick={() => handleClick(axis, direction)}
+            onMouseDown={() => handleJogStart(axis, direction)}
             onMouseUp={handleJogEnd}
             onMouseLeave={handleJogEnd}
             disabled={!isConnected}
@@ -74,7 +85,7 @@ export const JogControls = () => {
                         />
                     </div>
                     <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1">distance (mm)</label>
+                        <label className="block text-sm font-medium mb-1">Distance (mm)</label>
                         <input
                             type="number"
                             value={stepSize}
