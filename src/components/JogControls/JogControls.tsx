@@ -9,7 +9,7 @@ export const JogControls = () => {
 
     const stopJog = async () => {
         try {
-            await sendCommand('0x85');
+            await sendCommand('\x85');
         } catch (error) {
             console.error('Error stopping jog:', error);
         }
@@ -85,16 +85,17 @@ export const JogControls = () => {
                         />
                     </div>
                     <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1">Distance (mm)</label>
-                        <input
+                        {!continuousMode &&(<><label className="block text-sm font-medium mb-1">Distance
+                            (mm)</label><input
                             type="number"
                             value={stepSize}
                             onChange={(e) => setStepSize(Number(e.target.value))}
-                            className="w-full bg-gray-700 rounded px-3 py-2 text-white"
+                            className={`w-full bg-gray-700 rounded px-3 py-2 text-white ${continuousMode ? "cursor-not-allowed" : ""}`}
                             disabled={continuousMode}
                             min={0.001}
-                            max={1000}
-                        />
+                            max={1000}/></>)
+                    }
+                        {continuousMode && (<label className="block text-sm font-medium mt-6">Hold button to jog, release to stop</label>)}
                     </div>
                 </div>
 
@@ -107,7 +108,7 @@ export const JogControls = () => {
                         id="continuous-mode"
                     />
                     <label htmlFor="continuous-mode" className="text-sm font-medium">
-                        Continuous Mode {continuousMode && "(Hold button to jog, release to stop)"}
+                        Continuous Mode
                     </label>
                 </div>
 
