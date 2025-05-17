@@ -1,46 +1,146 @@
 import {useStore} from "../../app/store.ts";
+import {useGRBL} from "../../contexts/GRBLContext.tsx";
 
 export const OverrideControls = () => {
-
     const {
         feedrateOverridePercent,
         rapidSpeedOverridePercent,
         spindleSpeedOverridePercent
     } = useStore();
 
+    const { sendCommand } = useGRBL();
+
+    const handleFeedOverride = async (newValue: number) => {
+        // Validate feed override limits (10% to 200%)
+        if (newValue < 10 || newValue > 200) return;
+        
+        if (newValue === feedrateOverridePercent) return; // Ignore if no change
+
+        if (newValue === 100) {
+            await sendCommand('\x90'); // Set 100%
+        } else if (newValue > feedrateOverridePercent) {
+            const diff = newValue - feedrateOverridePercent;
+            const steps10 = Math.floor(diff / 10);
+            const steps1 = diff % 10;
+            
+            for (let i = 0; i < steps10; i++) {
+                await sendCommand('\x91'); // Increase 10%
+            }
+            for (let i = 0; i < steps1; i++) {
+                await sendCommand('\x93'); // Increase 1%
+            }
+        } else {
+            const diff = feedrateOverridePercent - newValue;
+            const steps10 = Math.floor(diff / 10);
+            const steps1 = diff % 10;
+            
+            for (let i = 0; i < steps10; i++) {
+                await sendCommand('\x92'); // Decrease 10%
+            }
+            for (let i = 0; i < steps1; i++) {
+                await sendCommand('\x94'); // Decrease 1%
+            }
+        }
+    };
+
+    const handleRapidOverride = async (newValue: number) => {
+        if (newValue === rapidSpeedOverridePercent) return; // Ignore if no change
+
+        if (newValue === 100) {
+            await sendCommand('\x95'); // Set to 100%
+        } else if (newValue === 50) {
+            await sendCommand('\x96'); // Set to 50%
+        } else if (newValue === 25) {
+            await sendCommand('\x97'); // Set to 25%
+        }
+    };
+
+    const handleSpindleOverride = async (newValue: number) => {
+        // Validate spindle override limits (10% to 200%)
+        if (newValue < 10 || newValue > 200) return;
+        
+        if (newValue === spindleSpeedOverridePercent) return; // Ignore if no change
+
+        if (newValue === 100) {
+            await sendCommand('\x99'); // Set 100%
+        } else if (newValue > spindleSpeedOverridePercent) {
+            const diff = newValue - spindleSpeedOverridePercent;
+            const steps10 = Math.floor(diff / 10);
+            const steps1 = diff % 10;
+            
+            for (let i = 0; i < steps10; i++) {
+                    await sendCommand('\x9A'); // Increase 10%
+            }
+            for (let i = 0; i < steps1; i++) {
+                await sendCommand('\x9C'); // Increase 1%
+            }
+        } else {
+            const diff = spindleSpeedOverridePercent - newValue;
+            const steps10 = Math.floor(diff / 10);
+            const steps1 = diff % 10;
+            
+            for (let i = 0; i < steps10; i++) {
+                await sendCommand('\x9B'); // Decrease 10%
+            }
+            for (let i = 0; i < steps1; i++) {
+                await sendCommand('\x9D'); // Decrease 1%
+            }
+        }
+    };
+
     const SliderControl = ({
-                               label,
-                               value,
-                               onChange
-                           }: {
+        label,
+        value,
+        onChange,
+        min = 0,
+        max = 200,
+        step = 1,
+        allowedValues,
+    }: {
         label: string;
         value: number;
         onChange?: (value: number) => void;
+        min?: number;
+        max?: number;
+        step?: number;
+        allowedValues?: number[];
     }) => (
         <div className="space-y-2">
             <div className="flex justify-between items-center">
                 <label className="text-sm font-medium">{label}</label>
                 <span className="text-sm font-mono bg-gray-700 px-2 py-1 rounded">
-          {value}%
-        </span>
+                    {value}%
+                </span>
             </div>
             <div className="flex items-center space-x-2">
                 <button
-                    onClick={() => onChange && onChange(Math.max(0, value - 10))}
+                    onClick={() => onChange && onChange(Math.max(min, value - 10))}
                     className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
                 >
                     -10%
                 </button>
                 <input
                     type="range"
-                    min="0"
-                    max="200"
+                    min={min}
+                    max={max}
+                    step={step}
                     value={value}
-                    onChange={(e) => onChange && onChange(Number(e.target.value))}
+                    onChange={(e) => {
+                        const newValue = Number(e.target.value);
+                        if (allowedValues && !allowedValues.includes(newValue)) {
+                            // Find nearest allowed value
+                            const nearest = allowedValues.reduce((prev, curr) => 
+                                Math.abs(curr - newValue) < Math.abs(prev - newValue) ? curr : prev
+                            );
+                            onChange && onChange(nearest);
+                        } else {
+                            onChange && onChange(newValue);
+                        }
+                    }}
                     className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
                 />
                 <button
-                    onClick={() => onChange && onChange(Math.min(200, value + 10))}
+                    onClick={() => onChange && onChange(Math.min(max, value + 10))}
                     className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
                 >
                     +10%
@@ -56,14 +156,25 @@ export const OverrideControls = () => {
                 <SliderControl
                     label="Rapid Speed Override"
                     value={rapidSpeedOverridePercent}
+                    onChange={handleRapidOverride}
+                    min={25}
+                    max={100}
+                    step={25}
+                    allowedValues={[25, 50, 100]}
                 />
                 <SliderControl
                     label="Feed Rate Override"
                     value={feedrateOverridePercent}
+                    onChange={handleFeedOverride}
+                    min={10}
+                    max={200}
                 />
                 <SliderControl
                     label="Spindle Speed Override"
                     value={spindleSpeedOverridePercent}
+                    onChange={handleSpindleOverride}
+                    min={10}
+                    max={200}
                 />
             </div>
         </div>
