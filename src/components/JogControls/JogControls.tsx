@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useGRBL } from "../../contexts/GRBLContext";
+import { useGRBL } from "../../app/useGRBL.ts";
 
 export const JogControls = () => {
     const [feedrate, setFeedrate] = useState(100);
     const [stepSize, setStepSize] = useState(1);
     const [continuousMode, setContinuousMode] = useState(false);
+    const [activeButton, setActiveButton] = useState<string | null>(null);
     const { sendCommand, isConnected } = useGRBL();
 
     const stopJog = async () => {
@@ -39,11 +40,13 @@ export const JogControls = () => {
 
     const handleJogStart = (axis: string, direction: number) => {
         if (continuousMode) {
+            setActiveButton(`${axis}${direction}`);
             handleJog(axis, direction);
         }
     };
 
     const handleJogEnd = () => {
+        setActiveButton(null);
         if (continuousMode) {
             stopJog();
         }
@@ -57,7 +60,11 @@ export const JogControls = () => {
 
     const renderJogButton = (axis: string, direction: number, label: string) => (
         <button 
-            className="p-3 bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed" 
+            className={`p-3 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+                activeButton === `${axis}${direction}` 
+                    ? 'bg-blue-600 hover:bg-blue-500' 
+                    : 'bg-gray-700 hover:bg-gray-600 active:bg-gray-400'
+            }`}
             onClick={() => handleClick(axis, direction)}
             onMouseDown={() => handleJogStart(axis, direction)}
             onMouseUp={handleJogEnd}
@@ -76,6 +83,7 @@ export const JogControls = () => {
                     <div className="flex-1">
                         <label className="block text-sm font-medium mb-1">Feedrate (mm/min)</label>
                         <input
+                            id={"Feedrate"}
                             type="number"
                             value={feedrate}
                             onChange={(e) => setFeedrate(Number(e.target.value))}
@@ -88,6 +96,7 @@ export const JogControls = () => {
                         {!continuousMode &&(<><label className="block text-sm font-medium mb-1">Distance
                             (mm)</label><input
                             type="number"
+                            id={"Distance"}
                             value={stepSize}
                             onChange={(e) => setStepSize(Number(e.target.value))}
                             className={`w-full bg-gray-700 rounded px-3 py-2 text-white ${continuousMode ? "cursor-not-allowed" : ""}`}

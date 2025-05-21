@@ -1,6 +1,14 @@
 import {create} from "zustand/react";
 import type {GCodeCommand, GRBLState, Point3D} from "../types/GCodeTypes.ts";
+import GRBLSerial from "./GRBLSerial.ts";
+
 interface CNCState {
+    isConnected: boolean;
+    setIsConnected: (isConnected: boolean) => void;
+
+    eventSource?: GRBLSerial;
+
+
     toolPathGCodes?: GCodeCommand[]
     allGCodes?: string[]
     selectedGCodeLine?: number
@@ -31,6 +39,10 @@ interface CNCState {
 
 }
 export const useStore = create<CNCState>((set) => ({
+    isConnected: false,
+    setIsConnected(isConnected: boolean) {set({isConnected})},
+    eventSource:new GRBLSerial(),
+
     toolPathGCodes: [],
     allGCodes: [],
     selectedGCodeLine: undefined,

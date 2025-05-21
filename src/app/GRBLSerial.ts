@@ -1,18 +1,25 @@
-// src/utils/GRBLSerial.js
-export default class GRBLSerial extends EventTarget {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+import {TypedEventTarget} from "typescript-event-target";
+
+export interface GRBLSerialEventMap {
+    connect: Event;
+    disconnect: CustomEvent<string|null>;
+    data: CustomEvent<string>;
+    error: CustomEvent<string>;
+    // [...]
+}
+
+export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
+
     port: SerialPort | null = null;
-    reader: ReadableStreamDefaultReader<string> | null = null;
-    keepReading = false;
     baudRate: number;
+    keepReading = false;
 
     constructor({ baudRate = 115200 } = {}) {
         super();
         this.baudRate = baudRate;
         this.port = null;
-        this.reader = null;
         this.keepReading = false;
+
     }
 
     // 1️⃣ Prompt user to select and open a serial port
@@ -20,56 +27,52 @@ export default class GRBLSerial extends EventTarget {
         if (!("serial" in navigator)) {
             throw new Error("Web Serial API not supported");
         }
+
         try {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
             this.port = await navigator.serial.requestPort();
+            if (!this.port) {
+                throw new Error("No port selected");
+            }
+            // Only set up event listeners after port is successfully opened
+
             await this.port.open({ baudRate: this.baudRate });
+            this._connectListener()
+            this.port.addEventListener("disconnect", this._disconnectListener);
             this.keepReading = true;
+
             this._readLoop();
-            this.port.addEventListener("disconnect", () => {
-                console.log("Disconnected");
-                this.dispatchEvent(new CustomEvent("disconnect"));
-            });
         } catch (error) {
+            console.error("Error connecting to serial port:", error);
             this.port = null;
             throw error;
         }
     }
-
+    private readonly _disconnectListener = () => {
+        console.log("Disconnected");
+        this.dispatchTypedEvent("data",new CustomEvent("data", { detail: "> device disconnected" }));
+        this.dispatchTypedEvent("disconnect", new CustomEvent("disconnect"));
+    };
+    private readonly _connectListener = () => {
+        console.log("connected");
+        this.dispatchTypedEvent("connect", new CustomEvent("connect"));
+    };
     // 2️⃣ Close reader and port
     async disconnect() {
+        this.port?.removeEventListener("disconnect", this._disconnectListener);
+        this.port?.removeEventListener("connect", this._connectListener);
         this.keepReading = false;
-        
+
         try {
-            // First, stop the read loop and release the reader
-            if (this.reader) {
-                await this.reader.cancel();
-                await new Promise(resolve => setTimeout(resolve, 100)); // Give time for cleanup
-                this.reader = null;
-            }
-
-            // Then close the port
-            if (this.port?.readable) {
-                await this.port.readable.cancel();
-            }
-            
-            if (this.port?.writable) {
-                const writer = this.port.writable.getWriter();
-                await writer.close();
-                writer.releaseLock();
-            }
-
             if (this.port) {
-                await this.port.close();
+                await this.port.forget();
                 this.port = null;
             }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error('Error during disconnect:', error);
             // Force reset of internal state even if there was an error
-            this.reader = null;
             this.port = null;
-            this.keepReading = false;
             throw error;
         }
     }
@@ -84,60 +87,50 @@ export default class GRBLSerial extends EventTarget {
             writer.releaseLock();
         }
     }
-
     // Internal: read continuously, split into lines, filter, and emit
-    async _readLoop() {
+    private async _readLoop() {
+        console.log("⭐️ _readLoop started");
+
         if (!this.port?.readable) return;
 
-        try {
-            const textStream = this.port.readable
-                .pipeThrough(new TextDecoderStream())
-                .pipeThrough(new TransformStream({
-                    start() {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        this.buffer = "";
-                    },
-                    transform(chunk, controller) {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        this.buffer += chunk;
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        const lines = this.buffer.split(/\r?\n/);
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        this.buffer = lines.pop(); // hold incomplete
-                        for (const line of lines) controller.enqueue(line);
-                    },
-                }));
-
-            this.reader = textStream.getReader();
-
-            try {
-                while (this.keepReading && this.reader) {
-                    const { value: raw, done } = await this.reader.read();
-                    if (done) break;
-                    const line = raw.trim();
-                    // filter out GRBL handshakes and queries:
-                    if (/^ok$/i.test(line) || line === "?") {
-                        continue;
-                    }
-                    this.dispatchEvent(new CustomEvent("data", { detail: line }));
+        // 1️⃣ Pipe through TextDecoderStream → lineSplitter → getReader()
+        let buffer = "";
+        const splitter = new TransformStream<string,string>({
+            transform(chunk, controller) {
+                buffer += chunk;
+                const lines = buffer.split("\n");
+                buffer = lines.pop()!;            // leftover
+                for (const line of lines) {
+                    controller.enqueue(line);
                 }
-            } finally {
-                if (this.reader) {
-                    await this.reader.cancel();
-                    this.reader.releaseLock();
-                    this.reader = null;
+            },
+            flush(controller) {
+                if (buffer) controller.enqueue(buffer);
+            }
+        });
+        const reader = this.port.readable
+            .pipeThrough(new TextDecoderStream())
+            .pipeThrough(splitter)
+            .getReader();
+        try {
+            while (this.keepReading) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                const trimmed = value.trim();
+                if (trimmed) {
+                    this.dispatchTypedEvent("data",new CustomEvent("data", { detail: trimmed }));
+
                 }
             }
-        } catch (error: any) {
-
-            console.error('Error in read loop:', error);
-
-            this.dispatchEvent(new CustomEvent("data", { detail: `Error: ${error?.message || 'Unknown error'}` }));
-            this.dispatchEvent(new CustomEvent("data", { detail: `Error: ${error?.message || 'Unknown error'}` }));
+        } catch (err) {
+            console.error('Serial read error:', err);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            this.dispatchTypedEvent("error", new CustomEvent<string>(err.toString()));
+        } finally {
+            reader.releaseLock();
+            this.dispatchTypedEvent("disconnect",new CustomEvent("disconnect"))
         }
+
     }
 }

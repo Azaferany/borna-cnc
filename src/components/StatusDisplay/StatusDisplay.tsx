@@ -1,9 +1,7 @@
-import { useEffect } from 'react';
-import { useGRBL } from '../../contexts/GRBLContext';
+
 import { useStore } from '../../app/store';
 
 export const StatusDisplay = () => {
-    const { sendCommand, isConnected } = useGRBL();
     const {
         machineCoordinate,
         workPlaceCoordinateOffset,
@@ -13,15 +11,7 @@ export const StatusDisplay = () => {
     } = useStore();
 
     // Set up polling interval
-    useEffect(() => {
-        if (!isConnected) return;
 
-        const pollInterval = setInterval(() => {
-            sendCommand('?').catch(console.error);
-        }, 50); // Poll every 50ms
-
-        return () => clearInterval(pollInterval);
-    }, [isConnected, sendCommand]);
 
     const CoordRow = ({ axis, workOffset, machine }: { axis: string; workOffset: number; machine: number }) => (
         <div className="grid grid-cols-3 gap-4 py-2 border-b border-gray-700">

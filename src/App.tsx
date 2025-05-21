@@ -1,6 +1,6 @@
 import {BrowserRouter, Route, Routes} from "react-router";
 import HomePage from "./pages/HomePage.tsx";
-import { GRBLProvider } from './contexts/GRBLContext';
+import {GRBLProvider} from "./app/GRBLProvider.tsx";
 
 function App() {
     return (

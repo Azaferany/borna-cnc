@@ -1,17 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useGRBL } from '../../contexts/GRBLContext';
-import { ConnectButton } from '../ConnectButton/ConnectButton';
+import {useGRBL} from "../../app/useGRBL.ts";
+import {useGRBLListener} from "../../app/useGRBLListener.ts";
 
 export const Console = () => {
     const [command, setCommand] = useState('');
     const historyEndRef = useRef<HTMLDivElement>(null);
-    const { isConnected, sendCommand, history : rawHistory } = useGRBL();
-    const [history, setHistory] = useState(rawHistory.filter(x=>!x.includes("> ?")))
-
+    const { isConnected, sendCommand } = useGRBL();
+    const [history, setHistory] = useState<string[]>([]);
+    
     // Track command history and current position
     const [commandHistory, setCommandHistory] = useState<string[]>([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
     const [tempCommand, setTempCommand] = useState('');
+
+    // Listen for incoming messages
+    useGRBLListener((line: string) => {
+
+        setHistory(prev => [...prev, line]);
+    });
 
     const scrollToBottom = () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -19,25 +25,11 @@ export const Console = () => {
         historyEndRef.current?.scrollTo({top:historyEndRef.current.firstChild?.clientHeight, behavior: 'smooth' });
     };
 
-
     useEffect(() => {
-        const h = rawHistory.filter(x=>!x.includes("> ?"));
-
-        if(h.length != history.length) {
-            scrollToBottom();
-            setTimeout(scrollToBottom,500)
-        }
-
-        setHistory(h)
-    }, [history.length, rawHistory]);
-
-    // Extract commands from history
-    useEffect(() => {
-        const commands = history
-            .filter(line => line.startsWith('> '))
-            .map(line => line.substring(2));
-        setCommandHistory(commands);
+        scrollToBottom();
+        setTimeout(scrollToBottom, 500);
     }, [history]);
+
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'ArrowUp') {
@@ -69,6 +61,9 @@ export const Console = () => {
         e.preventDefault();
         if (command.trim()) {
             try {
+                // Add the sent command to history
+                setHistory(prev => [...prev, `> ${command}`]);
+                setCommandHistory(prev => [...prev, command]);
                 await sendCommand(command);
                 setCommand('');
                 setHistoryIndex(-1); // Reset history index after sending command
@@ -84,7 +79,6 @@ export const Console = () => {
         <div className="bg-gray-800 p-4 rounded-lg min-h-[218px] flex flex-col">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Console</h2>
-                <ConnectButton />
             </div>
             <div className="h-40 max-h-[400px] bg-gray-900 rounded p-2 mb-4 overflow-y-auto custom-scrollbar" ref={historyEndRef}>
                 <div className="space-y-1 font-mono text-sm">
@@ -101,7 +95,9 @@ export const Console = () => {
                 </div>
             </div>
             <form onSubmit={handleSubmit} className="flex space-x-2">
+                <label htmlFor="command"></label>
                 <input
+                    id={"command"}
                     type="text"
                     value={command}
                     onChange={(e) => {

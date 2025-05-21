@@ -1,19 +1,18 @@
+import {useGRBL} from "../../app/useGRBL.ts";
 import {useStore} from "../../app/store.ts";
-import {useGRBL} from "../../contexts/GRBLContext.tsx";
+import {useEffect, useState} from "react";
 
 export const OverrideControls = () => {
-    const {
-        feedrateOverridePercent,
-        rapidSpeedOverridePercent,
-        spindleSpeedOverridePercent
-    } = useStore();
+    const spindleSpeedOverridePercent = useStore(state => state.spindleSpeedOverridePercent);
+    const feedrateOverridePercent = useStore(state => state.feedrateOverridePercent);
+    const rapidSpeedOverridePercent = useStore(state => state.rapidSpeedOverridePercent);
 
-    const { sendCommand } = useGRBL();
+    const { sendCommand } = useGRBL()
 
     const handleFeedOverride = async (newValue: number) => {
         // Validate feed override limits (10% to 200%)
         if (newValue < 10 || newValue > 200) return;
-        
+
         if (newValue === feedrateOverridePercent) return; // Ignore if no change
 
         if (newValue === 100) {
@@ -22,7 +21,7 @@ export const OverrideControls = () => {
             const diff = newValue - feedrateOverridePercent;
             const steps10 = Math.floor(diff / 10);
             const steps1 = diff % 10;
-            
+
             for (let i = 0; i < steps10; i++) {
                 await sendCommand('\x91'); // Increase 10%
             }
@@ -33,7 +32,7 @@ export const OverrideControls = () => {
             const diff = feedrateOverridePercent - newValue;
             const steps10 = Math.floor(diff / 10);
             const steps1 = diff % 10;
-            
+
             for (let i = 0; i < steps10; i++) {
                 await sendCommand('\x92'); // Decrease 10%
             }
@@ -57,8 +56,10 @@ export const OverrideControls = () => {
 
     const handleSpindleOverride = async (newValue: number) => {
         // Validate spindle override limits (10% to 200%)
+        console.log(newValue)
+
         if (newValue < 10 || newValue > 200) return;
-        
+
         if (newValue === spindleSpeedOverridePercent) return; // Ignore if no change
 
         if (newValue === 100) {
@@ -67,9 +68,9 @@ export const OverrideControls = () => {
             const diff = newValue - spindleSpeedOverridePercent;
             const steps10 = Math.floor(diff / 10);
             const steps1 = diff % 10;
-            
+
             for (let i = 0; i < steps10; i++) {
-                    await sendCommand('\x9A'); // Increase 10%
+                await sendCommand('\x9A'); // Increase 10%
             }
             for (let i = 0; i < steps1; i++) {
                 await sendCommand('\x9C'); // Increase 1%
@@ -78,7 +79,7 @@ export const OverrideControls = () => {
             const diff = spindleSpeedOverridePercent - newValue;
             const steps10 = Math.floor(diff / 10);
             const steps1 = diff % 10;
-            
+
             for (let i = 0; i < steps10; i++) {
                 await sendCommand('\x9B'); // Decrease 10%
             }
@@ -88,66 +89,100 @@ export const OverrideControls = () => {
         }
     };
 
+
     const SliderControl = ({
-        label,
-        value,
-        onChange,
-        min = 0,
-        max = 200,
-        step = 1,
-        allowedValues,
-    }: {
+                               value: storeValue,
+                               label,
+                               onCommit,
+                               min = 0,
+                               max = 200,
+                               step = 1,
+                               allowedValues,
+                           }: {
         label: string;
         value: number;
-        onChange?: (value: number) => void;
+        onCommit: (value: number) => void;
         min?: number;
         max?: number;
         step?: number;
-        allowedValues?: number[];
-    }) => (
-        <div className="space-y-2">
-            <div className="flex justify-between items-center">
-                <label className="text-sm font-medium">{label}</label>
-                <span className="text-sm font-mono bg-gray-700 px-2 py-1 rounded">
-                    {value}%
-                </span>
+        allowedValues?: number[];    }) => {
+        // Local thumb position
+        const [localValue, setLocalValue] = useState(storeValue);
+        const [isLoading, setIsLoading] = useState(false);
+
+
+        useEffect(() => {
+            if (localValue !== storeValue) {
+                setIsLoading(true);
+            } else {
+                setIsLoading(false);
+            }
+        }, [localValue, storeValue]);
+
+        useEffect(() => {
+            setLocalValue(storeValue);
+        }, [storeValue]);
+
+        return (
+            <div className="space-y-2">
+                <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium">{label}</label>
+                        <span className={`text-sm font-mono px-2 py-1 rounded flex items-center gap-1 ${isLoading ? 'bg-yellow-700' : 'bg-gray-700'}`}>
+                            {storeValue}%
+                            {isLoading && (
+                                <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            )}
+                        </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        {!allowedValues &&(<button
+                            onClick={() => onCommit && onCommit(Math.max(min, storeValue - 10))}
+                            className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                        >
+                            -10%
+                        </button>)}                <input
+                        type="range"
+                        min={min}
+                        max={max}
+                        step={step}
+                        value={localValue}
+                        onChange={(e) => {
+                            const v = Number(e.target.value);
+
+                            if (allowedValues && !allowedValues.includes(v)) {
+                                // Find nearest allowed value
+                                const nearest = allowedValues.reduce((prev, curr) =>
+                                    Math.abs(curr - v) < Math.abs(prev - v) ? curr : prev
+                                );
+                                setLocalValue(
+                                    nearest
+                                );
+                            } else {
+                                setLocalValue(
+                                    v
+                                );
+                            }
+                        }}
+                        className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+
+                        onMouseUp={() => onCommit(localValue)}
+                        onTouchEnd={() => onCommit(localValue)}
+                    />
+                        {!allowedValues && (<button
+                            onClick={() => {onCommit(Math.min(max, storeValue + 10))}}
+                            className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                        >
+                            +10%
+                        </button>)}
+                    </div>
+                </div>
             </div>
-            <div className="flex items-center space-x-2">
-                {!allowedValues &&(<button
-                    onClick={() => onChange && onChange(Math.max(min, value - 10))}
-                    className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
-                >
-                    -10%
-                </button>)}
-                <input
-                    type="range"
-                    min={min}
-                    max={max}
-                    step={step}
-                    value={value}
-                    onChange={(e) => {
-                        const newValue = Number(e.target.value);
-                        if (allowedValues && !allowedValues.includes(newValue)) {
-                            // Find nearest allowed value
-                            const nearest = allowedValues.reduce((prev, curr) => 
-                                Math.abs(curr - newValue) < Math.abs(prev - newValue) ? curr : prev
-                            );
-                            onChange && onChange(nearest);
-                        } else {
-                            onChange && onChange(newValue);
-                        }
-                    }}
-                    className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                />
-                {!allowedValues && (<button
-                    onClick={() => onChange && onChange(Math.min(max, value + 10))}
-                    className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
-                >
-                    +10%
-                </button>)}
-            </div>
-        </div>
-    );
+        );
+    }
+
+
+
 
     return (
         <div className="bg-gray-800 p-4 rounded-lg">
@@ -156,7 +191,7 @@ export const OverrideControls = () => {
                 <SliderControl
                     label="Rapid Speed Override"
                     value={rapidSpeedOverridePercent}
-                    onChange={handleRapidOverride}
+                    onCommit={handleRapidOverride}
                     min={0}
                     max={100}
                     step={25}
@@ -165,14 +200,14 @@ export const OverrideControls = () => {
                 <SliderControl
                     label="Feed Rate Override"
                     value={feedrateOverridePercent}
-                    onChange={handleFeedOverride}
+                    onCommit={handleFeedOverride}
                     min={10}
                     max={200}
                 />
                 <SliderControl
                     label="Spindle Speed Override"
                     value={spindleSpeedOverridePercent}
-                    onChange={handleSpindleOverride}
+                    onCommit={handleSpindleOverride}
                     min={10}
                     max={200}
                 />

@@ -226,7 +226,7 @@ export const GCodeEditor = () => {
             <OpenFileButton />
             <button
                 onClick={handleSave}
-                className="bg-green-600 hover:bg-green-800 px-4 py-1.5 rounded"
+                className="bg-green-600 hover:bg-green-700 active:bg-green-900 px-4 py-1.5 rounded"
             >
               Save File
             </button>
@@ -245,8 +245,7 @@ export const GCodeEditor = () => {
               mode="gcode"
               value={allGCodes?.join('\n') ?? ""}
               onChange={value =>loadToolPathGCodes(value.split('\n'), toolPathGCodes ?? [])}
-              onBlur={(e) => {
-                console.log(e)
+              onBlur={() => {
                 processGcode(editorRef?.current?.editor.getValue() ?? "")
               } }
               name="gcode-editor"

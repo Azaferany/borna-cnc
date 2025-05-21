@@ -198,7 +198,7 @@ export const OpenFileButton: React.FC<OpenFileButtonProps> = ({ className }) => 
     };
 
     return (
-        <label className={`bg-blue-600 hover:bg-blue-800 px-4 py-1.5 rounded cursor-pointer inline-block ${className}`}>
+        <label className={`bg-blue-600 hover:bg-blue-700 active:bg-blue-900 px-4 py-1.5 rounded cursor-pointer inline-block ${className}`}>
             Open File
             <input
                 type="file"
