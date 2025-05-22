@@ -129,7 +129,7 @@ export const OverrideControls = () => {
                     <div className="flex justify-between items-center">
                         <label className="text-sm font-medium">{label}</label>
                         <span className={`text-sm font-mono px-2 py-1 rounded flex items-center gap-1 ${isLoading ? 'bg-yellow-700' : 'bg-gray-700'}`}>
-                            {storeValue}%
+                            {isLoading ? `${storeValue}%  →  ${localValue}%` : `${storeValue}%`}
                             {isLoading && (
                                 <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
                             )}
