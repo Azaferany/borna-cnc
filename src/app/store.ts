@@ -8,6 +8,8 @@ interface CNCState {
 
     eventSource?: GRBLSerial;
 
+    isSending: boolean;
+    setIsSending: (isSending: boolean) => void;
 
     toolPathGCodes?: GCodeCommand[]
     allGCodes?: string[]
@@ -43,6 +45,9 @@ export const useStore = create<CNCState>((set) => ({
     isConnected: false,
     setIsConnected(isConnected: boolean) {set({isConnected})},
     eventSource:new GRBLSerial(),
+
+    isSending: false,
+    setIsSending(isSending: boolean) {set({isSending})},
 
     toolPathGCodes: [],
     allGCodes: [],

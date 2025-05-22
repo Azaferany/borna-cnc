@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import AceEditor from 'react-ace';
 
 import 'ace-builds/src-noconflict/mode-gcode';
@@ -9,12 +9,13 @@ import {OpenFileButton} from "../OpenFileButton/OpenFileButton.tsx";
 
 export const GCodeEditor = () => {
   const editorRef = useRef<AceEditor>(null);
+  const [isHovered, setIsHovered] = useState(false);
   const loadToolPathGCodes = useStore(x => x.loadToolPathGCodes);
   const allGCodes = useStore(x => x.allGCodes);
   const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
   const selectGCodeLine = useStore(x => x.selectGCodeLine);
   const toolPathGCodes = useStore(x => x.toolPathGCodes);
-  const status = useStore(x => x.status);
+  const isSending = useStore(x => x.isSending);
 
   useEffect(() => {
 
@@ -279,8 +280,18 @@ export const GCodeEditor = () => {
           {/* Transparent Overlay that blocks interaction */}
 
 
-          {status == "Run" &&(
-              <div className="absolute inset-0 z-10 bg-transparent pointer-events-auto" />
+          {isSending &&(
+              <div 
+                className="absolute inset-0 z-10 bg-transparent pointer-events-auto flex items-center justify-center"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+              >
+                {isHovered && (
+                  <div className="bg-gray-900 text-white px-4 py-2 rounded shadow-lg">
+                    G-codes are locked while sending
+                  </div>
+                )}
+              </div>
           )}
 
         </div>

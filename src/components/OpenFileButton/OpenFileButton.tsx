@@ -8,6 +8,7 @@ interface OpenFileButtonProps {
 
 export const OpenFileButton: React.FC<OpenFileButtonProps> = ({ className }) => {
     const loadToolPathGCodes = useStore(state => state.loadToolPathGCodes);
+    const isSending = useStore(state => state.isSending);
 
     const parseGCode = (text: string): GCodeCommand[] => {
         const lines = text.split('\n');
@@ -198,13 +199,14 @@ export const OpenFileButton: React.FC<OpenFileButtonProps> = ({ className }) => 
     };
 
     return (
-        <label className={`bg-blue-600 hover:bg-blue-700 active:bg-blue-900 px-4 py-1.5 rounded cursor-pointer inline-block ${className}`}>
+        <label className={`bg-blue-600 hover:bg-blue-700 active:bg-blue-900 px-4 py-1.5 rounded cursor-pointer inline-block ${className} ${isSending ? 'opacity-50 cursor-not-allowed' : ''}`}>
             Open File
             <input
                 type="file"
                 accept=".gcode,.nc,.txt"
                 onChange={handleFileUpload}
                 className="hidden"
+                disabled={isSending}
             />
         </label>
     );
