@@ -15,6 +15,7 @@ export const Console = () => {
 
     // Listen for incoming messages
     useGRBLListener((line: string) => {
+        if(line != "ok")
         setHistory(prev => [...prev, line]);
     },[]);
 
