@@ -123,14 +123,27 @@ export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
                 if (trimmed) {
                     if (trimmed === "ok" && pendingStatusLine) {
                         // If we have a pending status line and received "ok", emit the combined line
-                        this.dispatchTypedEvent("data", new CustomEvent("data", { 
+                        this.dispatchTypedEvent("data", new CustomEvent("data", {
                             detail: `${pendingStatusLine}`
                         }));
                         pendingStatusLine = ""; // Reset the pending status line
                     } else if (trimmed.startsWith("<") && trimmed.endsWith(">")) {
-                        // Store the status line but don't emit it yet
+                        // If we have a pending status line, emit it first
+                        if (pendingStatusLine) {
+                            this.dispatchTypedEvent("data", new CustomEvent("data", {
+                                detail: pendingStatusLine
+                            }));
+                        }
+                        // Store the new status line
                         pendingStatusLine = trimmed;
                     } else {
+                        // If we have a pending status line, emit it first
+                        if (pendingStatusLine) {
+                            this.dispatchTypedEvent("data", new CustomEvent("data", {
+                                detail: pendingStatusLine
+                            }));
+                            pendingStatusLine = ""; // Reset the pending status line
+                        }
                         // For any other line, emit it directly
                         this.dispatchTypedEvent("data", new CustomEvent("data", { detail: trimmed }));
                     }

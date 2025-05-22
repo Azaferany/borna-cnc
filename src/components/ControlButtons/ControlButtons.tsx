@@ -8,30 +8,110 @@ import {
 } from '@heroicons/react/24/solid';
 import {useGRBL} from "../../app/useGRBL.ts";
 import {useStore} from "../../app/store.ts";
+import {useEffect, useState} from "react";
+import {useGRBLListener} from "../../app/useGRBLListener.ts";
 
 export const ControlButtons = () => {
     const { sendCommand, isConnected } = useGRBL();
+    const [isSending, setIsSending] = useState(false);
+    const [waitingForOk, setWaitingForOk] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
+    const { 
+        allGCodes, 
+        selectedGCodeLine, 
+        availableBufferSlots,
+        lastSentLine,
+        updateLastSentLine 
+    } = useStore();
+
+    useGRBLListener(line => {
+        console.log('GRBL Response:', line);
+        if(line == "ok") {
+            console.log('Received OK, ready for next line');
+            setWaitingForOk(false);
+        }
+        else if(line.includes("error")) {
+            console.error('GRBL Error:', line);
+            setIsSending(false);
+        }
+    });
+
     const handleCommand = async (command: string) => {
         try {
+            console.log('Sending command:', command);
             await sendCommand(command);
         } catch (error) {
             console.error('Error sending command:', error);
         }
     };
 
+    const sendNextLine = async () => {
+        if (waitingForOk) {
+            console.log('Waiting for OK response, skipping send');
+            return;
+        }
+
+        const nextLine = lastSentLine + 1;
+        const pendingLines = nextLine - (selectedGCodeLine ?? 0);
+
+        console.log('Send status:', {
+            nextLine,
+            pendingLines,
+            availableBufferSlots,
+            lastSentLine,
+            selectedGCodeLine,
+            totalLines: allGCodes?.length
+        });
+
+        if (lastSentLine >= ((allGCodes?.length ?? 0) - 1) || !isConnected || !allGCodes?.[nextLine]) {
+            console.log('Stopping send process:', {
+                reason: lastSentLine >= ((allGCodes?.length ?? 0) - 1) ? 'Reached end of file' : 
+                        !isConnected ? 'Not connected' : 'No next line available'
+            });
+            setIsSending(false);
+            updateLastSentLine(-1);
+            return;
+        }
+
+        if (pendingLines < availableBufferSlots) {
+            console.log('Sending line:', {
+                lineNumber: nextLine,
+                content: allGCodes[nextLine]
+            });
+            setWaitingForOk(true);
+            await handleCommand(allGCodes[nextLine]);
+            updateLastSentLine(nextLine);
+        } else {
+            console.log('Buffer full, waiting for execution:', {
+                pendingLines,
+                availableBufferSlots
+            });
+        }
+    };
+
+    useEffect(() => {
+        if (isConnected && allGCodes && lastSentLine < allGCodes.length - 1 && isSending && !waitingForOk) {
+            console.log('Effect triggered, attempting to send next line');
+            sendNextLine();
+        }
+    }, [selectedGCodeLine, lastSentLine, isConnected, allGCodes, isSending, waitingForOk]);
+
     const buttons = [
         { 
             icon: PlayIcon, 
             label: 'Start', 
             color: 'bg-green-600 hover:bg-green-700 active:bg-green-900',
-            command: '~', // Cycle start/resume
-            disabled: !isConnected
+            onClick: () => {
+                console.log('Start button clicked, beginning send process');
+                setIsSending(true);
+            },
+            disabled: !isConnected || !allGCodes || allGCodes.length === 0 || isSending
         },
         { 
             icon: StopIcon, 
             label: 'Stop', 
             color: 'bg-red-600 hover:bg-red-700 active:bg-red-900',
-            command: '!', // Feed hold
+            command: '\x84', // Feed hold
             disabled: !isConnected
         },
         { 
@@ -49,10 +129,14 @@ export const ControlButtons = () => {
             disabled: !isConnected
         },
         { 
-            icon: PauseIcon, 
-            label: 'Pause', 
+            icon: isPaused ? PlayIcon : PauseIcon, 
+            label: isPaused ? 'Continue' : 'Pause', 
             color: 'bg-orange-600 hover:bg-orange-700 active:bg-orange-900',
-            command: '!', // Feed hold (same as stop)
+            onClick: () => {
+                const command = isPaused ? '~' : '!'; // '~' for cycle start, '!' for feed hold
+                handleCommand(command);
+                setIsPaused(!isPaused);
+            },
             disabled: !isConnected
         },
         { 
@@ -68,11 +152,11 @@ export const ControlButtons = () => {
         <div className="bg-gray-800 p-4 rounded-lg h-full">
             <h2 className="text-xl font-bold mb-4">Machine Control</h2>
             <div className="grid grid-cols-3 gap-4 items-center mt-14">
-                {buttons.map(({ icon: Icon, label, color, command, disabled }) => (
+                {buttons.map(({ icon: Icon, label, color, command, disabled, onClick }) => (
                     <button
                         key={label}
                         className={`${color} p-3 rounded flex flex-col items-center justify-center transition-colors duration-150 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        onClick={() => command && handleCommand(command)}
+                        onClick={() => onClick ? onClick() : command && handleCommand(command)}
                         disabled={disabled}
                     >
                         <Icon className="h-6 w-6" />

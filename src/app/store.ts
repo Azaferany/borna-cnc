@@ -36,7 +36,8 @@ interface CNCState {
     updateSpindleSpeedOverridePercent:(spindleSpeedOverridePercent:number) =>void,
     updateAvailableBufferSlots:(availableBufferSlots:number) =>void,
 
-
+    lastSentLine: number;
+    updateLastSentLine: (line: number) => void;
 }
 export const useStore = create<CNCState>((set) => ({
     isConnected: false,
@@ -56,6 +57,7 @@ export const useStore = create<CNCState>((set) => ({
     spindleSpeedOverridePercent: 100,
     availableBufferSlots : 15,
 
+    lastSentLine: -1,
 
     loadToolPathGCodes: (allGCodes,toolPathGCodes,) => set({ toolPathGCodes, allGCodes }),
     selectGCodeLine: (line) => set({ selectedGCodeLine: line }),
@@ -68,4 +70,5 @@ export const useStore = create<CNCState>((set) => ({
     updateRapidSpeedOverridePercent:(rapidSpeedOverridePercent) =>set({ rapidSpeedOverridePercent }),
     updateSpindleSpeedOverridePercent:(spindleSpeedOverridePercent) =>set({ spindleSpeedOverridePercent }),
     updateAvailableBufferSlots:(availableBufferSlots) =>set({ availableBufferSlots }),
+    updateLastSentLine: (line: number) => set({ lastSentLine: line }),
 }))

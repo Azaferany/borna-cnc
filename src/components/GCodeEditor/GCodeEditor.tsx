@@ -213,7 +213,7 @@ export const GCodeEditor = () => {
 
     const parsedCommands = parseGCode(numberedText);
 
-    loadToolPathGCodes(numberedText.split('\n').filter(x=>!x.startsWith(";")),
+    loadToolPathGCodes(numberedText.split('\n').filter(x=>x != "").filter(x=>!x.startsWith(";")),
         parsedCommands
             .filter(x=>x.commandCode?.includes('G')))
   };
@@ -258,7 +258,7 @@ export const GCodeEditor = () => {
               mode="gcode"
               value={allGCodes?.join('\n') ?? ""}
               onChange={value =>{
-                loadToolPathGCodes(value.split('\n'), toolPathGCodes ?? [])
+                loadToolPathGCodes(value.split('\n').filter(x=>x != ""), toolPathGCodes ?? [])
               }}
               onBlur={() => {
                 processGcode(editorRef?.current?.editor.getValue() ?? "")

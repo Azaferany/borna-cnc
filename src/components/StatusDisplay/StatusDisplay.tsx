@@ -1,11 +1,17 @@
 import { useStore } from '../../app/store';
+import { useState } from 'react';
+import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
 export const StatusDisplay = () => {
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const machineCoordinate = useStore(x => x.machineCoordinate);
     const workPlaceCoordinateOffset = useStore(x => x.workPlaceCoordinateOffset);
     const feedrate = useStore(x => x.feedrate);
     const spindleSpeed = useStore(x => x.spindleSpeed);
     const status = useStore(x => x.status);
+    const lastSentLine = useStore(x => x.lastSentLine);
+    const availableBufferSlots = useStore(x => x.availableBufferSlots);
+    const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
 
     // Set up polling interval
 
@@ -44,6 +50,40 @@ export const StatusDisplay = () => {
                 <InfoRow label="Feedrate (mm/min)" value={feedrate.toFixed(0)} />
                 <InfoRow label="Spindle Speed (RPM)" value={spindleSpeed.toFixed(0)} />
                 <InfoRow label="Status" value={status} />
+                {status === "Run" && (
+                    <div className="text-xs text-gray-400 space-y-1 pt-2">
+                        {lastSentLine != -1 && (
+                            <div>
+                                <button 
+                                    onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+                                    className="w-full flex items-center justify-center gap-2 text-gray-300 hover:text-white transition-colors"
+                                >
+                                    <span className="transition-transform duration-300">
+                                        {isDetailsOpen ? (
+                                            <ChevronUpIcon className="w-4 h-4" />
+                                        ) : (
+                                            <ChevronDownIcon className="w-4 h-4" />
+                                        )}
+                                    </span>
+                                    Details
+                                </button>
+                                <div 
+                                    className={`grid transition-all duration-300 ease-in-out ${
+                                        isDetailsOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                                    }`}
+                                >
+                                    <div className="overflow-hidden">
+                                        <div className="pl-4 mt-2 space-y-1">
+                                            <InfoRow label="Last Sent Line" value={lastSentLine}/>
+                                            <InfoRow label="Buffer Slots" value={availableBufferSlots}/>
+                                            <InfoRow label="Selected Line" value={selectedGCodeLine ?? '-'}/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
