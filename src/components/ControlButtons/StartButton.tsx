@@ -25,7 +25,10 @@ export const StartButton = () => {
         else if(line.includes("error")) {
             console.error('GRBL Error:', line);
             setIsSending(false);
-            updateLastSentLine(-1);        }
+            updateLastSentLine(-1);
+            setWaitingForOk(false);
+
+        }
     });
 
     const handleCommand = async (command: string) => {
