@@ -56,14 +56,16 @@ export const Scene3D = () => {
             </div>
             <Canvas shadows camera={{
                 fov: 45,
-                position: [100, 100, 100]
+                position: [50, -50,   200]
             }}>
 
                 <OrbitControls
+                    enabled={true}
+
                     enablePan={true}
                     enableZoom={true}
                     enableRotate={true}
-                    makeDefault
+                    enableDamping={true}
                 />
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[10, 10, 10]} intensity={1} castShadow />
@@ -78,10 +80,11 @@ export const Scene3D = () => {
                     sectionSize={100}
                     sectionThickness={1}
                     sectionColor="#9ca3af"
-                    fadeDistance={100}
-                    fadeStrength={1}
+                    fadeDistance={500}
+                    fadeStrength={0.5}
                     followCamera={false}
                     infiniteGrid
+                    rotation={[Math.PI / 2, 0, 0]}
                 />
                 {machineCoordinate &&(
                     <ToolHead position={machineCoordinate}
