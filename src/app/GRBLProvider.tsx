@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect} from 'react';
 import { useStore } from './store.ts';
-import type { GRBLState, Point3D } from '../types/GCodeTypes.ts';
+import type { GRBLState } from '../types/GCodeTypes.ts';
 
 export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const status = useStore(x => x.status);
@@ -78,18 +78,17 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 updateStatus(state);
 
             if(Bf) {
-                const availableBufferSlots = Bf.map(Number)[0];
-                if (availableBufferSlots !== availableBufferSlots) {
-                    updateAvailableBufferSlots(availableBufferSlots);
+                const newAvailableBufferSlots = Bf.map(Number)[0];
+                if (newAvailableBufferSlots !== availableBufferSlots) {
+                    updateAvailableBufferSlots(newAvailableBufferSlots);
                 }
             }
             if(MPos) {
                 const [mx, my, mz] = MPos.map(Number);
-                const machineCoordinate: Point3D = { x: mx, y: my, z: mz };
                 if (machineCoordinate.x !== mx ||
                     machineCoordinate.y !== my ||
                     machineCoordinate.z !== mz) {
-                    updateMachineCoordinate(machineCoordinate);
+                    updateMachineCoordinate({ x: mx, y: my, z: mz });
                 }
             }
 
@@ -101,34 +100,33 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
             if(WCO) {
                 const [wx, wy, wz] = WCO.map(Number);
-                const workPlaceCoordinateOffset = {x: wx, y: wy, z: wz};
                 if (workPlaceCoordinateOffset.x !== wx ||
                     workPlaceCoordinateOffset.y !== wy ||
                     workPlaceCoordinateOffset.z !== wz) {
-                    updateWorkPlaceCoordinateOffset(workPlaceCoordinateOffset);
+                    updateWorkPlaceCoordinateOffset({x: wx, y: wy, z: wz});
                 }
             }
 
             if(FS) {
-                const [feedrate, spindleSpeed] = FS.map(Number);
-                if (feedrate !== feedrate) {
-                    updateFeedrate(feedrate);
+                const [newFeedrate, newSpindleSpeed] = FS.map(Number);
+                if (newFeedrate !== feedrate) {
+                    updateFeedrate(newFeedrate);
                 }
-                if (spindleSpeed !== spindleSpeed) {
-                    updateSpindleSpeed(spindleSpeed);
+                if (newSpindleSpeed !== spindleSpeed) {
+                    updateSpindleSpeed(newSpindleSpeed);
                 }
             }
 
             if(Ov) {
-                const [feedrateOverridePercent, rapidSpeedOverride, spindleSpeedOverride] = Ov.map(Number);
-                if (feedrateOverridePercent !== feedrateOverridePercent) {
-                    updateFeedrateOverridePercent(feedrateOverridePercent);
+                const [newFeedrateOverridePercent, newRapidSpeedOverridePercent, newSpindleSpeedOverridePercent] = Ov.map(Number);
+                if (feedrateOverridePercent !== newFeedrateOverridePercent) {
+                    updateFeedrateOverridePercent(newFeedrateOverridePercent);
                 }
-                if (rapidSpeedOverridePercent !== rapidSpeedOverride) {
-                    updateRapidSpeedOverridePercent(rapidSpeedOverride);
+                if (rapidSpeedOverridePercent !== newRapidSpeedOverridePercent) {
+                    updateRapidSpeedOverridePercent(newRapidSpeedOverridePercent);
                 }
-                if (spindleSpeedOverridePercent !== spindleSpeedOverride) {
-                    updateSpindleSpeedOverridePercent(spindleSpeedOverride);
+                if (spindleSpeedOverridePercent !== newSpindleSpeedOverridePercent) {
+                    updateSpindleSpeedOverridePercent(newSpindleSpeedOverridePercent);
                 }
             }
         }
@@ -150,6 +148,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }, 50); // Poll every 50ms
 
         return () => clearInterval(pollInterval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isConnected, eventSource]);
 
     const connect = async () => {
@@ -176,6 +175,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 grblSerial.removeEventListener('connect', connect);
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [statusListenerAndParse, eventSource]);
 
     return <>{children}</>;
