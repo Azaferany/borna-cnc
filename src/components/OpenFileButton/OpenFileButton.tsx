@@ -7,7 +7,7 @@ interface OpenFileButtonProps {
 }
 
 export const OpenFileButton: React.FC<OpenFileButtonProps> = ({ className }) => {
-    const {loadToolPathGCodes} = useStore();
+    const loadToolPathGCodes = useStore(state => state.loadToolPathGCodes);
 
     const parseGCode = (text: string): GCodeCommand[] => {
         const lines = text.split('\n');

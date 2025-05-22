@@ -1,9 +1,9 @@
 import {useStore} from "./store.ts";
-import {useEffect} from "react";
+import {type DependencyList, useEffect} from "react";
 
-export const useGRBLListener = (listener : (line :string)=>void) => {
-    const store = useStore();
-    if (!store.eventSource) {
+export const useGRBLListener = (listener : (line :string)=>void, deps?: DependencyList) => {
+    const eventSource = useStore(state => state.eventSource);
+    if (!eventSource) {
         throw new Error('useGRBLListener must be used within a GRBLProvider');
     }
 
@@ -14,17 +14,17 @@ export const useGRBLListener = (listener : (line :string)=>void) => {
             const line = customEvent.detail;
 
             //filter status check stuff
-            if ((line.startsWith('<') && line.endsWith('>')) || line == "ok") {
+            if ((line.startsWith('<') && line.endsWith('>'))) {
                 return;
             }
             listener(line);
         }
-        store.eventSource!.addEventListener("data",eventHandler)
+        eventSource!.addEventListener("data",eventHandler)
 
         return () => {
-            store.eventSource?.removeEventListener("data",eventHandler);
+            eventSource?.removeEventListener("data",eventHandler);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, deps);
 
 };

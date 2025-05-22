@@ -1,7 +1,8 @@
 import {useStore} from "../../app/store.ts";
 
 export const ConnectButton = ({ className = '' }: { className?: string }) => {
-    const {isConnected,eventSource} = useStore();
+    const  isConnected = useStore(x => x.isConnected);
+    const  eventSource = useStore(x => x.eventSource);
     return (
         <button
             onClick={()=> {

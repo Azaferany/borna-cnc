@@ -112,14 +112,28 @@ export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
             .pipeThrough(new TextDecoderStream())
             .pipeThrough(splitter)
             .getReader();
+
+        let pendingStatusLine = "";
+
         try {
             while (this.keepReading) {
                 const { value, done } = await reader.read();
                 if (done) break;
                 const trimmed = value.trim();
                 if (trimmed) {
-                    this.dispatchTypedEvent("data",new CustomEvent("data", { detail: trimmed }));
-
+                    if (trimmed === "ok" && pendingStatusLine) {
+                        // If we have a pending status line and received "ok", emit the combined line
+                        this.dispatchTypedEvent("data", new CustomEvent("data", { 
+                            detail: `${pendingStatusLine}`
+                        }));
+                        pendingStatusLine = ""; // Reset the pending status line
+                    } else if (trimmed.startsWith("<") && trimmed.endsWith(">")) {
+                        // Store the status line but don't emit it yet
+                        pendingStatusLine = trimmed;
+                    } else {
+                        // For any other line, emit it directly
+                        this.dispatchTypedEvent("data", new CustomEvent("data", { detail: trimmed }));
+                    }
                 }
             }
         } catch (err) {
@@ -131,6 +145,5 @@ export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
             reader.releaseLock();
             this.dispatchTypedEvent("disconnect",new CustomEvent("disconnect"))
         }
-
     }
 }

@@ -1,14 +1,11 @@
-
 import { useStore } from '../../app/store';
 
 export const StatusDisplay = () => {
-    const {
-        machineCoordinate,
-        workPlaceCoordinateOffset,
-        feedrate,
-        spindleSpeed,
-        status
-    } = useStore();
+    const machineCoordinate = useStore(x => x.machineCoordinate);
+    const workPlaceCoordinateOffset = useStore(x => x.workPlaceCoordinateOffset);
+    const feedrate = useStore(x => x.feedrate);
+    const spindleSpeed = useStore(x => x.spindleSpeed);
+    const status = useStore(x => x.status);
 
     // Set up polling interval
 

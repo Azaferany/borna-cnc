@@ -9,7 +9,12 @@ import {OpenFileButton} from "../OpenFileButton/OpenFileButton.tsx";
 
 export const GCodeEditor = () => {
   const editorRef = useRef<AceEditor>(null);
-  const {loadToolPathGCodes,allGCodes,selectedGCodeLine,selectGCodeLine,toolPathGCodes} = useStore();
+  const loadToolPathGCodes = useStore(x => x.loadToolPathGCodes);
+  const allGCodes = useStore(x => x.allGCodes);
+  const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
+  const selectGCodeLine = useStore(x => x.selectGCodeLine);
+  const toolPathGCodes = useStore(x => x.toolPathGCodes);
+  const status = useStore(x => x.status);
 
   useEffect(() => {
 
@@ -214,8 +219,16 @@ export const GCodeEditor = () => {
   };
 
   const handleSave = () => {
-    //const blob = new Blob([gcode], { type: 'text/plain;charset=utf-8' });
-    //saveAs(blob, 'program.gcode');
+    const gcode = editorRef.current?.editor.getValue() ?? "";
+    const blob = new Blob([gcode], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'program.gcode';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -244,7 +257,9 @@ export const GCodeEditor = () => {
               highlightActiveLine={true}
               mode="gcode"
               value={allGCodes?.join('\n') ?? ""}
-              onChange={value =>loadToolPathGCodes(value.split('\n'), toolPathGCodes ?? [])}
+              onChange={value =>{
+                loadToolPathGCodes(value.split('\n'), toolPathGCodes ?? [])
+              }}
               onBlur={() => {
                 processGcode(editorRef?.current?.editor.getValue() ?? "")
               } }
@@ -263,9 +278,10 @@ export const GCodeEditor = () => {
           />
           {/* Transparent Overlay that blocks interaction */}
 
-          {/*
-          <div className="absolute inset-0 z-10 bg-transparent pointer-events-auto" />
-*/}
+
+          {status == "Run" &&(
+              <div className="absolute inset-0 z-10 bg-transparent pointer-events-auto" />
+          )}
 
         </div>
       </div>

@@ -15,9 +15,8 @@ export const Console = () => {
 
     // Listen for incoming messages
     useGRBLListener((line: string) => {
-
         setHistory(prev => [...prev, line]);
-    });
+    },[]);
 
     const scrollToBottom = () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

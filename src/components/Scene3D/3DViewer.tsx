@@ -27,8 +27,9 @@ export const findGCodeCommandOrLatestBaseOnLine =
     }
 
 export const Scene3D = () => {
-
-    const {toolPathGCodes,selectedGCodeLine,machineCoordinate} = useStore();
+    const toolPathGCodes = useStore(x => x.toolPathGCodes);
+    const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
+    const machineCoordinate = useStore(x => x.machineCoordinate);
     const [completeData, setCompleteData] = useState<GCodePointData | null>(null);
     useEffect(() => {
             setCompleteData(processor.processCommands(toolPathGCodes ??[]))
