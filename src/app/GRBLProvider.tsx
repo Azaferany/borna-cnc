@@ -37,7 +37,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // 3. The first token (before the first '|') is the machine state
         const result = {
-            state: tokens.shift() as GRBLState,
+            state: tokens.shift()?.replace(":0","") as GRBLState,
         };
 
         // 4. Parse remaining tokens of the form KEY:VAL or KEY:VAL1,VAL2,...

@@ -15,14 +15,13 @@ export const ControlButtons = () => {
     const { sendCommand, isConnected } = useGRBL();
     const [isSending, setIsSending] = useState(false);
     const [waitingForOk, setWaitingForOk] = useState(false);
-    const [isPaused, setIsPaused] = useState(false);
-    const { 
-        allGCodes, 
-        selectedGCodeLine, 
-        availableBufferSlots,
-        lastSentLine,
-        updateLastSentLine 
-    } = useStore();
+
+    const allGCodes = useStore(s => s.allGCodes);
+    const selectedGCodeLine = useStore(s => s.selectedGCodeLine);
+    const availableBufferSlots = useStore(s => s.availableBufferSlots);
+    const lastSentLine = useStore(s => s.lastSentLine);
+    const updateLastSentLine = useStore(s => s.updateLastSentLine);
+    const status = useStore(s => s.status);
 
     useGRBLListener(line => {
         console.log('GRBL Response:', line);
@@ -42,6 +41,12 @@ export const ControlButtons = () => {
             await sendCommand(command);
         } catch (error) {
             console.error('Error sending command:', error);
+        }
+    };
+
+    const handleContinue = async () => {
+        if (window.confirm('Are you sure you want to continue? Make sure the door is closed.')) {
+            await handleCommand('~');
         }
     };
 
@@ -108,10 +113,10 @@ export const ControlButtons = () => {
             disabled: !isConnected || !allGCodes || allGCodes.length === 0 || isSending
         },
         { 
-            icon: StopIcon, 
-            label: 'Stop', 
-            color: 'bg-red-600 hover:bg-red-700 active:bg-red-900',
-            command: '\x84', // Feed hold
+            icon: status === "Door" ? PlayIcon : StopIcon, 
+            label: status === "Door" ? 'Continue' : 'Stop', 
+            color: status === "Door" ? 'bg-green-600 hover:bg-green-700 active:bg-green-900' : 'bg-red-600 hover:bg-red-700 active:bg-red-900',
+            onClick: status === "Door" ? handleContinue : () => handleCommand('\x84'),
             disabled: !isConnected
         },
         { 
@@ -119,7 +124,7 @@ export const ControlButtons = () => {
             label: 'Home', 
             color: 'bg-blue-600 hover:bg-blue-700 active:bg-blue-900',
             command: '$H', // Home all axes
-            disabled: !isConnected
+            disabled: !isConnected || status === "Door"
         },
         { 
             icon: ArrowPathIcon, 
@@ -129,15 +134,14 @@ export const ControlButtons = () => {
             disabled: !isConnected
         },
         { 
-            icon: isPaused ? PlayIcon : PauseIcon, 
-            label: isPaused ? 'Continue' : 'Pause', 
+            icon: status === "Hold" ? PlayIcon : PauseIcon,
+            label: status === "Hold" ? 'Continue' : 'Pause',
             color: 'bg-orange-600 hover:bg-orange-700 active:bg-orange-900',
             onClick: () => {
-                const command = isPaused ? '~' : '!'; // '~' for cycle start, '!' for feed hold
+                const command = status === "Hold" ? '~' : '!'; // '~' for cycle start, '!' for feed hold
                 handleCommand(command);
-                setIsPaused(!isPaused);
             },
-            disabled: !isConnected
+            disabled: !isConnected || status === "Door"
         },
         { 
             icon: BackwardIcon, 
