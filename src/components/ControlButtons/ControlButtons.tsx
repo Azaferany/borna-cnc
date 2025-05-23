@@ -12,8 +12,18 @@ import {PreviousButton} from "./PreviousButton.tsx";
 
 export const ControlButtons = () => {
     const { sendCommand, isConnected } = useGRBL();
-
     const status = useStore(s => s.status);
+    const updateStatus = useStore(s => s.updateStatus);
+    const updateMachineCoordinate = useStore(s => s.updateMachineCoordinate);
+    const updateWorkPlaceCoordinateOffset = useStore(s => s.updateWorkPlaceCoordinateOffset);
+    const updateFeedrate = useStore(s => s.updateFeedrate);
+    const updateSpindleSpeed = useStore(s => s.updateSpindleSpeed);
+    const updateFeedrateOverridePercent = useStore(s => s.updateFeedrateOverridePercent);
+    const updateRapidSpeedOverridePercent = useStore(s => s.updateRapidSpeedOverridePercent);
+    const updateSpindleSpeedOverridePercent = useStore(s => s.updateSpindleSpeedOverridePercent);
+    const updateAvailableBufferSlots = useStore(s => s.updateAvailableBufferSlots);
+    const updateLastSentLine = useStore(s => s.updateLastSentLine);
+    const setIsSending = useStore(s => s.setIsSending);
 
     const handleCommand = async (command: string) => {
         try {
@@ -28,6 +38,24 @@ export const ControlButtons = () => {
         if (window.confirm('Are you sure you want to continue? Make sure the door is closed.')) {
             await handleCommand('~');
         }
+    };
+
+    const handleReset = async () => {
+        // Reset store state to initial values
+        updateStatus("NotConnected");
+        updateMachineCoordinate({ x: 0, y: 0, z: 0 });
+        updateWorkPlaceCoordinateOffset({ x: 0, y: 0, z: 0 });
+        updateFeedrate(0);
+        updateSpindleSpeed(0);
+        updateFeedrateOverridePercent(100);
+        updateRapidSpeedOverridePercent(100);
+        updateSpindleSpeedOverridePercent(100);
+        updateAvailableBufferSlots(15);
+        updateLastSentLine(-1);
+        setIsSending(false);
+        
+        // Send soft reset command
+        await handleCommand('\x18');
     };
 
     const buttons = [
@@ -49,7 +77,7 @@ export const ControlButtons = () => {
             icon: ArrowPathIcon,
             label: 'Reset',
             color: 'bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-900',
-            command: '\x18', // Soft reset (Ctrl-X)
+            onClick: handleReset,
             disabled: !isConnected
         },
         {
