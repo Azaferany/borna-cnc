@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/solid';
 import {useGRBL} from "../../app/useGRBL.ts";
 import {useStore} from "../../app/store.ts";
-import {StartButton} from "./StartButton.tsx";
+import {StartButton} from "../StartButton/StartButton.tsx";
 import {PreviousButton} from "./PreviousButton.tsx";
 
 export const ControlButtons = () => {
