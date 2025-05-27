@@ -3,11 +3,7 @@ import { useStore } from './store';
 import { useGRBL } from './useGRBL';
 import {useGRBLListener} from "./useGRBLListener.ts";
 
-interface UseGCodeBufferProps {
-    allGCodes: string[];
-}
-
-export const useGCodeBuffer = ({ allGCodes }: UseGCodeBufferProps) => {
+export const useGCodeBuffer = (bufferGCodesList:string[],) => {
     const { sendCommand, isConnected } = useGRBL();
     const selectedGCodeLine = useStore(s => s.selectedGCodeLine);
     const availableBufferSlots = useStore(s => s.availableBufferSlots);
@@ -21,7 +17,7 @@ export const useGCodeBuffer = ({ allGCodes }: UseGCodeBufferProps) => {
 
     const handleCommand = async (command: string) => {
         try {
-            console.log('Sending command:', command);
+            console.debug('Sending command:', command);
             await sendCommand(command);
         } catch (error) {
             console.error('Error sending command:', error);
@@ -32,25 +28,25 @@ export const useGCodeBuffer = ({ allGCodes }: UseGCodeBufferProps) => {
 
     const sendNextLine = async () => {
         if (waitingForOk) {
-            console.log('Waiting for OK response, skipping send');
+            console.debug('Waiting for OK response, skipping send');
             return;
         }
 
         const nextLine = lastSentLine + 1;
         const pendingLines = nextLine - (selectedGCodeLine ?? 0);
 
-        console.log('Send status:', {
+        console.debug('Send status:', {
             nextLine,
             pendingLines,
             availableBufferSlots,
             lastSentLine,
             selectedGCodeLine,
-            totalLines: allGCodes?.length
+            totalLines: bufferGCodesList?.length
         });
 
-        if (lastSentLine >= ((allGCodes?.length ?? 0) - 1) || !isConnected || !allGCodes?.[nextLine]) {
-            console.log('Stopping send process:', {
-                reason: lastSentLine >= ((allGCodes?.length ?? 0) - 1) ? 'Reached end of file' :
+        if (lastSentLine >= ((bufferGCodesList?.length ?? 0) - 1) || !isConnected || !bufferGCodesList?.[nextLine]) {
+            console.debug('Stopping send process:', {
+                reason: lastSentLine >= ((bufferGCodesList?.length ?? 0) - 1) ? 'Reached end of file' :
                     !isConnected ? 'Not connected' : 'No next line available'
             });
             stopSending()
@@ -58,28 +54,28 @@ export const useGCodeBuffer = ({ allGCodes }: UseGCodeBufferProps) => {
         }
 
         if (pendingLines < availableBufferSlots) {
-            console.log('Sending line:', {
+            console.debug('Sending line:', {
                 lineNumber: nextLine,
-                content: allGCodes[nextLine]
+                content: bufferGCodesList[nextLine]
             });
             setWaitingForOk(true);
-            await handleCommand(allGCodes[nextLine]);
+            await handleCommand(bufferGCodesList[nextLine]);
             updateLastSentLine(nextLine);
         } else {
-            console.log('Buffer full, waiting for execution:', {
+            console.debug('Buffer full, waiting for execution:', {
                 pendingLines,
                 availableBufferSlots
             });
         }
 
-        if (nextLine === (allGCodes?.length ?? 0)) {
+        if (nextLine === (bufferGCodesList?.length ?? 0)) {
             stopSending()
             return;
         }
     };
 
     useEffect(() => {
-        if (isSending && (lastSentLine === (allGCodes?.length ?? 0) - 1 ||
+        if (isSending && (
             status === "Door" ||
             status === "Alarm" ||
             !isConnected)) {
@@ -89,38 +85,37 @@ export const useGCodeBuffer = ({ allGCodes }: UseGCodeBufferProps) => {
 
         if (
             isConnected &&
-            allGCodes &&
-            lastSentLine < allGCodes.length - 1 &&
+            bufferGCodesList &&
             isSending &&
             !waitingForOk &&
             status !== "Hold" &&
             status !== "Home"
         ) {
-            console.log('Effect triggered, attempting to send next line');
+            console.debug('Effect triggered, attempting to send next line');
             sendNextLine();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedGCodeLine, lastSentLine, isConnected, allGCodes, isSending, waitingForOk, status]);
+    }, [selectedGCodeLine, lastSentLine, isConnected, bufferGCodesList, isSending, waitingForOk, status]);
 
     const startSending = () => {
-        const canStartNow = isConnected && allGCodes && allGCodes.length > 0 && !isSending;
+        const canStartNow = isConnected;
         if (!canStartNow) {
-            console.log('Cannot start sending - conditions not met');
+            console.debug('Cannot start sending - conditions not met');
             return;
         }
-        console.log('Starting G-code send process');
+        console.debug('Starting G-code send process');
         setIsSending(true);
     };
 
     const stopSending = () => {
-        console.log('Stopping G-code send process');
+        console.debug('Stopping G-code send process');
         setIsSending(false);
         updateLastSentLine(-1);
         setWaitingForOk(false);
     };
 
     const handleOkResponse = () => {
-        console.log('Received OK, ready for next line');
+        console.debug('Received OK, ready for next line');
         setWaitingForOk(false);
     };
 
@@ -134,10 +129,11 @@ export const useGCodeBuffer = ({ allGCodes }: UseGCodeBufferProps) => {
         }
     });
 
+
     return {
         isSending,
         startSending,
         stopSending,
-        canStart: isConnected && allGCodes && allGCodes.length > 0 && !isSending
+        canStart: isConnected && bufferGCodesList && bufferGCodesList.length > 0 && !isSending
     };
 }; 

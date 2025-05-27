@@ -143,9 +143,9 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         if (!isConnected) return;
 
-        const pollInterval = setInterval(() => {
-            sendCommand('?').catch(console.error);
-        }, 50); // Poll every 50ms
+        const pollInterval = setInterval(async () => {
+            await sendCommand('?');
+        }, 80); // Poll every 50ms
 
         return () => clearInterval(pollInterval);
         // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -2,7 +2,7 @@ import {ControlButtons} from "../components/ControlButtons/ControlButtons.tsx";
 import {StatusDisplay} from "../components/StatusDisplay/StatusDisplay.tsx";
 import {GCodeEditor} from "../components/GCodeEditor/GCodeEditor.tsx";
 import {Console} from "../components/Console/Console.tsx";
-import {Scene3D} from "../components/Scene3D/3DViewer.tsx";
+import {Scene3D} from "../components/Scene3D/Scene3D.tsx";
 import {JogControls} from "../components/JogControls/JogControls.tsx";
 import {OverrideControls} from "../components/OverrideControls/OverrideControls.tsx";
 import { ConnectButton } from "../components/ConnectButton/ConnectButton.tsx";

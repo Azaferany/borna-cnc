@@ -19,6 +19,19 @@ export interface Point3D {
     y: number;
     z: number;
 }
+export interface Point3D6Axis  {
+    x: number;
+    y: number;
+    z: number;
+    a?: number;
+    b?: number;
+    c?: number;
+}
+export type ArcIJk = {
+    i?: number;
+    j?: number;
+    k?: number;
+};
 export type GRBLState =
     | "NotConnected"
     | "Idle"
@@ -51,7 +64,7 @@ export interface GCodeCommand {
     endB?: number;
     endC?: number;
 
-    feedRate?: number;
+    feedRate: number;
     isRapidMove?: boolean;
     isArcMove?: boolean;
     isClockwise?: boolean;

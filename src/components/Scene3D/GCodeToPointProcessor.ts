@@ -5,7 +5,7 @@ const CHUNK_SIZE = 500;
 
 // Declare the worker context type
 
-class GCodeProcessor {
+class GCodeToPointProcessor {
 
     private chunkArray<T>(array: T[], size: number): T[][] {
         const chunks: T[][] = [];
@@ -140,7 +140,7 @@ class GCodeProcessor {
         startRotation: Matrix4,
         endRotation: Matrix4
     ): Point3D[] {
-        const segments = 8;
+        const segments = 100;
         const arcPoints = this.generateArcSegments(
             isClockwise,
             start,
@@ -274,6 +274,6 @@ class GCodeProcessor {
 }
 
 // Set up worker message handler
-export const processor = new GCodeProcessor();
+export const processor = new GCodeToPointProcessor();
 
 // Use addEventListener instead of self.onmessage

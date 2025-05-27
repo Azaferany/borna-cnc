@@ -3,28 +3,13 @@ import { OrbitControls, Grid } from '@react-three/drei';
 import {CoordinateAxes} from "./CoordinateAxes.tsx";
 import {useStore} from "../../app/store.ts";
 import {useEffect, useState} from "react";
-import type {GCodeCommand, GCodePointData} from "../../types/GCodeTypes.ts";
+import type {GCodePointData} from "../../types/GCodeTypes.ts";
 import {Color} from "three";
 import {SpatialPartition} from "./SpatialPartition.tsx";
-import {processor} from "./GCodeProcessor.ts";
+import {processor} from "./GCodeToPointProcessor.ts";
 import {ToolHead} from "./ToolHead.tsx";
+import {findGCodeCommandOrLatestBaseOnLine} from "../../app/findGCodeCommandOrLatestBaseOnLine.ts";
 
-export const findGCodeCommandOrLatestBaseOnLine =
-    (gCodeLine : number,toolPathGCodes:GCodeCommand[],) : GCodeCommand | undefined => {
-        let toolPathGCodeCommand =
-            toolPathGCodes.find(x=>x.lineNumber == gCodeLine)
-        if(toolPathGCodeCommand)
-            return toolPathGCodeCommand;
-        const lastToolPathGCodeLine = toolPathGCodes.map(x=>x.lineNumber).filter(x=>x < gCodeLine)
-            .reduce((max, num) => Math.max(max, num), -Infinity)
-
-        toolPathGCodeCommand =
-            toolPathGCodes.find(x=>x.lineNumber == lastToolPathGCodeLine)
-        if(toolPathGCodeCommand)
-            return toolPathGCodeCommand;
-
-        return undefined;
-    }
 
 export const Scene3D = () => {
     const toolPathGCodes = useStore(x => x.toolPathGCodes);

@@ -5,6 +5,7 @@ export const ToolHead: React.FC<{ position: Point3D,gCodeCommand?:GCodeCommand }
 
     return (
         <group position={new Vector3(position.x,position.y,position.z)}
+               rotation={[Math.PI / 2, 0, 0]}
 /*               rotation={ gCodeCommand ? new Euler(
             -THREE.MathUtils.degToRad((gCodeCommand.endA! - gCodeCommand.startA) / 2 + gCodeCommand.startA),
             -THREE.MathUtils.degToRad((gCodeCommand.endB! - gCodeCommand.startB)/2 + gCodeCommand.startB),
@@ -12,7 +13,7 @@ export const ToolHead: React.FC<{ position: Point3D,gCodeCommand?:GCodeCommand }
         ) : undefined}*/
         >
             {/* Tool holder */}
-            <mesh position={[0, 26, 0]}>
+            <mesh position={[0, 26, 0]} >
                 <cylinderGeometry args={[2, 2, 36, 16]} />
                 <meshStandardMaterial color="#0000ff" roughness={0.2} />
             </mesh>

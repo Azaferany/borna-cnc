@@ -8,21 +8,11 @@ import {
 import {useGRBL} from "../../app/useGRBL.ts";
 import {useStore} from "../../app/store.ts";
 import {StartButton} from "../StartButton/StartButton.tsx";
-import {PreviousButton} from "./PreviousButton.tsx";
+import {PreviousButton} from "../PreviousButton/PreviousButton.tsx";
 
 export const ControlButtons = () => {
     const { sendCommand, isConnected } = useGRBL();
     const status = useStore(s => s.status);
-    const updateStatus = useStore(s => s.updateStatus);
-    const updateMachineCoordinate = useStore(s => s.updateMachineCoordinate);
-    const updateWorkPlaceCoordinateOffset = useStore(s => s.updateWorkPlaceCoordinateOffset);
-    const updateFeedrate = useStore(s => s.updateFeedrate);
-    const updateSpindleSpeed = useStore(s => s.updateSpindleSpeed);
-    const updateFeedrateOverridePercent = useStore(s => s.updateFeedrateOverridePercent);
-    const updateRapidSpeedOverridePercent = useStore(s => s.updateRapidSpeedOverridePercent);
-    const updateSpindleSpeedOverridePercent = useStore(s => s.updateSpindleSpeedOverridePercent);
-    const updateAvailableBufferSlots = useStore(s => s.updateAvailableBufferSlots);
-    const updateLastSentLine = useStore(s => s.updateLastSentLine);
     const setIsSending = useStore(s => s.setIsSending);
 
     const handleCommand = async (command: string) => {
@@ -42,18 +32,8 @@ export const ControlButtons = () => {
 
     const handleReset = async () => {
         // Reset store state to initial values
-        updateStatus("NotConnected");
-        updateMachineCoordinate({ x: 0, y: 0, z: 0 });
-        updateWorkPlaceCoordinateOffset({ x: 0, y: 0, z: 0 });
-        updateFeedrate(0);
-        updateSpindleSpeed(0);
-        updateFeedrateOverridePercent(100);
-        updateRapidSpeedOverridePercent(100);
-        updateSpindleSpeedOverridePercent(100);
-        updateAvailableBufferSlots(15);
-        updateLastSentLine(-1);
-        setIsSending(false);
-        
+
+        setIsSending(false)
         // Send soft reset command
         await handleCommand('\x18');
     };
