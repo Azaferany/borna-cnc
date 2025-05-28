@@ -1,33 +1,12 @@
-import React, {
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useState,
-    useMemo, type ReactNode, // Import useMemo as it was used in the previous example
-} from "react";
-import { useGRBLListener } from "./useGRBLListener"; // Still need this hook or its underlying event system
-import { useStore } from "./store"; // Still need this hook to access your Zustand store
-import { useGRBL } from "./useGRBL"; // Still need this hook to access GRBL sending functions
+import React, {type ReactNode, useCallback, useEffect, useMemo, useState} from "react";
+import {useGRBL} from "./useGRBL.ts";
+import {useStore} from "./store.ts";
+import {useGRBLListener} from "./useGRBLListener.ts";
+import {GCodeBufferContext} from "./GCodeBufferContext.ts";
 
-// Define the shape of the context value
-interface GCodeBufferContextType {
-    isSending: boolean;
-    startSending: (gCodes: string[]) => void;
-    stopSending: () => void;
-}
-
-// Create the context with an initial undefined value,
-// and assert its type for TypeScript's benefit.
-const GCodeBufferContext = createContext<GCodeBufferContextType | undefined>(
-    undefined
-);
-
-// Create the Provider component
 interface GCodeBufferProviderProps {
     children: ReactNode;
 }
-
 export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
                                                                             children,
                                                                         }) => {
@@ -62,16 +41,16 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
      * @param command The G-code command string to send.
      */
     const handleCommand =useCallback(async (command: string) => {
-            try {
-                console.debug('Sending command:', command);
-                await sendCommand(command);
-                setWaitingForOk(true); // Set true as we are now waiting for an 'ok'
-            } catch (error) {
-                console.error('Error sending command:', error);
-                stopSending(); // Stop sending on error (calls the memoized stopSending from context)
-                setWaitingForOk(false); // Reset waiting state
-            }
-        },[sendCommand, stopSending]);
+        try {
+            console.debug('Sending command:', command);
+            await sendCommand(command);
+            setWaitingForOk(true); // Set true as we are now waiting for an 'ok'
+        } catch (error) {
+            console.error('Error sending command:', error);
+            stopSending(); // Stop sending on error (calls the memoized stopSending from context)
+            setWaitingForOk(false); // Reset waiting state
+        }
+    },[sendCommand, stopSending]);
 
     /**
      * Attempts to send the next G-code line from the buffer.
@@ -219,15 +198,4 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             {children}
         </GCodeBufferContext.Provider>
     );
-};
-
-// Custom hook to consume the context
-export const useGCodeBufferContext = (): GCodeBufferContextType => {
-    const context = useContext(GCodeBufferContext);
-    if (context === undefined) {
-        throw new Error(
-            'useGCodeBufferContext must be used within a GCodeBufferProvider'
-        );
-    }
-    return context;
 };

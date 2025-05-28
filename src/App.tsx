@@ -1,7 +1,7 @@
 import {BrowserRouter, Route, Routes} from "react-router";
 import HomePage from "./pages/HomePage.tsx";
 import {GRBLProvider} from "./app/GRBLProvider.tsx";
-import {GCodeBufferProvider} from "./app/GCodeBufferContext.tsx";
+import {GCodeBufferProvider} from "./app/GCodeBufferProvider.tsx";
 
 function App() {
     return (

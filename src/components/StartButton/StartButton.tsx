@@ -1,6 +1,6 @@
 import { PlayIcon } from '@heroicons/react/24/solid';
 import { useStore } from "../../app/store.ts";
-import { useGCodeBufferContext } from "../../app/GCodeBufferContext.tsx";
+import { useGCodeBufferContext } from "../../app/GCodeBufferContext.ts";
 import { useState } from 'react';
 
 export const StartButton = () => {

@@ -3,7 +3,7 @@ import { BackwardIcon } from '@heroicons/react/24/solid';
 import { useGRBL } from "../../app/useGRBL.ts";
 import { useStore } from "../../app/store.ts";
 import { reverseGCode } from "./reverseGCode.ts";
-import { useGCodeBufferContext } from "../../app/GCodeBufferContext.tsx";
+import { useGCodeBufferContext } from "../../app/GCodeBufferContext.ts";
 import { useEffect, useState } from 'react'; // Import useState and useEffect
 
 export const PreviousButton = () => {
