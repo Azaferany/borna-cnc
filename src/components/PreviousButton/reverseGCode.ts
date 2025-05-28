@@ -23,22 +23,24 @@ function parseArkGCode(gcode: string): ArcIJk {
 
 
 export function reverseGCode(
-    toolPaths: GCodeCommand[],
+    toolPathsOrg: GCodeCommand[],
     currentLine: number,
     currentPos:Point3D6Axis
 ): string[] {
     const reversedCode:string[]= [];
 
-
+    const toolPaths = [...toolPathsOrg]
 
     if(findGCodeCommandOrLatestBaseOnLine(currentLine,toolPaths)?.lineNumber == currentLine){
         const i = toolPaths.findIndex(x=>x.lineNumber == currentLine);
-
-        toolPaths[i].endPoint = {...currentPos};
-        toolPaths[i].endA = currentPos.a;
-        toolPaths[i].endB = currentPos.b;
-        toolPaths[i].endC = currentPos.c;
-
+        toolPaths[i] =
+            {
+                ...toolPaths[i],
+                endPoint:{...currentPos},
+                endA:currentPos.a,
+                endB:currentPos.b,
+                endC: currentPos.c
+            }
     }
 
     const IsXChanges = !!toolPaths.find(g=>g?.endPoint?.x !== g.startPoint.x);
