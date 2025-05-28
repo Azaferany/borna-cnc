@@ -13,6 +13,7 @@ export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
     port: SerialPort | null = null;
     baudRate: number;
     keepReading = false;
+    private writer: WritableStreamDefaultWriter<Uint8Array> | null = null;
 
     constructor({ baudRate = 115200 } = {}) {
         super();
@@ -63,6 +64,12 @@ export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
         this.keepReading = false;
 
         try {
+            // Release the writer if it exists
+            if (this.writer) {
+                this.writer.releaseLock();
+                this.writer = null;
+            }
+            
             if (this.port) {
                 await this.port.forget();
                 this.port = null;
@@ -80,11 +87,17 @@ export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
     // 3️⃣ Send a line (with newline) to GRBL
     async send(line: string) {
         if (!this.port?.writable) return;
-        const writer = this.port.writable.getWriter();
+        
         try {
-            await writer.write(new TextEncoder().encode(line + "\n"));
-        } finally {
-            writer.releaseLock();
+            if (!this.writer) {
+                this.writer = this.port.writable.getWriter();
+            }
+            await this.writer.write(new TextEncoder().encode(line + "\n"));
+        } catch (error) {
+            // If there's an error, release the writer and set it to null
+            this.writer?.releaseLock();
+            this.writer = null;
+            throw error;
         }
     }
     // Internal: read continuously, split into lines, filter, and emit

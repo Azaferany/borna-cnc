@@ -3,12 +3,13 @@ import { useState } from 'react';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
 export const StatusDisplay = () => {
-    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [isDetailsOpen, setIsDetailsOpen] = useState(true);
     const machineCoordinate = useStore(x => x.machineCoordinate);
     const workPlaceCoordinateOffset = useStore(x => x.workPlaceCoordinateOffset);
     const feedrate = useStore(x => x.feedrate);
     const spindleSpeed = useStore(x => x.spindleSpeed);
     const status = useStore(x => x.status);
+    const isSending = useStore(x => x.isSending);
     const lastSentLine = useStore(x => x.lastSentLine);
     const availableBufferSlots = useStore(x => x.availableBufferSlots);
     const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
@@ -50,7 +51,7 @@ export const StatusDisplay = () => {
                 <InfoRow label="Feedrate (mm/min)" value={feedrate.toFixed(0)} />
                 <InfoRow label="Spindle Speed (RPM)" value={spindleSpeed.toFixed(0)} />
                 <InfoRow label="Status" value={status} />
-                {status === "Run" && (
+                {(isSending || status == "Run") && (
                     <div className="text-xs text-gray-400 space-y-1 pt-2">
                         {lastSentLine != -1 && (
                             <div>
