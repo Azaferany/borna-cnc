@@ -2,10 +2,13 @@ import {
     createContext,
     useContext,
 } from "react";
+import type {BufferType} from "./store.ts";
+
 
 interface GCodeBufferContextType {
     isSending: boolean;
-    startSending: (gCodes: string[]) => void;
+    bufferType?: BufferType;
+    startSending: (gCodes: string[],bufferType:BufferType) => void;
     stopSending: () => void;
 }
 

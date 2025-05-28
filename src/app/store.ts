@@ -2,6 +2,11 @@ import {create} from "zustand/react";
 import type {GCodeCommand, GRBLState, Point3D} from "../types/GCodeTypes.ts";
 import GRBLSerial from "./GRBLSerial.ts";
 
+export type BufferType =
+    | "GCodeFile"
+    | "GCodeFileInReverse";
+
+
 interface CNCState {
     isConnected: boolean;
     setIsConnected: (isConnected: boolean) => void;
@@ -9,7 +14,8 @@ interface CNCState {
     eventSource?: GRBLSerial;
 
     isSending: boolean;
-    setIsSending: (isSending: boolean) => void;
+    bufferType?: BufferType,
+    setIsSending: (isSending: boolean,bufferType?: BufferType) => void;
 
     toolPathGCodes?: GCodeCommand[]
     allGCodes?: string[]
@@ -47,7 +53,8 @@ export const useStore = create<CNCState>((set) => ({
     eventSource:new GRBLSerial(),
 
     isSending: false,
-    setIsSending(isSending: boolean) {set({isSending})},
+    bufferType: undefined,
+    setIsSending(isSending: boolean,bufferType?:BufferType) {set({isSending,bufferType})},
 
     toolPathGCodes: [],
     allGCodes: [],

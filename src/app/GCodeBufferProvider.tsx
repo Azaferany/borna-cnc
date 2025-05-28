@@ -1,6 +1,6 @@
 import React, {type ReactNode, useCallback, useEffect, useMemo, useState} from "react";
 import {useGRBL} from "./useGRBL.ts";
-import {useStore} from "./store.ts";
+import {type BufferType, useStore} from "./store.ts";
 import {useGRBLListener} from "./useGRBLListener.ts";
 import {GCodeBufferContext} from "./GCodeBufferContext.ts";
 
@@ -18,6 +18,8 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
     const updateLastSentLine = useStore((s) => s.updateLastSentLine);
     const status = useStore((s) => s.status);
     const isSending = useStore((s) => s.isSending);
+    const bufferType = useStore((s) => s.bufferType);
+
     const setIsSending = useStore((s) => s.setIsSending);
 
     // Component-specific state
@@ -103,7 +105,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
      * @param gCodes An array of G-code strings to send.
      */
     const startSending = useCallback(
-        (gCodes: string[]) => {
+        (gCodes: string[],bufferType:BufferType) => {
             // Pre-flight checks
             if (!isConnected) {
                 console.warn('Cannot start sending: Not connected to GRBL.');
@@ -125,7 +127,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
 
             // Set the buffer with the provided G-code lines
             setBufferGCodesList(gCodes); // Update local state
-            setIsSending(true); // Update Zustand store
+            setIsSending(true,bufferType); // Update Zustand store
             updateLastSentLine(-1); // Reset to -1 to start from line 0 (Zustand store)
             setWaitingForOk(false); // Ensure not waiting for 'ok' when starting (local state)
         },
@@ -187,10 +189,12 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
     const contextValue = useMemo(
         () => ({
             isSending,      // Expose isSending from Zustand store
+            bufferType,      // Expose bufferType from Zustand store
             startSending,   // Expose memoized function
             stopSending,    // Expose memoized function
+            
         }),
-        [isSending, startSending,stopSending]
+        [bufferType, isSending, startSending, stopSending]
     );
 
     return (
