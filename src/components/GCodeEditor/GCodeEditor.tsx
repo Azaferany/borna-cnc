@@ -98,7 +98,7 @@ export const GCodeEditor = () => {
               mode="gcode"
               value={allGCodes?.join('\n') ?? ""}
               onChange={value =>{
-                loadToolPathGCodes(value.split('\n').filter(x=>x != ""), toolPathGCodes ?? [])
+                loadToolPathGCodes(value.split('\n'), toolPathGCodes ?? [])
               }}
               onBlur={() => {
                 processGcode(editorRef?.current?.editor.getValue() ?? "")
