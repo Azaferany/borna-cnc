@@ -3,12 +3,17 @@ import { useStore } from "../../app/store.ts";
 import { useGCodeBufferContext } from "../../app/GCodeBufferContext.ts";
 import { useGRBL } from "../../app/useGRBL.ts";
 import { useState, useEffect } from 'react';
+import {findGCodeCommandOrLatestBaseOnLine} from "../../app/findGCodeCommandOrLatestBaseOnLine.ts";
 
 export const StartButton = () => {
     const { isSending, bufferType, startSending, stopSending } = useGCodeBufferContext();
     const { sendCommand } = useGRBL();
     const allGCodes = useStore(s => s.allGCodes);
     const status = useStore(s => s.status);
+    const selectedGCodeLine = useStore(s => s.selectedGCodeLine);
+    const machineCoordinate = useStore(s => s.machineCoordinate);
+    const toolPathGCodes = useStore(s => s.toolPathGCodes);
+
     const [error, setError] = useState<string | null>(null);
     const [shouldRestartAfterStop, setShouldRestartAfterStop] = useState<string[] | null>(null);
 
@@ -24,6 +29,45 @@ export const StartButton = () => {
             console.error('Error sending command:', error);
             stopSending();
             setError('Failed to send command to machine');
+        }
+    };
+
+    const handleContinueFromHere = async () => {
+        console.log("asdasd")
+        if (status === "Hold" && bufferType === "GCodeFileInReverse" && isSending && (allGCodes?.length ?? 0) > 0) {
+            try {
+                setError(null);
+
+                const gCodeLines = [...(allGCodes ?? [])].slice((selectedGCodeLine ?? 0) - 1)
+                const currentGCodeCommand =
+                    findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine ?? 0, toolPathGCodes ?? [])!
+
+                if (currentGCodeCommand?.isArcMove) {
+                    const newI = currentGCodeCommand.arcCenter!.x - machineCoordinate.x
+                    const newJ = currentGCodeCommand.arcCenter!.y - machineCoordinate.y
+                    const newK = currentGCodeCommand.arcCenter!.z - machineCoordinate.z
+
+                    // Update the raw command with new I, J, K values
+                    const updatedCommand = currentGCodeCommand.rawCommand
+                        .replace(/I[-\d.]+/, `I${newI.toFixed(3)}`)
+                        .replace(/J[-\d.]+/, `J${newJ.toFixed(3)}`)
+                        .replace(/K[-\d.]+/, `K${newK.toFixed(3)}`);
+                    
+                    gCodeLines[0] = updatedCommand;
+                }
+
+                //set feedRate
+                gCodeLines[0] = `${gCodeLines[0]} F${currentGCodeCommand.feedRate}`
+
+                await handleCommand('\x18'); // Soft reset
+                setShouldRestartAfterStop(gCodeLines ?? []);
+                stopSending();
+
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to start sending reversed G-code');
+                console.error('Error starting reversed G-code send:', err);
+                stopSending();
+            }
         }
     };
 
@@ -57,8 +101,23 @@ export const StartButton = () => {
         }
     }, [status, isSending, shouldRestartAfterStop, startSending]);
 
+    if(status === "Hold" && bufferType === "GCodeFileInReverse" && isSending && (allGCodes?.length ?? 0) > 0) {
+        return (
+            <button
+                className="bg-blue-600 hover:bg-blue-700 active:bg-blue-900
+                p-3 rounded flex flex-col items-center justify-center
+                transition-all duration-150"
+                onClick={handleContinueFromHere}
+                aria-label="Continue from here"
+            >
+                <PlayIcon className="h-6 w-6" />
+                <span className="text-sm mt-1">Continue from here</span>
+            </button>
+        )
+    }
+
     return (
-        <div className="relative group flex flex-col">
+        <div className="relative group flex flex-col gap-2">
             <button
                 className={`
                     bg-green-600 hover:bg-green-700 active:bg-green-900 
@@ -89,7 +148,7 @@ export const StartButton = () => {
                     {shouldRestartAfterStop ? 'Resetting...' : buttonText}
                 </span>
             </button>
-            
+
             {error && (
                 <div className="absolute bottom-full mb-2 p-2 bg-red-100 text-red-700 rounded text-sm">
                     {error}
