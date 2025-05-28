@@ -73,11 +73,11 @@ export interface GCodeCommand {
 }
 
 export interface GCodePointData {
-    feedMovePoints: {gCodeLineNumber : number , points :Point3D[]}[];
-    rapidMovePoints: {gCodeLineNumber : number , points :Point3D[]}[];
-    arkMovePoints: {gCodeLineNumber : number , points :Point3D[]}[];
-    feedMoveStartPoints: {gCodeLineNumber : number , point :Point3D}[];
-    rapidMoveStartPoints: {gCodeLineNumber : number , point :Point3D}[];
-    arkMoveStartPoints: {gCodeLineNumber : number , point :Point3D}[];
+    feedMovePoints: {gCodeLineNumber : number , points :Point3D[]}[][];
+    rapidMovePoints: {gCodeLineNumber : number , points :Point3D[]}[][];
+    arkMovePoints: {gCodeLineNumber : number , points :Point3D[]}[][];
+    feedMoveStartPoints: {gCodeLineNumber : number , point :Point3D}[][];
+    rapidMoveStartPoints: {gCodeLineNumber : number , point :Point3D}[][];
+    arkMoveStartPoints: {gCodeLineNumber : number , point :Point3D}[][];
 
 }

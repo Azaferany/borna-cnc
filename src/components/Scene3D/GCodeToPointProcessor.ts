@@ -1,27 +1,95 @@
 import {Euler, Matrix4, Vector3} from 'three';
 import {type GCodeCommand, type GCodePointData, Plane, type Point3D} from "../../types/GCodeTypes.ts";
 
-const CHUNK_SIZE = 500;
-
-// Declare the worker context type
-
 class GCodeToPointProcessor {
 
-    private chunkArray<T>(array: T[], size: number): T[][] {
-        const chunks: T[][] = [];
-        for (let i = 0; i < array.length; i += size) {
-            chunks.push(array.slice(i, i + size));
-        }
-        return chunks;
-    }
 
     private mergePointData(target: GCodePointData, source: GCodePointData): void {
-        target.feedMovePoints.push(...source.feedMovePoints);
-        target.rapidMovePoints.push(...source.rapidMovePoints);
-        target.feedMoveStartPoints.push(...source.feedMoveStartPoints);
-        target.rapidMoveStartPoints.push(...source.rapidMoveStartPoints);
-        target.arkMoveStartPoints.push(...source.arkMoveStartPoints);
-        target.arkMovePoints.push(...source.arkMovePoints);
+        // Helper function to get last GCode line number from a point array
+        const getLastGCodeLineNumber = (points: {gCodeLineNumber: number, points: Point3D[]}[][]) => {
+            if (!points.length || !points[0].length) return 0;
+            return points[points.length - 1][points[points.length - 1].length - 1]?.gCodeLineNumber ?? 0;
+        };
+
+        // Get last GCode line numbers for each type of move
+        const lastFeedMoveGCodeLineNumber = getLastGCodeLineNumber(target.feedMovePoints);
+        const lastRapidMoveGCodeLineNumber = getLastGCodeLineNumber(target.rapidMovePoints);
+        const lastArkMoveGCodeLineNumber = getLastGCodeLineNumber(target.arkMovePoints);
+
+        // Handle feed moves
+        if (source.feedMovePoints.length > 0) {
+            const isLastGCodeIsFeedMove = Math.max(
+                lastFeedMoveGCodeLineNumber,
+                lastRapidMoveGCodeLineNumber,
+                lastArkMoveGCodeLineNumber
+            ) === lastFeedMoveGCodeLineNumber;
+
+            // Only merge if it's the same type of move AND the line numbers are the same
+            if (isLastGCodeIsFeedMove && target.feedMovePoints.length > 0) {
+                // Merge with last feed move
+                const lastTargetGroup = target.feedMovePoints[target.feedMovePoints.length - 1];
+                const sourceGroup = source.feedMovePoints[0];
+                lastTargetGroup.push(...sourceGroup);
+                
+                const lastTargetStartGroup = target.feedMoveStartPoints[target.feedMoveStartPoints.length - 1];
+                const sourceStartGroup = source.feedMoveStartPoints[0];
+                lastTargetStartGroup.push(...sourceStartGroup);
+            } else {
+                // Add as new group
+                target.feedMovePoints.push(source.feedMovePoints[0]);
+                target.feedMoveStartPoints.push(source.feedMoveStartPoints[0]);
+            }
+        }
+
+        // Handle rapid moves
+        if (source.rapidMovePoints.length > 0) {
+            const isLastGCodeIsRapidMove = Math.max(
+                lastFeedMoveGCodeLineNumber,
+                lastRapidMoveGCodeLineNumber,
+                lastArkMoveGCodeLineNumber
+            ) === lastRapidMoveGCodeLineNumber;
+
+            // Only merge if it's the same type of move AND the line numbers are the same
+            if (isLastGCodeIsRapidMove && target.rapidMovePoints.length > 0) {
+                // Merge with last rapid move
+                const lastTargetGroup = target.rapidMovePoints[target.rapidMovePoints.length - 1];
+                const sourceGroup = source.rapidMovePoints[0];
+                lastTargetGroup.push(...sourceGroup);
+                
+                const lastTargetStartGroup = target.rapidMoveStartPoints[target.rapidMoveStartPoints.length - 1];
+                const sourceStartGroup = source.rapidMoveStartPoints[0];
+                lastTargetStartGroup.push(...sourceStartGroup);
+            } else {
+                // Add as new group
+                target.rapidMovePoints.push(source.rapidMovePoints[0]);
+                target.rapidMoveStartPoints.push(source.rapidMoveStartPoints[0]);
+            }
+        }
+
+        // Handle arc moves
+        if (source.arkMovePoints.length > 0) {
+            const isLastGCodeIsArkMove = Math.max(
+                lastFeedMoveGCodeLineNumber,
+                lastRapidMoveGCodeLineNumber,
+                lastArkMoveGCodeLineNumber
+            ) === lastArkMoveGCodeLineNumber;
+
+            // Only merge if it's the same type of move AND the line numbers are the same
+            if (isLastGCodeIsArkMove && target.arkMovePoints.length > 0) {
+                // Merge with last arc move
+                const lastTargetGroup = target.arkMovePoints[target.arkMovePoints.length - 1];
+                const sourceGroup = source.arkMovePoints[0];
+                lastTargetGroup.push(...sourceGroup);
+                
+                const lastTargetStartGroup = target.arkMoveStartPoints[target.arkMoveStartPoints.length - 1];
+                const sourceStartGroup = source.arkMoveStartPoints[0];
+                lastTargetStartGroup.push(...sourceStartGroup);
+            } else {
+                // Add as new group
+                target.arkMovePoints.push(source.arkMovePoints[0]);
+                target.arkMoveStartPoints.push(source.arkMoveStartPoints[0]);
+            }
+        }
     }
 
     public getGCodePoints(command : GCodeCommand) : GCodePointData & {points:Point3D[]} {
@@ -72,8 +140,8 @@ class GCodeToPointProcessor {
                 startMatrix,
                 endMatrix
             );
-            data.arkMoveStartPoints.push({gCodeLineNumber:command.lineNumber,point:arkPoints[0]});
-            data.arkMovePoints.push({gCodeLineNumber:command.lineNumber,points:arkPoints});
+            data.arkMoveStartPoints.push([{gCodeLineNumber:command.lineNumber,point:arkPoints[0]}]);
+            data.arkMovePoints.push([{gCodeLineNumber:command.lineNumber,points:arkPoints}]);
 
             return {
                 ...data,
@@ -81,41 +149,23 @@ class GCodeToPointProcessor {
             }
 
         } else if (command.isRapidMove) {
-            data.rapidMovePoints.push({gCodeLineNumber:command.lineNumber,points:[rotatedStart, rotatedEnd]});
-            data.rapidMoveStartPoints.push({gCodeLineNumber:command.lineNumber,point:rotatedStart});
+            data.rapidMovePoints.push([{gCodeLineNumber:command.lineNumber,points:[rotatedStart, rotatedEnd]}]);
+            data.rapidMoveStartPoints.push([{gCodeLineNumber:command.lineNumber,point:rotatedStart}]);
 
             return {
                 ...data,
                 points:[rotatedStart, rotatedEnd]
             }
         } else {
-            data.feedMovePoints.push({gCodeLineNumber:command.lineNumber,points:[rotatedStart, rotatedEnd]});
-            data.feedMoveStartPoints.push({gCodeLineNumber:command.lineNumber,point:rotatedStart});
+            data.feedMovePoints.push([{gCodeLineNumber:command.lineNumber,points:[rotatedStart, rotatedEnd]}]);
+            data.feedMoveStartPoints.push([{gCodeLineNumber:command.lineNumber,point:rotatedStart}]);
             return {
                 ...data,
                 points:[rotatedStart, rotatedEnd]
             }
         }
     }
-    private processChunk(commands: GCodeCommand[]): GCodePointData {
-        const result: GCodePointData = {
-            feedMovePoints: [],
-            rapidMovePoints: [],
-            feedMoveStartPoints: [],
-            rapidMoveStartPoints: [],
-            arkMovePoints: [],
-            arkMoveStartPoints: [],
-        };
 
-        for (const command of commands) {
-
-            const data = this.getGCodePoints(command)
-
-            this.mergePointData(result, data);
-        }
-
-        return result;
-    }
 
     private applyRotation(point: Point3D, matrix: Matrix4): Point3D {
         const vector = new Vector3(point.x, point.y, point.z);
@@ -252,8 +302,6 @@ class GCodeToPointProcessor {
     }
 
     processCommands(commands: GCodeCommand[]) {
-        const chunks = this.chunkArray(commands, CHUNK_SIZE);
-
         const result: GCodePointData = {
             feedMovePoints: [],
             rapidMovePoints: [],
@@ -263,10 +311,11 @@ class GCodeToPointProcessor {
             arkMoveStartPoints: [],
         };
 
-        for (const chunk of chunks) {
-            const chunkData = this.processChunk(chunk);
-            this.mergePointData(result, chunkData);
+        for (const command of commands) {
 
+            const data = this.getGCodePoints(command)
+
+            this.mergePointData(result, data);
         }
 
         return result;

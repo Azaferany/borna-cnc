@@ -25,7 +25,7 @@ export const parseGCode = (lines: string[]): GCodeCommand[] => {
                 isRapidMove:false,
                 rawCommand: trimmedLine,
                 lineNumber:currentLine,
-                commandCode: words[1],
+                commandCode: 'G01',
                 isIncremental: isIncrementalMode,
                 startPoint: { ...currentPosition },
                 startA: currentA,
@@ -51,6 +51,7 @@ export const parseGCode = (lines: string[]): GCodeCommand[] => {
                             command.lineNumber = value;
                             break;
                         case 'G':
+                            command.commandCode = word;
                             if (value === 0) command.isRapidMove = true;
                             else if (value === 1) command.isRapidMove = false;
                             else if (value === 2 || value === 3) {
@@ -78,6 +79,10 @@ export const parseGCode = (lines: string[]): GCodeCommand[] => {
                             else {
                                 continue lineLoop;
                             }
+                            break;
+                        case 'M':
+                        case 'T':
+                            command.commandCode = word;
                             break;
                         case 'X':
                             newX = isIncrementalMode ? currentPosition.x + value : value;

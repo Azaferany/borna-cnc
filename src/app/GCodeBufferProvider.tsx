@@ -106,12 +106,14 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
      */
     const startSending = useCallback(
         (gCodes: string[],bufferType:BufferType) => {
+            const currentState = useStore.getState(); // Get latest state
+
             // Pre-flight checks
             if (!isConnected) {
                 console.warn('Cannot start sending: Not connected to GRBL.');
                 return;
             }
-            if (isSending) { // isSending is from Zustand store
+            if (currentState.isSending) { // isSending is from Zustand store
                 console.warn('Cannot start sending: Already sending.');
                 return;
             }
@@ -131,7 +133,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             updateLastSentLine(-1); // Reset to -1 to start from line 0 (Zustand store)
             setWaitingForOk(false); // Ensure not waiting for 'ok' when starting (local state)
         },
-        [isConnected, isSending, setIsSending, updateLastSentLine] // Dependencies for useCallback
+        [isConnected, setIsSending, updateLastSentLine] // Dependencies for useCallback
     );
 
     /**

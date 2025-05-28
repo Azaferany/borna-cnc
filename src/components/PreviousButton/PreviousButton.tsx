@@ -4,7 +4,7 @@ import { useGRBL } from "../../app/useGRBL.ts";
 import { useStore } from "../../app/store.ts";
 import { reverseGCode } from "./reverseGCode.ts";
 import { useGCodeBufferContext } from "../../app/GCodeBufferContext.ts";
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export const PreviousButton = () => {
     const { sendCommand } = useGRBL();
@@ -14,7 +14,6 @@ export const PreviousButton = () => {
     const toolPathGCodes = useStore(s => s.toolPathGCodes);
     const { isSending, bufferType, startSending, stopSending } = useGCodeBufferContext();
     const [error, setError] = useState<string | null>(null);
-    const [shouldRestartAfterStop, setShouldRestartAfterStop] = useState<string[] | null>(null);
 
     const isDisabled =
         status !== "Hold" ||
@@ -46,9 +45,8 @@ export const PreviousButton = () => {
             // First, send the soft reset
             await handleCommand('\x18'); // Soft reset
 
-            // Set a flag that we want to restart sending once isSending is false
-            setShouldRestartAfterStop(reversedCommands);
             stopSending();
+            startSending(reversedCommands,"GCodeFileInReverse")
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to start sending reversed G-code');
             console.error('Error starting reversed G-code send:', err);
@@ -56,14 +54,6 @@ export const PreviousButton = () => {
         }
     };
 
-    // Effect to watch for isSending becoming false after we intended to restart
-    useEffect(() => {
-        if (shouldRestartAfterStop && !isSending) {
-            console.log("isSending is false, now attempting to start sending reversed commands.");
-            startSending(shouldRestartAfterStop, "GCodeFileInReverse");
-            setShouldRestartAfterStop(null);
-        }
-    }, [isSending, shouldRestartAfterStop, startSending]);
 
     return (
         <div className="relative group flex flex-col">
@@ -74,36 +64,35 @@ export const PreviousButton = () => {
                     transition-all duration-150
                     ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                     ${isSendingRunning ? 'animate-pulse' : ''}
-                    ${shouldRestartAfterStop ? 'animate-pulse' : ''}
                 `}
                 onClick={handlePrevious}
-                disabled={isDisabled || isSendingRunning || shouldRestartAfterStop !== null}
+                disabled={isDisabled || isSendingRunning}
                 aria-label={buttonText}
                 aria-busy={isSendingRunning}
                 title={
-                    isDisabled 
+                    isDisabled
                         ? !toolPathGCodes || !selectedGCodeLine
-                            ? 'No G-code line selected' 
+                            ? 'No G-code line selected'
                             : `Machine must be in Hold state (current: ${status})`
                         : buttonText
                 }
             >
-                <BackwardIcon 
+                <BackwardIcon
                     className={`h-6 w-6 ${
-                        isSendingRunning || shouldRestartAfterStop ? 'animate-spin' : ''
-                    }`} 
+                        isSendingRunning ? 'animate-spin' : ''
+                    }`}
                 />
                 <span className="text-sm mt-1">
-                    {shouldRestartAfterStop ? 'Resetting...' : buttonText}
+                    {buttonText}
                 </span>
             </button>
-            
+
             {error && (
                 <div className="absolute top-full mb-2 p-2 bg-red-100 text-red-700 rounded text-sm">
                     {error}
                 </div>
             )}
-            
+
             {isDisabled && (
                 <div className="absolute top-full mb-2 p-2 bg-gray-100 text-gray-700 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity">
                     {!toolPathGCodes || !selectedGCodeLine

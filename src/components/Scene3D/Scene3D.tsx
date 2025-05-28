@@ -81,26 +81,33 @@ export const Scene3D = () => {
                 {(completeData?.feedMovePoints  || completeData?.rapidMovePoints || completeData?.arkMovePoints) && (
                     <>
 
-                        {completeData?.feedMovePoints?.length>0 && (
+                        {completeData?.feedMovePoints.map(value => (
+
                             <SpatialPartition
-                                points={completeData?.feedMovePoints.flatMap(x=>x.points)}
+                                points={value.flatMap(x=>x.points)}
                                 color={new Color(0xffa500)}
                                 lineWidth={1.5}/>
-                        )}
 
-                        {completeData?.rapidMovePoints?.length>0 && (
+                        ))}
+
+
+                        {completeData?.rapidMovePoints.map(value => (
+
                             <SpatialPartition
-                                points={completeData?.rapidMovePoints.flatMap(x=>x.points)}
+                                points={value.flatMap(x=>x.points)}
                                 color={new Color(0xff0000)}
                                 lineWidth={1}/>
-                        )}
 
-                        {completeData?.arkMovePoints?.length>0 && (
+                        ))}
+                        {completeData?.arkMovePoints.map(value => (
+
                             <SpatialPartition
-                                points={completeData?.arkMovePoints.flatMap(x=>x.points)}
+                                points={value.flatMap(x=>x.points)}
                                 color={new Color(0x008000)}
                                 lineWidth={1}/>
-                        )}
+
+                        ))}
+
                         {selectedGCodeLine && selectedGCodeLine > 0 && toolPathGCodes && findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes) != null && (
                             <SpatialPartition
                                 points={processor.getGCodePoints(findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes)!).points}

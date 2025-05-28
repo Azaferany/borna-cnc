@@ -2,7 +2,7 @@ import { PlayIcon } from '@heroicons/react/24/solid';
 import { useStore } from "../../app/store.ts";
 import { useGCodeBufferContext } from "../../app/GCodeBufferContext.ts";
 import { useGRBL } from "../../app/useGRBL.ts";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {findGCodeCommandOrLatestBaseOnLine} from "../../app/findGCodeCommandOrLatestBaseOnLine.ts";
 
 export const StartButton = () => {
@@ -15,7 +15,6 @@ export const StartButton = () => {
     const toolPathGCodes = useStore(s => s.toolPathGCodes);
 
     const [error, setError] = useState<string | null>(null);
-    const [shouldRestartAfterStop, setShouldRestartAfterStop] = useState<string[] | null>(null);
 
     const isDisabled = (allGCodes?.length ?? 0) <= 0 || status !== "Idle";
     const isSendingRunning = isSending && bufferType === "GCodeFile";
@@ -49,19 +48,22 @@ export const StartButton = () => {
 
                     // Update the raw command with new I, J, K values
                     const updatedCommand = currentGCodeCommand.rawCommand
-                        .replace(/I[-\d.]+/, `I${newI.toFixed(3)}`)
-                        .replace(/J[-\d.]+/, `J${newJ.toFixed(3)}`)
-                        .replace(/K[-\d.]+/, `K${newK.toFixed(3)}`);
-                    
+                        .replace(/I[-\d.]+/, `I${newI}`)
+                        .replace(/J[-\d.]+/, `J${newJ}`)
+                        .replace(/K[-\d.]+/, `K${newK}`);
+
                     gCodeLines[0] = updatedCommand;
                 }
 
                 //set feedRate
-                gCodeLines[0] = `${gCodeLines[0]} F${currentGCodeCommand.feedRate}`
+                if (!gCodeLines[0].includes('F')) {
+                    gCodeLines[0] = `${gCodeLines[0]} F${currentGCodeCommand.feedRate}`;
+                }
 
                 await handleCommand('\x18'); // Soft reset
-                setShouldRestartAfterStop(gCodeLines ?? []);
                 stopSending();
+                startSending(gCodeLines ?? [],"GCodeFile");
+
 
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to start sending reversed G-code');
@@ -79,8 +81,8 @@ export const StartButton = () => {
             // If machine is not in Idle state, send a soft reset first
             if (status !== "Idle") {
                 await handleCommand('\x18'); // Soft reset
-                setShouldRestartAfterStop(allGCodes ?? []);
                 stopSending();
+                startSending(allGCodes ?? [],"GCodeFile");
                 return;
             }
 
@@ -91,15 +93,6 @@ export const StartButton = () => {
             stopSending();
         }
     };
-
-    // Effect to watch for status changes and restart if needed
-    useEffect(() => {
-        if (shouldRestartAfterStop && status === "Idle" && !isSending) {
-            console.log("Machine is idle, now attempting to start sending G-code.");
-            startSending(shouldRestartAfterStop, "GCodeFile");
-            setShouldRestartAfterStop(null);
-        }
-    }, [status, isSending, shouldRestartAfterStop, startSending]);
 
     if(status === "Hold" && bufferType === "GCodeFileInReverse" && isSending && (allGCodes?.length ?? 0) > 0) {
         return (
@@ -125,27 +118,26 @@ export const StartButton = () => {
                     transition-all duration-150
                     ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                     ${isSendingRunning ? 'animate-pulse' : ''}
-                    ${shouldRestartAfterStop ? 'animate-pulse' : ''}
                 `}
                 onClick={handleStart}
-                disabled={isDisabled || isSendingRunning || shouldRestartAfterStop !== null}
+                disabled={isDisabled || isSendingRunning}
                 aria-label={buttonText}
                 aria-busy={isSendingRunning}
                 title={
-                    isDisabled 
-                        ? allGCodes?.length === 0 
-                            ? 'No G-code available to send' 
-                            : `Machine must be in Idle state (current: ${status})`
+                    isDisabled
+                        ? (allGCodes?.length === 0
+                            ? 'No G-code available to send'
+                            : `Machine must be in Idle state (current: ${status})`)
                         : buttonText
                 }
             >
-                <PlayIcon 
+                <PlayIcon
                     className={`h-6 w-6 ${
-                        isSendingRunning || shouldRestartAfterStop ? 'animate-spin' : ''
-                    }`} 
+                        isSendingRunning ? 'animate-spin' : ''
+                    }`}
                 />
                 <span className="text-sm mt-1">
-                    {shouldRestartAfterStop ? 'Resetting...' : buttonText}
+                    {buttonText}
                 </span>
             </button>
 
@@ -154,14 +146,14 @@ export const StartButton = () => {
                     {error}
                 </div>
             )}
-            
+
             {isDisabled && (
                 <div className="absolute bottom-full mb-2 p-2 bg-gray-100 text-gray-700 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                    {allGCodes?.length === 0 
-                        ? 'No G-code available to send' 
+                    {allGCodes?.length === 0
+                        ? 'No G-code available to send'
                         : `Machine must be in Idle state (current: ${status})`}
                 </div>
             )}
         </div>
     );
-}; 
+};
