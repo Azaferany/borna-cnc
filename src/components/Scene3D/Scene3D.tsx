@@ -86,7 +86,7 @@ export const Scene3D = () => {
                             <SpatialPartition
                                 points={value.flatMap(x=>x.points)}
                                 color={new Color(0xffa500)}
-                                lineWidth={1.5}/>
+                                lineWidth={2}/>
 
                         ))}
 
@@ -96,7 +96,7 @@ export const Scene3D = () => {
                             <SpatialPartition
                                 points={value.flatMap(x=>x.points)}
                                 color={new Color(0xff0000)}
-                                lineWidth={1}/>
+                                lineWidth={1.5}/>
 
                         ))}
                         {completeData?.arkMovePoints.map(value => (
@@ -104,7 +104,7 @@ export const Scene3D = () => {
                             <SpatialPartition
                                 points={value.flatMap(x=>x.points)}
                                 color={new Color(0x008000)}
-                                lineWidth={1}/>
+                                lineWidth={2}/>
 
                         ))}
 
