@@ -7,7 +7,7 @@ export const OverrideControls = () => {
     const feedrateOverridePercent = useStore(state => state.feedrateOverridePercent);
     const rapidSpeedOverridePercent = useStore(state => state.rapidSpeedOverridePercent);
 
-    const { sendCommand } = useGRBL()
+    const { sendCommand, isConnected } = useGRBL()
 
     const handleFeedOverride = async (newValue: number) => {
         // Validate feed override limits (10% to 200%)
@@ -138,7 +138,8 @@ export const OverrideControls = () => {
                     <div className="flex items-center space-x-2">
                         {!allowedValues &&(<button
                             onClick={() => onCommit && onCommit(Math.max(min, storeValue - 10))}
-                            className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                            className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!isConnected}
                         >
                             -10%
                         </button>)}                <input
@@ -164,14 +165,15 @@ export const OverrideControls = () => {
                                 );
                             }
                         }}
-                        className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-
+                        className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!isConnected}
                         onMouseUp={() => onCommit(localValue)}
                         onTouchEnd={() => onCommit(localValue)}
                     />
                         {!allowedValues && (<button
                             onClick={() => {onCommit(Math.min(max, storeValue + 10))}}
-                            className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm"
+                            className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!isConnected}
                         >
                             +10%
                         </button>)}

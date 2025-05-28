@@ -157,6 +157,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const disconnect = async () => {
         setIsConnected(false);
+        updateStatus("NotConnected");
     };
 
     useEffect(() => {
