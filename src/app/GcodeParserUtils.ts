@@ -162,7 +162,7 @@ export const addLineNumbers = (lines: string[]): string[] => {
             }
 
             // Strip any existing line-number prefix (e.g. "N12 ")
-            const withoutPrefix = rawLine.replace(/^\s*N\d+\s+/, '');
+            const withoutPrefix = rawLine.replace(/^\s*[Nn]\d+\s+/, '');
 
             // Prefix with the next unique number
             const numbered = `N${currentNumber} ${withoutPrefix}`;

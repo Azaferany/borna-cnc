@@ -11,3 +11,8 @@
     background:aqua !important;
 
 }
+
+input:focus, textarea:focus, select:focus {
+    outline: 2px solid rgb(135, 206, 222);
+    outline-offset: 2px;
+  }

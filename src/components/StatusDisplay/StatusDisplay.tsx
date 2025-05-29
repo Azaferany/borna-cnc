@@ -20,8 +20,8 @@ export const StatusDisplay = () => {
     const CoordRow = ({ axis, workOffset, machine }: { axis: string; workOffset: number; machine: number }) => (
         <div className="grid grid-cols-3 gap-4 py-2 border-b border-gray-700">
             <div className="font-bold text-gray-300">{axis}</div>
-            <div className="text-blue-400">{(workOffset + machine).toFixed(3)}</div>
-            <div className="text-green-400">{machine.toFixed(3)}</div>
+            <div className="text-blue-400">{(workOffset + machine)}</div>
+            <div className="text-green-400">{machine}</div>
         </div>
     );
 

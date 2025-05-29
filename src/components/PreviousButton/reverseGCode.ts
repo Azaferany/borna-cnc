@@ -1,27 +1,6 @@
 import {type ArcIJk, type GCodeCommand, Plane, type Point3D6Axis} from "../../types/GCodeTypes.ts";
 import {findGCodeCommandOrLatestBaseOnLine} from "../../app/findGCodeCommandOrLatestBaseOnLine.ts";
 
-function parseArkGCode(gcode: string): ArcIJk {
-    const result: ArcIJk = {};
-
-    // Normalize spacing and uppercase
-    const parts = gcode.toUpperCase().trim().split(/\s+/);
-
-    for (const part of parts) {
-        const prefix = part[0];
-        const value = parseFloat(part.slice(1));
-
-        if (!isNaN(value)) {
-            if (prefix === 'I') result.i = value;
-            else if (prefix === 'J') result.j = value;
-            else if (prefix === 'K') result.k = value;
-        }
-    }
-
-    return result;
-}
-
-
 export function reverseGCode(
     toolPathsOrg: GCodeCommand[],
     currentLine: number,
@@ -51,6 +30,7 @@ export function reverseGCode(
     const IsCChanges = !!toolPaths.find(g=>(g?.endC ?? 0) !== g.startC);
     for (let i = currentLine; i >= 1; i--) {
         const curentGCodeCommand = toolPaths.find(x=>x.lineNumber == i)
+
         if(!curentGCodeCommand) {
             continue;
         }
@@ -65,22 +45,21 @@ export function reverseGCode(
         reversedGCodeCode = `N${curentGCodeCommand.lineNumber} ${reversedGCodeCode}`
 
         if(curentGCodeCommand.commandCode == "G3" || curentGCodeCommand.commandCode =="G2") {
-            const curentArcIJk =parseArkGCode(curentGCodeCommand.rawCommand)
             if(curentGCodeCommand.activePlane == Plane.XY) {
 
-                const newI = curentGCodeCommand.startPoint.x + curentArcIJk.i! - curentGCodeCommand.endPoint!.x!
-                const newJ = curentGCodeCommand.startPoint.y + curentArcIJk.j! - curentGCodeCommand.endPoint!.y!
+                const newI = (curentGCodeCommand.arcCenter!.x - curentGCodeCommand.endPoint!.x!).toFixed(6)
+                const newJ = (curentGCodeCommand.arcCenter!.y - curentGCodeCommand.endPoint!.y!).toFixed(6)
                 reversedGCodeCode += ` I${newI} J${newJ}`
             }
             else if(curentGCodeCommand.activePlane == Plane.YZ) {
-                const newJ = curentGCodeCommand.startPoint.y + curentArcIJk.j! - curentGCodeCommand.endPoint!.y!
-                const newK = curentGCodeCommand.startPoint.z + curentArcIJk.k! - curentGCodeCommand.endPoint!.z!
+                const newJ = curentGCodeCommand.arcCenter!.y - curentGCodeCommand.endPoint!.y!
+                const newK = curentGCodeCommand.arcCenter!.z - curentGCodeCommand.endPoint!.z!
 
                 reversedGCodeCode += ` K${newK} J${newJ}`
             }
             else if(curentGCodeCommand.activePlane == Plane.XZ) {
-                const newI = curentGCodeCommand.startPoint.x + curentArcIJk.i! - curentGCodeCommand.endPoint!.x!
-                const newK = curentGCodeCommand.startPoint.z + curentArcIJk.k! - curentGCodeCommand.endPoint!.z!
+                const newI = curentGCodeCommand.arcCenter!.x - curentGCodeCommand.endPoint!.x!
+                const newK = curentGCodeCommand.arcCenter!.z - curentGCodeCommand.endPoint!.z!
 
                 reversedGCodeCode += ` I${newI} K${newK}`
             }
