@@ -48,9 +48,9 @@ export const StartButton = () => {
 
                     // Update the raw command with new I, J, K values
                     const updatedCommand = currentGCodeCommand.rawCommand
-                        .replace(/I[-\d.]+/, `I${newI}`)
-                        .replace(/J[-\d.]+/, `J${newJ}`)
-                        .replace(/K[-\d.]+/, `K${newK}`);
+                        .replace(/I[-\d.]+/, `I${newI.toFixed(3)}`)
+                        .replace(/J[-\d.]+/, `J${newJ.toFixed(3)}`)
+                        .replace(/K[-\d.]+/, `K${newK.toFixed(3)}`);
 
                     gCodeLines[0] = updatedCommand;
                 }
