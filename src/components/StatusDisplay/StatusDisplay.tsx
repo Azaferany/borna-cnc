@@ -53,12 +53,11 @@ export const StatusDisplay = () => {
                 <InfoRow label="Status" value={status} />
                 {(isSending || status == "Run") && (
                     <div className="text-xs text-gray-400 space-y-1 pt-2">
-                        {lastSentLine != -1 && (
-                            <div>
-                                <button 
-                                    onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-                                    className="w-full flex items-center justify-center gap-2 text-gray-300 hover:text-white transition-colors"
-                                >
+                        <div>
+                            <button
+                                onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+                                className="w-full flex items-center justify-center gap-2 text-gray-300 hover:text-white transition-colors"
+                            >
                                     <span className="transition-transform duration-300">
                                         {isDetailsOpen ? (
                                             <ChevronUpIcon className="w-4 h-4" />
@@ -66,23 +65,22 @@ export const StatusDisplay = () => {
                                             <ChevronDownIcon className="w-4 h-4" />
                                         )}
                                     </span>
-                                    Details
-                                </button>
-                                <div 
-                                    className={`grid transition-all duration-300 ease-in-out ${
-                                        isDetailsOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                                    }`}
-                                >
-                                    <div className="overflow-hidden">
-                                        <div className="pl-4 mt-2 space-y-1">
-                                            <InfoRow label="Last Sent Line" value={lastSentLine}/>
-                                            <InfoRow label="Buffer Slots" value={availableBufferSlots}/>
-                                            <InfoRow label="Selected Line" value={selectedGCodeLine ?? '-'}/>
-                                        </div>
+                                Details
+                            </button>
+                            <div
+                                className={`grid transition-all duration-300 ease-in-out ${
+                                    isDetailsOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                                }`}
+                            >
+                                <div className="overflow-hidden">
+                                    <div className="pl-4 mt-2 space-y-1">
+                                        <InfoRow label="Last Sent Line" value={lastSentLine ?? "Not Sending"}/>
+                                        <InfoRow label="Buffer Slots" value={availableBufferSlots}/>
+                                        <InfoRow label="Selected Line" value={selectedGCodeLine ?? '-'}/>
                                     </div>
                                 </div>
                             </div>
-                        )}
+                        </div>
                     </div>
                 )}
             </div>

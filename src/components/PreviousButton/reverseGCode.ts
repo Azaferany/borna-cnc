@@ -1,6 +1,6 @@
 import {type GCodeCommand, Plane, type Point3D6Axis} from "../../types/GCodeTypes.ts";
-import {findGCodeCommandOrLatestBaseOnLine} from "../../app/findGCodeCommandOrLatestBaseOnLine.ts";
-
+import {Vector3} from 'three';
+import { findCircleIntersection} from "../../app/findCircleIntersection.ts";
 export function reverseGCode(
     toolPathsOrg: GCodeCommand[],
     currentLine: number,
@@ -10,17 +10,6 @@ export function reverseGCode(
 
     const toolPaths = [...toolPathsOrg]
 
-    if(findGCodeCommandOrLatestBaseOnLine(currentLine,toolPaths)?.lineNumber == currentLine){
-        const i = toolPaths.findIndex(x=>x.lineNumber == currentLine);
-        toolPaths[i] =
-            {
-                ...toolPaths[i],
-                endPoint:{...currentPos},
-                endA:currentPos.a,
-                endB:currentPos.b,
-                endC: currentPos.c
-            }
-    }
 
     const IsXChanges = !!toolPaths.find(g=>g?.endPoint?.x !== g.startPoint.x);
     const IsYChanges = !!toolPaths.find(g=>g?.endPoint?.y !== g.startPoint.y);
@@ -29,7 +18,7 @@ export function reverseGCode(
     const IsBChanges = !!toolPaths.find(g=>(g?.endB ?? 0) !== g.startB);
     const IsCChanges = !!toolPaths.find(g=>(g?.endC ?? 0) !== g.startC);
     for (let i = currentLine; i >= 1; i--) {
-        const curentGCodeCommand = toolPaths.find(x=>x.lineNumber == i)
+        let curentGCodeCommand = toolPaths.find(x=>x.lineNumber == i)
 
         if(!curentGCodeCommand) {
             continue;
@@ -45,21 +34,76 @@ export function reverseGCode(
         reversedGCodeCode = `N${curentGCodeCommand.lineNumber} ${reversedGCodeCode}`
 
         if(curentGCodeCommand.commandCode == "G3" || curentGCodeCommand.commandCode =="G2") {
+
+            if(curentGCodeCommand?.lineNumber == currentLine){
+                curentGCodeCommand =
+                    {
+                        ...curentGCodeCommand,
+                        endPoint:{...currentPos},
+                        endA:currentPos.a,
+                        endB:currentPos.b,
+                        endC: currentPos.c
+                    }
+
+                const startPoint = new Vector3(curentGCodeCommand.startPoint.x, curentGCodeCommand.startPoint.y, curentGCodeCommand.startPoint.z);
+                const endPoint = new Vector3(curentGCodeCommand.endPoint!.x, curentGCodeCommand.endPoint!.y, curentGCodeCommand.endPoint!.z);
+                const centerPoint = new Vector3(curentGCodeCommand.arcCenter!.x, curentGCodeCommand.arcCenter!.y, curentGCodeCommand.arcCenter!.z);
+
+                const radius = startPoint.distanceTo(centerPoint);
+                let pitch = 0 ;
+                if(curentGCodeCommand.activePlane == Plane.XY) {
+
+                    pitch = Math.abs(curentGCodeCommand.startPoint.z - curentGCodeCommand.endPoint!.z);
+                }
+                else if(curentGCodeCommand.activePlane == Plane.YZ) {
+
+                    pitch = Math.abs(curentGCodeCommand.startPoint.x - curentGCodeCommand.endPoint!.x);
+
+                }
+                else if(curentGCodeCommand.activePlane == Plane.XZ) {
+                    pitch = Math.abs(curentGCodeCommand.startPoint.y - curentGCodeCommand.endPoint!.y);
+
+                }
+                if (endPoint.distanceTo(centerPoint) - radius != 0 && pitch == 0) {
+
+                    const intersectionPoint = findCircleIntersection(centerPoint,radius,currentPos,5,curentGCodeCommand.activePlane ?? Plane.XY,curentGCodeCommand.isClockwise ?? true )[1]!
+
+                    console.warn(endPoint.distanceTo(centerPoint) - radius);
+                    console.warn(intersectionPoint);
+                    console.warn(findCircleIntersection(centerPoint,radius,currentPos,1,curentGCodeCommand.activePlane ?? Plane.XY,curentGCodeCommand.isClockwise ?? true ));
+                    reversedCode.push(`G1 X${ intersectionPoint?.x?.toFixed(3)} Y${intersectionPoint?.y?.toFixed(3)} Z${intersectionPoint?.z?.toFixed(3)} F${curentGCodeCommand.feedRate}`)
+                    console.warn(reversedCode)
+                    curentGCodeCommand =
+                        {
+                            ...curentGCodeCommand,
+                            endPoint:{...intersectionPoint},
+
+                        }
+                }
+
+            }
+
+
             if(curentGCodeCommand.activePlane == Plane.XY) {
 
-                const newI = (curentGCodeCommand.arcCenter!.x - curentGCodeCommand.endPoint!.x!).toFixed(6)
-                const newJ = (curentGCodeCommand.arcCenter!.y - curentGCodeCommand.endPoint!.y!).toFixed(6)
+                const newI = curentGCodeCommand.arcCenter!.x - curentGCodeCommand.endPoint!.x!
+                const newJ = curentGCodeCommand.arcCenter!.y - curentGCodeCommand.endPoint!.y!
+                reversedCode.push("G17")
+
                 reversedGCodeCode += ` I${newI} J${newJ}`
             }
             else if(curentGCodeCommand.activePlane == Plane.YZ) {
+
                 const newJ = curentGCodeCommand.arcCenter!.y - curentGCodeCommand.endPoint!.y!
                 const newK = curentGCodeCommand.arcCenter!.z - curentGCodeCommand.endPoint!.z!
+                reversedCode.push("G19")
 
                 reversedGCodeCode += ` K${newK} J${newJ}`
             }
             else if(curentGCodeCommand.activePlane == Plane.XZ) {
                 const newI = curentGCodeCommand.arcCenter!.x - curentGCodeCommand.endPoint!.x!
                 const newK = curentGCodeCommand.arcCenter!.z - curentGCodeCommand.endPoint!.z!
+                reversedCode.push("G18")
 
                 reversedGCodeCode += ` I${newI} K${newK}`
             }
@@ -87,6 +131,10 @@ export function reverseGCode(
         reversedGCodeCode +=` F${curentGCodeCommand.feedRate}`
 
         reversedCode.push(reversedGCodeCode)
+
+
+
+
     }
     return reversedCode;
 }

@@ -109,17 +109,17 @@ export const parseGCode = (lines: string[]): GCodeCommand[] => {
                             hasMove = true;
                             break;
                         case 'I':
-                            command.arcCenter = {x: value+ command.startPoint.x , y : command.arcCenter?.y ?? 0, z : command.arcCenter?.z ?? 0};
+                            command.arcCenter = {x: value+ command.startPoint.x , y : command.arcCenter?.y ?? command.startPoint.y ?? 0, z : command.arcCenter?.z  ?? command.startPoint.z ?? 0};
                             hasMove = true;
 
                             break;
                         case 'J':
-                            command.arcCenter = {x: command.arcCenter?.x ?? 0  , y : value  + command.startPoint.y, z : command.arcCenter?.z ?? 0};
+                            command.arcCenter = {x: command.arcCenter?.x  ?? command.startPoint.x ?? 0  , y : value  + command.startPoint.y, z : command.arcCenter?.z  ?? command.startPoint.z ?? 0};
                             hasMove = true;
 
                             break;
                         case 'K':
-                            command.arcCenter = {x: command.arcCenter?.x ?? 0 , y : command.arcCenter?.y ?? 0, z : value+ command.startPoint.z};
+                            command.arcCenter = {x: command.arcCenter?.x  ?? command.startPoint.x ?? 0 , y : command.arcCenter?.y  ?? command.startPoint.y ?? 0, z : value+ command.startPoint.z};
                             hasMove = true;
 
                             break;

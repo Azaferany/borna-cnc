@@ -275,9 +275,9 @@ class GCodeToPointProcessor {
             switch (plane) {
                 case Plane.XZ:
                     nextPoint = {
-                        x: center.x + radius * Math.cos(angle),
+                        x: center.x + radius * Math.sin(angle),
                         y: start.y + (end.y - start.y) * fraction,
-                        z: center.z + radius * Math.sin(angle)
+                        z: center.z + radius * Math.cos(angle)
                     };
                     break;
                 case Plane.YZ:
