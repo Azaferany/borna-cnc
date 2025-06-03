@@ -19,7 +19,7 @@ export const PreviousButton = () => {
         status !== "Hold" ||
         !toolPathGCodes ||
         !selectedGCodeLine ||
-        (selectedGCodeLine <= toolPathGCodes[0].lineNumber);
+        (selectedGCodeLine <= toolPathGCodes[0]?.lineNumber);
     const isSendingRunning = isSending && bufferType === "GCodeFileInReverse";
 
     const buttonText = isSendingRunning ? (status == "Hold" ? "Sending Paused" : 'Sending...') : 'Previous';
