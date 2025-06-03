@@ -1,9 +1,12 @@
-import { PlayIcon } from '@heroicons/react/24/solid';
-import { useStore } from "../../app/store.ts";
-import { useGCodeBufferContext } from "../../app/GCodeBufferContext.ts";
-import { useGRBL } from "../../app/useGRBL.ts";
-import { useState } from 'react';
+import {PlayIcon} from '@heroicons/react/24/solid';
+import {useStore} from "../../app/store.ts";
+import {useGCodeBufferContext} from "../../app/GCodeBufferContext.ts";
+import {useGRBL} from "../../app/useGRBL.ts";
+import {useState} from 'react';
 import {findGCodeCommandOrLatestBaseOnLine} from "../../app/findGCodeCommandOrLatestBaseOnLine.ts";
+import {Vector3} from "three";
+import { findCircleIntersection} from "../../app/findCircleIntersection.ts";
+import {Plane} from "../../types/GCodeTypes.ts";
 
 export const StartButton = () => {
     const { isSending, bufferType, startSending, stopSending } = useGCodeBufferContext();
@@ -37,22 +40,110 @@ export const StartButton = () => {
             try {
                 setError(null);
 
-                const gCodeLines = [...(allGCodes ?? [])].slice((selectedGCodeLine ?? 0) - 1)
+                const gCodeLines = [...(allGCodes ?? [])].slice((selectedGCodeLine ?? 0)-1)
+                console.warn(gCodeLines)
                 const currentGCodeCommand =
                     findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine ?? 0, toolPathGCodes ?? [])!
 
                 if (currentGCodeCommand?.isArcMove) {
-                    const newI = currentGCodeCommand.arcCenter!.x - machineCoordinate.x
-                    const newJ = currentGCodeCommand.arcCenter!.y - machineCoordinate.y
-                    const newK = currentGCodeCommand.arcCenter!.z - machineCoordinate.z
 
-                    // Update the raw command with new I, J, K values
-                    const updatedCommand = currentGCodeCommand.rawCommand
-                        .replace(/I[-\d.]+/, `I${newI.toFixed(3)}`)
-                        .replace(/J[-\d.]+/, `J${newJ.toFixed(3)}`)
-                        .replace(/K[-\d.]+/, `K${newK.toFixed(3)}`);
+                    let curentGCodeCommand =
+                        {
+                            ...currentGCodeCommand,
+                            endPoint:{...machineCoordinate},
+                            endA:machineCoordinate.a,
+                            endB:machineCoordinate.b,
+                            endC: machineCoordinate.c
+                        }
 
-                    gCodeLines[0] = updatedCommand;
+                    const startPoint = new Vector3(curentGCodeCommand.startPoint.x, curentGCodeCommand.startPoint.y, curentGCodeCommand.startPoint.z);
+                    const endPoint = new Vector3(curentGCodeCommand.endPoint!.x, curentGCodeCommand.endPoint!.y, curentGCodeCommand.endPoint!.z);
+                    const centerPoint = new Vector3(curentGCodeCommand.arcCenter!.x, curentGCodeCommand.arcCenter!.y, curentGCodeCommand.arcCenter!.z);
+
+                    const radius = startPoint.distanceTo(centerPoint);
+
+                    let pitch = 0 ;
+                    if(curentGCodeCommand.activePlane == Plane.XY) {
+
+                        pitch = Math.abs(curentGCodeCommand.startPoint.z - curentGCodeCommand.endPoint!.z);
+                    }
+                    else if(curentGCodeCommand.activePlane == Plane.YZ) {
+
+                        pitch = Math.abs(curentGCodeCommand.startPoint.x - curentGCodeCommand.endPoint!.x);
+
+                    }
+                    else if(curentGCodeCommand.activePlane == Plane.XZ) {
+                        pitch = Math.abs(curentGCodeCommand.startPoint.y - curentGCodeCommand.endPoint!.y);
+
+                    }
+                    if (endPoint.distanceTo(centerPoint) - radius != 0 && pitch == 0) {
+
+                        const intersectionPoint = findCircleIntersection(centerPoint,radius,machineCoordinate,1,curentGCodeCommand.activePlane ?? Plane.XY,curentGCodeCommand.isClockwise ?? true )[0]!
+
+                        console.warn(endPoint.distanceTo(centerPoint) - radius);
+                        console.warn(machineCoordinate);
+                        console.warn(`G1 X${ intersectionPoint.x.toFixed(3)} Y${intersectionPoint.y.toFixed(3)} Z${intersectionPoint.z.toFixed(3)} F${curentGCodeCommand.feedRate}`)
+
+
+                        curentGCodeCommand = {
+                            ...curentGCodeCommand,
+                            endPoint:{...intersectionPoint}
+                        }
+
+                        const newI = currentGCodeCommand.arcCenter!.x - curentGCodeCommand.endPoint.x
+                        const newJ = currentGCodeCommand.arcCenter!.y - curentGCodeCommand.endPoint.y
+                        const newK = currentGCodeCommand.arcCenter!.z - curentGCodeCommand.endPoint.z
+
+                        // Update the raw command with new I, J, K values
+                        const updatedCommand = currentGCodeCommand.rawCommand
+                            .replace(/I[-\d.]+/, `I${newI.toFixed(3)}`)
+                            .replace(/J[-\d.]+/, `J${newJ.toFixed(3)}`)
+                            .replace(/K[-\d.]+/, `K${newK.toFixed(3)}`);
+
+                        gCodeLines[0] = updatedCommand;
+                        if(curentGCodeCommand.activePlane == Plane.XY) {
+
+                            gCodeLines.unshift("G17")
+                        }
+                        else if(curentGCodeCommand.activePlane == Plane.YZ) {
+
+                            gCodeLines.unshift("G19")
+
+                        }
+                        else if(curentGCodeCommand.activePlane == Plane.XZ) {
+                            gCodeLines.unshift("G18")
+                        }
+                        gCodeLines.unshift(`G1 X${ intersectionPoint.x.toFixed(3)} Y${intersectionPoint.y.toFixed(3)} Z${intersectionPoint.z.toFixed(3)} F${curentGCodeCommand.feedRate}`)
+
+                    }
+
+                    else {
+                        const newI = currentGCodeCommand.arcCenter!.x - curentGCodeCommand.endPoint.x
+                        const newJ = currentGCodeCommand.arcCenter!.y - curentGCodeCommand.endPoint.y
+                        const newK = currentGCodeCommand.arcCenter!.z - curentGCodeCommand.endPoint.z
+
+                        // Update the raw command with new I, J, K values
+                        const updatedCommand = currentGCodeCommand.rawCommand
+                            .replace(/I[-\d.]+/, `I${newI.toFixed(3)}`)
+                            .replace(/J[-\d.]+/, `J${newJ.toFixed(3)}`)
+                            .replace(/K[-\d.]+/, `K${newK.toFixed(3)}`);
+
+                        gCodeLines[0] = updatedCommand;
+                        if(curentGCodeCommand.activePlane == Plane.XY) {
+
+                            gCodeLines.unshift("G17")
+                        }
+                        else if(curentGCodeCommand.activePlane == Plane.YZ) {
+
+                            gCodeLines.unshift("G19")
+
+                        }
+                        else if(curentGCodeCommand.activePlane == Plane.XZ) {
+                            gCodeLines.unshift("G18")
+                        }
+                    }
+
+
                 }
 
                 //set feedRate
