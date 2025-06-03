@@ -144,7 +144,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!isConnected) return;
 
         const pollInterval = setInterval(async () => {
-            await sendCommand('?');
+            await sendCommand('\x80');
         }, 80); // Poll every 50ms
 
         return () => clearInterval(pollInterval);

@@ -180,3 +180,16 @@ export const cleanGCodeText = (text: string) : string[] => {
 
     return cleanedLines;
 }
+export function extractLineNumber(gcodeLine : string) {
+    // Use a regex to match an 'N' at the beginning of the line,
+    // followed by one or more digits, capturing just the digits.
+    const match = gcodeLine.match(/^N(\d+)/);
+
+    // If there was no match, return null.
+    if (!match) {
+        return null;
+    }
+
+    // match[1] contains the digits after 'N'. Convert to a Number and return.
+    return Number(match[1]);
+}

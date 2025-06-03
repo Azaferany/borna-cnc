@@ -3,6 +3,7 @@ import {useGRBL} from "./useGRBL.ts";
 import {type BufferType, useStore} from "./store.ts";
 import {useGRBLListener} from "./useGRBLListener.ts";
 import {GCodeBufferContext} from "./GCodeBufferContext.ts";
+import {extractLineNumber} from "./GcodeParserUtils.ts";
 
 interface GCodeBufferProviderProps {
     children: ReactNode;
@@ -26,7 +27,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
     const [bufferGCodesList, setBufferGCodesList] = useState<string[]>([]);
     const [waitingForOk, setWaitingForOk] = useState<boolean>(false);
 
-
+    const [IsAllLineSent, setIsAllLineSent] = useState(false)
     /**
      * Halts the G-code sending process.
      */
@@ -46,7 +47,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         try {
             console.debug('Sending command:', command);
             await sendCommand(command);
-            setWaitingForOk(true); // Set true as we are now waiting for an 'ok'
+            setWaitingForOk(false); // Set true as we are now waiting for an 'ok'
         } catch (error) {
             console.error('Error sending command:', error);
             stopSending(); // Stop sending on error (calls the memoized stopSending from context)
@@ -68,7 +69,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         const nextLineIndex = lastSentLine + 1; // Calculate the index of the next line to send
         const totalLines = bufferGCodesList?.length ?? 0;
 
-        if (availableBufferSlots < 2 && (lastSentLine - (selectedGCodeLine ?? 0)) > 10 ) {
+        if ((lastSentLine - (selectedGCodeLine ?? 0)) > 10 ) {
             console.debug('AttemptSendNextLine skipped:', { buffered: (lastSentLine - (selectedGCodeLine ?? 0)), availableBufferSlots });
             return;
         }
@@ -76,7 +77,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         // Check if all lines have been sent
         if (nextLineIndex >= totalLines) {
             console.debug('All lines sent. Stopping sending process.');
-            stopSending(); // Calls the memoized stopSending from context
+            setIsAllLineSent(true);
             return;
         }
 
@@ -136,6 +137,13 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         [isConnected, setIsSending, updateLastSentLine] // Dependencies for useCallback
     );
 
+    useEffect(() => {
+        const moveGCodes = bufferGCodesList
+            .map(x=> x.split(';')[0].toUpperCase())
+            .filter(x=>x.includes("G0") || x.includes("G1")|| x.includes("G2"));
+        if(IsAllLineSent && selectedGCodeLine === extractLineNumber(moveGCodes[moveGCodes.length -1]))
+            stopSending()
+    }, [bufferGCodesList, IsAllLineSent, selectedGCodeLine, stopSending]);
     /**
      * Effect hook to manage the G-code sending process.
      * It triggers `sendNextLine` based on various conditions.
@@ -183,7 +191,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             handleOkResponse(); // Call the memoized handler
         } else if (line.includes('error')) {
             console.error('GRBL reported an error:', line);
-            stopSending(); // Stop sending on GRBL error (calls the memoized stopSending)
+            //stopSending(); // Stop sending on GRBL error (calls the memoized stopSending)
         }
     });
 

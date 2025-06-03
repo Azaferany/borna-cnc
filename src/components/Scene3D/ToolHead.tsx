@@ -13,14 +13,14 @@ export const ToolHead: React.FC<{ position: Point3D,gCodeCommand?:GCodeCommand }
         ) : undefined}*/
         >
             {/* Tool holder */}
-            <mesh position={[0, 26, 0]} >
-                <cylinderGeometry args={[2, 2, 36, 16]} />
-                <meshStandardMaterial color="#0000ff" roughness={0.2} />
+            <mesh position={[0, 37, 0]} >
+                <cylinderGeometry args={[6, 6, 50, 16]} />
+                <meshStandardMaterial color="#ffa500" roughness={0.2} />
             </mesh>
             {/* Tool tip */}
             <mesh position={[0, 4, 0]}>
-                <coneGeometry args={[2, -8, 32]} />
-                <meshStandardMaterial color="#0000ff" roughness={0.2} />
+                <coneGeometry args={[6, -16, 32,16]} />
+                <meshStandardMaterial color="#ffa500" roughness={0.2} />
             </mesh>
             {/* Position indicator */}
         </group>
