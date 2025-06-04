@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useGRBL } from "../../app/useGRBL.ts";
+import { UnitDisplay } from "../UnitDisplay/UnitDisplay";
+import { FeedrateUnitDisplay } from "../UnitDisplay/FeedrateUnitDisplay";
 
 export const JogControls = () => {
     const [feedrate, setFeedrate] = useState(100);
@@ -81,7 +83,7 @@ export const JogControls = () => {
             <div className="space-y-4">
                 <div className="flex space-x-4">
                     <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1" htmlFor={"Feedrate"}>Feedrate (mm/min)</label>
+                        <label className="block text-sm font-medium mb-1" htmlFor={"Feedrate"}>Feedrate (<FeedrateUnitDisplay/>)</label>
                         <input
                             id={"Feedrate"}
                             type="number"
@@ -93,8 +95,7 @@ export const JogControls = () => {
                         />
                     </div>
                     <div className="flex-1">
-                        {!continuousMode &&(<><label className="block text-sm font-medium mb-1" htmlFor={"Distance"}>Distance
-                            (mm)</label><input
+                        {!continuousMode &&(<><label className="block text-sm font-medium mb-1" htmlFor={"Distance"}>Distance (<UnitDisplay/>)</label><input
                             type="number"
                             id={"Distance"}
                             value={stepSize}
@@ -103,7 +104,7 @@ export const JogControls = () => {
                             disabled={continuousMode}
                             min={0.001}
                             max={1000}/></>)
-                    }
+                        }
                         {continuousMode && (<label className="block text-sm font-medium mt-6">Hold button to jog, release to stop</label>)}
                     </div>
                 </div>

@@ -88,13 +88,13 @@ export const PreviousButton = () => {
             </button>
 
             {error && (
-                <div className="absolute top-full mb-2 p-2 bg-red-100 text-red-700 rounded text-sm">
+                <div className="absolute bottom-full mb-2 p-2 bg-red-100 text-red-700 rounded text-sm">
                     {error}
                 </div>
             )}
 
             {isDisabled && (
-                <div className="absolute top-full mb-2 p-2 bg-gray-100 text-gray-700 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute bottom-full mb-2 p-2 bg-gray-100 text-gray-700 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity">
                     {!toolPathGCodes || !selectedGCodeLine
                         ? 'No G-code line selected or exist'
                         : `Machine must be in Hold state (current: ${status})`}

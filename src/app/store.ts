@@ -19,7 +19,7 @@ export interface GCodeOffsets {
 export interface ActiveModes {
     WorkCoordinateSystem: "G54" | "G55" | "G56" | "G57" | "G58"  | "G59";
     Plane: Plane;
-    UnitsType: "millimeters" | "inches";
+    UnitsType: "Millimeters" | "Inches";
     PositioningMode: "Absolute" | "Relative";
 }
 

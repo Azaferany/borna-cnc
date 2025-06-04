@@ -126,7 +126,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }, 600); // Poll every 5s
         const pollActiveModesInterval = setInterval(async () => {
             await sendCommand('$G');
-        }, 5000); // Poll every 5s
+        }, 1000); // Poll every 5s
         try {
             sendCommand('$#');
             sendCommand('$G');
@@ -184,7 +184,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     Plane: modes.find(m => m === 'G17') ? Plane.XY :
                         modes.find(m => m === 'G18') ? Plane.XZ :
                             modes.find(m => m === 'G19') ? Plane.YZ : Plane.XY,
-                    UnitsType: modes.find(m => m === 'G21') ? "millimeters" : "inches",
+                    UnitsType: modes.find(m => m === 'G21') ? "Millimeters" : "Inches",
                     PositioningMode: modes.find(m => m === 'G90') ? "Absolute" : "Relative"
                 };
                 updateActiveModes(activeModes);

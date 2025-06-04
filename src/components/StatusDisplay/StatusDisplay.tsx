@@ -2,6 +2,8 @@ import { useStore } from '../../app/store';
 import { useState } from 'react';
 import { ChevronUpIcon, ChevronDownIcon, HomeIcon, ArrowPathIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/solid';
 import { useGRBL } from '../../app/useGRBL';
+import { Plane } from '../../types/GCodeTypes';
+import { UnitDisplay } from '../UnitDisplay/UnitDisplay';
 
 export const StatusDisplay = () => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(true);
@@ -13,6 +15,7 @@ export const StatusDisplay = () => {
     const availableBufferSlots = useStore(x => x.availableBufferSlots);
     const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
     const gCodeOffsets = useStore(x => x.gCodeOffsets);
+    const activeModes = useStore(x => x.activeModes);
     const { sendCommand } = useGRBL();
 
     const handleSetZero = async (axis: string) => {
@@ -121,11 +124,13 @@ export const StatusDisplay = () => {
                         <HomeIcon className="w-4 h-4" />
                     </button>
                     Axis
-
-
                 </div>
-                <div className="text-blue-400 text-xs flex items-center justify-center">Work (mm)</div>
-                <div className="text-green-400 text-xs flex items-center justify-center">Machine(mm)</div>
+                <div className="text-blue-400 text-xs flex items-center justify-center">
+                    Work (<UnitDisplay/>)
+                </div>
+                <div className="text-green-400 text-xs flex items-center justify-center">
+                    Machine (<UnitDisplay/>)
+                </div>
                 <div className="text-green-400 text-xs flex items-center justify-center text-center">Temporary Work Offset</div>
             </div>
             <div className="space-y-0">
@@ -163,6 +168,26 @@ export const StatusDisplay = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {activeModes && (
+                <div className="space-y-2">
+                    <h2 className="text-xl font-bold mb-4">Active Modes :</h2>
+                    <div className="flex flex-wrap gap-2">
+                        <span className="px-2 py-1 text-xs bg-blue-600 text-white rounded-full">
+                            Work Coordinate System: {activeModes.WorkCoordinateSystem}
+                        </span>
+                        <span className="px-2 py-1 text-xs bg-green-600 text-white rounded-full">
+                            Arc Plane: {activeModes.Plane === Plane.XY ? 'XY Plane' : activeModes.Plane === Plane.XZ ? 'XZ Plane' : 'YZ Plane'}
+                        </span>
+                        <span className="px-2 py-1 text-xs bg-purple-600 text-white rounded-full">
+                            Units Type: {activeModes.UnitsType}
+                        </span>
+                        <span className="px-2 py-1 text-xs bg-yellow-600 text-white rounded-full">
+                            Positioning Mode: {activeModes.PositioningMode}
+                        </span>
                     </div>
                 </div>
             )}

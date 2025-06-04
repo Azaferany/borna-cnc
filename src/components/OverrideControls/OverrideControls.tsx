@@ -1,6 +1,7 @@
 import {useGRBL} from "../../app/useGRBL.ts";
 import {useStore} from "../../app/store.ts";
 import {useEffect, useState} from "react";
+import { FeedrateUnitDisplay } from "../UnitDisplay/FeedrateUnitDisplay";
 
 export const OverrideControls = () => {
     const spindleSpeedOverridePercent = useStore(state => state.spindleSpeedOverridePercent);
@@ -208,7 +209,7 @@ export const OverrideControls = () => {
                     max={200}
                 >
                     <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700">
-                        {feedrate.toFixed(0)} mm/min
+                        {feedrate.toFixed(0)} <FeedrateUnitDisplay/>
                     </span>
                 </SliderControl>
                 <SliderControl
