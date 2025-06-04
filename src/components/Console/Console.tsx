@@ -12,12 +12,41 @@ export const Console = () => {
     const [commandHistory, setCommandHistory] = useState<string[]>([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
     const [tempCommand, setTempCommand] = useState('');
+    const [ShowGCodeOk, setShowGCodeOk] = useState(false)
+    const [ShowStatusResponse, setShowStatusResponse] = useState(false)
+    const [ShowGCodeOffsetResponse, setShowGCodeOffsetResponse] = useState(false)
+    const [ShowActiveModesResponse, setShowActiveModesResponse] = useState(false)
 
     // Listen for incoming messages
     useGRBLListener((line: string) => {
-        if(line != "ok")
+        if ((line.startsWith('<') && line.endsWith('>')) && !ShowStatusResponse) {
+            return;
+        }
+        else {
+            setShowStatusResponse(false)
+        }
+        if ((line.startsWith('[') && line.endsWith(']') && line.startsWith('[GC:')) && !ShowActiveModesResponse) {
+            return;
+        }
+        else {
+            setShowActiveModesResponse(false)
+        }
+        if ((line.startsWith('[') && line.endsWith(']')) && !line.startsWith('[GC:') && !ShowGCodeOffsetResponse) {
+            return;
+        }
+        else if(!(line.startsWith('[') && line.endsWith(']')  && !line.startsWith('[GC:'))){
+            setShowGCodeOffsetResponse(false)
+        }
+        if(line == "ok" && !ShowGCodeOk)
+        {
+            return;
+        }
+        else {
+            setShowGCodeOk(false);
+        }
         setHistory(prev => [...prev, line]);
-    },[]);
+
+    },[ShowStatusResponse,ShowGCodeOffsetResponse,ShowGCodeOk,ShowActiveModesResponse]);
 
     const scrollToBottom = () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -60,6 +89,20 @@ export const Console = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (command.trim()) {
+            const c= command.trim();
+            if(c == "?")
+            {
+                setShowStatusResponse(true)
+            }
+            else if (c == "$#"){
+                setShowGCodeOffsetResponse(true)
+            }
+            else if (c == "$G"){
+                setShowActiveModesResponse(true)
+            }
+            else {
+                setShowGCodeOk(true);
+            }
             try {
                 // Add the sent command to history
                 setHistory(prev => [...prev, `> ${command}`]);

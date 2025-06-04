@@ -14,9 +14,7 @@ export const useGRBLListener = (listener : (line :string)=>void, deps?: Dependen
             const line = customEvent.detail;
 
             //filter status check stuff
-            if ((line.startsWith('<') && line.endsWith('>'))) {
-                return;
-            }
+
             listener(line);
         }
         eventSource!.addEventListener("data",eventHandler)

@@ -98,7 +98,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
 
         await handleCommand(lineToSend); // Send the command
         updateLastSentLine(nextLineIndex); // Update the last sent line index
-    },[availableBufferSlots, bufferGCodesList, handleCommand, lastSentLine, selectedGCodeLine, stopSending, updateLastSentLine, waitingForOk])
+    },[availableBufferSlots, bufferGCodesList, handleCommand, lastSentLine, selectedGCodeLine, updateLastSentLine, waitingForOk])
 
 
     /**
@@ -187,6 +187,8 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
      * Listens for incoming lines from GRBL and handles 'ok' or 'error' responses.
      */
     useGRBLListener(line => {
+        if(!isSending)
+            return;
         if (line === 'ok') {
             handleOkResponse(); // Call the memoized handler
         } else if (line.includes('error')) {

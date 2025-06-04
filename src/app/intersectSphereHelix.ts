@@ -95,6 +95,9 @@ export function intersectSphereHelix(
         if (fL * fR > 0 && Math.abs(fL) > tol && Math.abs(fR) > tol) return null;
 
         let a = tL, b = tR;
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         let fa = fL, fb = fR;
         let c = 0, fc = 0;
 
@@ -110,6 +113,7 @@ export function intersectSphereHelix(
             // Use tolerance for comparisons to avoid infinite loops near zero
             if (fa * fc < 0) { // Sign change between a and c
                 b = c;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 fb = fc;
             } else { // Sign change between c and b, or no sign change (move 'a' to 'c')
                 a = c;
@@ -135,9 +139,7 @@ export function intersectSphereHelix(
         // Check for sign change or if one of the values is close to zero
         if (fPrev * fCurr <= 0 || Math.abs(fPrev) < EPSILON || Math.abs(fCurr) < EPSILON) {
             // Attempt to bracket and refine root
-            const tLeft = tPrev;
-            const tRight = tCurr;
-            const root = findRootBisection(tLeft, tRight);
+            const root = findRootBisection(tPrev, tCurr);
 
             if (root !== null) {
                 // Ensure uniqueness: check if the found root is significantly different from already added roots
@@ -159,9 +161,7 @@ export function intersectSphereHelix(
     roots.sort((a, b) => a - b);
 
     // 2. Map each root t_k to (x,y,z)
-    const intersections: Point3D[] = roots.map(tk => helixPoint(tk));
-
-    return intersections;
+    return roots.map(tk => helixPoint(tk));
 }
 
 /**
@@ -176,11 +176,16 @@ export function intersectSphereHelix(
  * @param point1 The first point to compare.
  * @param point2 The second point to compare.
  */
+
 export function determineHelixPointOrder(
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     helixRadius: number,
     helixCenter: Point3D,
     helixPlane: Plane,
     helixClockwise: boolean,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     helixPitch: number,
     point1: Point3D,
     point2: Point3D

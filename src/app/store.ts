@@ -1,11 +1,27 @@
 import {create} from "zustand/react";
-import type {GCodeCommand, GRBLState, Point3D, Point3D6Axis} from "../types/GCodeTypes.ts";
+import {type GCodeCommand, type GRBLState, Plane, type Point3D, type Point3D6Axis} from "../types/GCodeTypes.ts";
 import GRBLSerial from "./GRBLSerial.ts";
 
 export type BufferType =
     | "GCodeFile"
     | "GCodeFileInReverse";
 
+export interface GCodeOffsets {
+    G54: Point3D6Axis;
+    G55: Point3D6Axis;
+    G56: Point3D6Axis;
+    G57: Point3D6Axis;
+    G58: Point3D6Axis;
+    G59: Point3D6Axis;
+    G92: Point3D6Axis;
+}
+
+export interface ActiveModes {
+    WorkCoordinateSystem: "G54" | "G55" | "G56" | "G57" | "G58"  | "G59";
+    Plane: Plane;
+    UnitsType: "millimeters" | "inches";
+    PositioningMode: "Absolute" | "Relative";
+}
 
 interface CNCState {
     isConnected: boolean;
@@ -23,6 +39,8 @@ interface CNCState {
 
     machineCoordinate: Point3D6Axis
     workPlaceCoordinateOffset: Point3D6Axis
+    gCodeOffsets : GCodeOffsets
+    activeModes?: ActiveModes
     feedrate: number
     status: GRBLState
     spindleSpeed: number
@@ -43,6 +61,8 @@ interface CNCState {
     updateRapidSpeedOverridePercent:(rapidSpeedOverridePercent:number) =>void,
     updateSpindleSpeedOverridePercent:(spindleSpeedOverridePercent:number) =>void,
     updateAvailableBufferSlots:(availableBufferSlots:number) =>void,
+    updateGCodeOffsets:(gCodeOffsets:GCodeOffsets) =>void,
+    updateActiveModes:(activeModes:ActiveModes) =>void,
 
     lastSentLine: number;
     updateLastSentLine: (line: number) => void;
@@ -60,7 +80,17 @@ export const useStore = create<CNCState>((set) => ({
     allGCodes: [],
     selectedGCodeLine: undefined,
     machineCoordinate: {x: 0, y: 0, z: 0},
+    gCodeOffsets:{
+        G54:{x: 0, y: 0, z: 0},
+        G55:{x: 0, y: 0, z: 0},
+        G56:{x: 0, y: 0, z: 0},
+        G57:{x: 0, y: 0, z: 0},
+        G58:{x: 0, y: 0, z: 0},
+        G59:{x: 0, y: 0, z: 0},
+        G92:{x: 0, y: 0, z: 0},
+    },
     workPlaceCoordinateOffset: {x: 0, y: 0, z: 0},
+    activeModes:undefined,
     feedrate: 0,
     status: "NotConnected",
     spindleSpeed: 0,
@@ -83,4 +113,6 @@ export const useStore = create<CNCState>((set) => ({
     updateSpindleSpeedOverridePercent:(spindleSpeedOverridePercent) =>set({ spindleSpeedOverridePercent }),
     updateAvailableBufferSlots:(availableBufferSlots) =>set({ availableBufferSlots }),
     updateLastSentLine: (line: number) => set({ lastSentLine: line }),
+    updateGCodeOffsets: (gCodeOffsets) => set({ gCodeOffsets }),
+    updateActiveModes: (activeModes) => set({ activeModes }),
 }))

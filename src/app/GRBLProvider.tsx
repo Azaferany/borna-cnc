@@ -1,6 +1,8 @@
 import React, {useCallback, useEffect} from 'react';
 import { useStore } from './store.ts';
 import type { GRBLState } from '../types/GCodeTypes.ts';
+import { Plane } from '../types/GCodeTypes.ts';
+import type { ActiveModes } from './store.ts';
 
 export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const status = useStore(x => x.status);
@@ -26,6 +28,11 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updateFeedrateOverridePercent = useStore(x => x.updateFeedrateOverridePercent);
     const updateRapidSpeedOverridePercent = useStore(x => x.updateRapidSpeedOverridePercent);
     const updateSpindleSpeedOverridePercent = useStore(x => x.updateSpindleSpeedOverridePercent);
+    const updateGCodeOffsets = useStore(x => x.updateGCodeOffsets);
+    const gCodeOffsets = useStore(x => x.gCodeOffsets);
+
+    const updateActiveModes = useStore(x => x.updateActiveModes);
+
     const setIsConnected = useStore(x => x.setIsConnected);
 
     function parseGrblStatus(report : string) : {state: GRBLState,MPos?:string[],WCO?:string[],FS?:string[],Ov?:string[],Ln?:string,Bf?:string[]} {
@@ -143,11 +150,27 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         if (!isConnected) return;
 
-        const pollInterval = setInterval(async () => {
+        const pollStatusInterval = setInterval(async () => {
             await sendCommand('?');
-        }, 80); // Poll every 50ms
-
-        return () => clearInterval(pollInterval);
+        }, 80); // Poll every 80ms
+        const pollGCodeOffsetsInterval = setInterval(async () => {
+            await sendCommand('$#');
+        }, 400); // Poll every 5s
+        const pollActiveModesInterval = setInterval(async () => {
+            await sendCommand('$G');
+        }, 500); // Poll every 5s
+        try {
+            sendCommand('$#');
+            sendCommand('$G');
+        }
+        catch {
+            console.log('Error sending command');
+        }
+        return () => {
+            clearInterval(pollStatusInterval)
+            clearInterval(pollGCodeOffsetsInterval)
+            clearInterval(pollActiveModesInterval)
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isConnected, eventSource]);
 
@@ -160,11 +183,52 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateStatus("NotConnected");
     };
 
+    const handleGCodeOffset = useCallback((event: CustomEvent<string>) => {
+        const line = event.detail;
+        if (line.startsWith('[') && line.endsWith(']') && !line.startsWith('[GC:')) {
+            const offsetMatch = line.match(/\[(G\d+):([\d.-]+),([\d.-]+),([\d.-]+)\]/);
+            if (offsetMatch) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const [_, offsetType, x, y, z] = offsetMatch;
+                updateGCodeOffsets({
+                    ...gCodeOffsets,
+                    [offsetType]: {
+                        x: parseFloat(x),
+                        y: parseFloat(y),
+                        z: parseFloat(z)
+                    }
+                });
+
+            }
+        }
+    },[gCodeOffsets, updateGCodeOffsets]);
+
+    const handleActiveModes =useCallback((event: CustomEvent<string>) => {
+        const line = event.detail;
+        if (line.startsWith('[GC:') && line.endsWith(']')) {
+            const modesMatch = line.match(/\[GC:(.*?)\]/);
+            if (modesMatch) {
+                const modes = modesMatch[1].split(' ');
+                const activeModes: ActiveModes = {
+                    WorkCoordinateSystem: modes.find(m => m.startsWith('G5')) as "G54" | "G55" | "G56" | "G57" | "G58" | "G59" || "G54",
+                    Plane: modes.find(m => m === 'G17') ? Plane.XY : 
+                           modes.find(m => m === 'G18') ? Plane.XZ : 
+                           modes.find(m => m === 'G19') ? Plane.YZ : Plane.XY,
+                    UnitsType: modes.find(m => m === 'G21') ? "millimeters" : "inches",
+                    PositioningMode: modes.find(m => m === 'G90') ? "Absolute" : "Relative"
+                };
+                updateActiveModes(activeModes);
+            }
+        }
+    },[updateActiveModes]);
+
     useEffect(() => {
         // Initialize GRBL Serial
         const grblSerial = eventSource!;
         // Set up event listener for incoming data
         grblSerial.addEventListener('data', statusListenerAndParse);
+        grblSerial.addEventListener('data', handleGCodeOffset);
+        grblSerial.addEventListener('data', handleActiveModes);
         grblSerial.addEventListener('disconnect', disconnect);
         grblSerial.addEventListener('connect', connect);
 
@@ -172,12 +236,14 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Cleanup on unmount
             if (eventSource) {
                 eventSource.removeEventListener('data', statusListenerAndParse);
+                eventSource.removeEventListener('data', handleGCodeOffset);
+                eventSource.removeEventListener('data', handleActiveModes);
                 grblSerial.removeEventListener('disconnect', disconnect);
                 grblSerial.removeEventListener('connect', connect);
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [statusListenerAndParse, eventSource]);
+    }, [statusListenerAndParse, eventSource, handleGCodeOffset, handleActiveModes]);
 
     return <>{children}</>;
 }; 
