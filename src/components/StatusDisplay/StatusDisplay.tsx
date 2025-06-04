@@ -7,8 +7,6 @@ export const StatusDisplay = () => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(true);
     const machineCoordinate = useStore(x => x.machineCoordinate);
     const workPlaceCoordinateOffset = useStore(x => x.workPlaceCoordinateOffset);
-    const feedrate = useStore(x => x.feedrate);
-    const spindleSpeed = useStore(x => x.spindleSpeed);
     const status = useStore(x => x.status);
     const isSending = useStore(x => x.isSending);
     const lastSentLine = useStore(x => x.lastSentLine);
@@ -119,50 +117,44 @@ export const StatusDisplay = () => {
                 <div className="text-green-400 text-xs flex items-center justify-center">Machine(mm)</div>
                 <div className="text-green-400 text-xs flex items-center justify-center text-center">Temporary Work Offset</div>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-0">
                 <CoordRow axis="X" workOffset={workPlaceCoordinateOffset?.x ?? 0} machine={machineCoordinate?.x ?? 0} />
                 <CoordRow axis="Y" workOffset={workPlaceCoordinateOffset?.y ?? 0} machine={machineCoordinate?.y ??0} />
                 <CoordRow axis="Z" workOffset={workPlaceCoordinateOffset?.z ?? 0} machine={machineCoordinate?.z ?? 0} />
             </div>
 
-            <h2 className="text-xl font-bold">Machine Info</h2>
-            <div className="space-y-1">
-                <InfoRow label="Feedrate (mm/min)" value={feedrate.toFixed(0)} />
-                <InfoRow label="Spindle Speed (RPM)" value={spindleSpeed.toFixed(0)} />
-                <InfoRow label="Status" value={status} />
-                {(isSending || status == "Run") && (
-                    <div className="text-xs text-gray-400 space-y-1 pt-2">
-                        <div>
-                            <button
-                                onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-                                className="w-full flex items-center justify-center gap-2 text-gray-300 hover:text-white transition-colors"
-                            >
-                                    <span className="transition-transform duration-300">
-                                        {isDetailsOpen ? (
-                                            <ChevronUpIcon className="w-4 h-4" />
-                                        ) : (
-                                            <ChevronDownIcon className="w-4 h-4" />
-                                        )}
-                                    </span>
-                                Details
-                            </button>
-                            <div
-                                className={`grid transition-all duration-300 ease-in-out ${
-                                    isDetailsOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                                }`}
-                            >
-                                <div className="overflow-hidden">
-                                    <div className="pl-4 mt-2 space-y-1">
-                                        <InfoRow label="Last Sent Line" value={lastSentLine ?? "Not Sending"}/>
-                                        <InfoRow label="Buffer Slots" value={availableBufferSlots}/>
-                                        <InfoRow label="Selected Line" value={selectedGCodeLine ?? '-'}/>
-                                    </div>
+            {(isSending || status == "Run") && (
+                <div className="text-xs text-gray-400 space-y-1 pt-2">
+                    <div>
+                        <button
+                            onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+                            className="w-full flex items-center justify-center gap-2 text-gray-300 hover:text-white transition-colors"
+                        >
+                            <span className="transition-transform duration-300">
+                                {isDetailsOpen ? (
+                                    <ChevronUpIcon className="w-4 h-4 font-bold" />
+                                ) : (
+                                    <ChevronDownIcon className="w-4 h-4 font-bold" />
+                                )}
+                            </span>
+                            <span>Details</span>
+                        </button>
+                        <div
+                            className={`grid transition-all duration-300 ease-in-out ${
+                                isDetailsOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                            }`}
+                        >
+                            <div className="overflow-hidden">
+                                <div className="px-2 mt-2 space-y-1">
+                                    <InfoRow label="Last Sent Line" value={lastSentLine ?? "Not Sending"}/>
+                                    <InfoRow label="Buffer Slots" value={availableBufferSlots}/>
+                                    <InfoRow label="Selected Line" value={selectedGCodeLine ?? '-'}/>
                                 </div>
                             </div>
                         </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };

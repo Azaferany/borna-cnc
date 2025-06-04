@@ -46,7 +46,7 @@ export const Console = () => {
         }
         setHistory(prev => [...prev, line]);
 
-    },[ShowStatusResponse,ShowGCodeOffsetResponse,ShowGCodeOk,ShowActiveModesResponse]);
+    },[ShowStatusResponse,ShowGCodeOffsetResponse,ShowGCodeOk,ShowActiveModesResponse],true);
 
     const scrollToBottom = () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

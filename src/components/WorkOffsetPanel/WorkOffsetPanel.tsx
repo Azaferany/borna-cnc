@@ -9,7 +9,7 @@ const WorkOffsetPanel: React.FC = () => {
   const updateGCodeOffsets = useStore(state => state.updateGCodeOffsets);
   const activeModes = useStore(state => state.activeModes);
   const [editingOffset, setEditingOffset] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleActivateOffset = (offset: string) => {
     sendCommand(offset);

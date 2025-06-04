@@ -6,6 +6,8 @@ export const OverrideControls = () => {
     const spindleSpeedOverridePercent = useStore(state => state.spindleSpeedOverridePercent);
     const feedrateOverridePercent = useStore(state => state.feedrateOverridePercent);
     const rapidSpeedOverridePercent = useStore(state => state.rapidSpeedOverridePercent);
+    const feedrate = useStore(state => state.feedrate);
+    const spindleSpeed = useStore(state => state.spindleSpeed);
 
     const { sendCommand, isConnected } = useGRBL()
 
@@ -89,7 +91,6 @@ export const OverrideControls = () => {
         }
     };
 
-
     const SliderControl = ({
                                value: storeValue,
                                label,
@@ -98,6 +99,7 @@ export const OverrideControls = () => {
                                max = 200,
                                step = 1,
                                allowedValues,
+                               children,
                            }: {
         label: string;
         value: number;
@@ -105,11 +107,12 @@ export const OverrideControls = () => {
         min?: number;
         max?: number;
         step?: number;
-        allowedValues?: number[];    }) => {
+        allowedValues?: number[];
+        children?: React.ReactNode;
+    }) => {
         // Local thumb position
         const [localValue, setLocalValue] = useState(storeValue);
         const [isLoading, setIsLoading] = useState(false);
-
 
         useEffect(() => {
             if (localValue !== storeValue) {
@@ -128,12 +131,15 @@ export const OverrideControls = () => {
                 <div className="space-y-2">
                     <div className="flex justify-between items-center">
                         <label className="text-sm font-medium">{label}</label>
-                        <span className={`text-sm font-mono px-2 py-1 rounded flex items-center gap-1 ${isLoading ? 'bg-yellow-700' : 'bg-gray-700'}`}>
-                            {isLoading ? `${storeValue}%  →  ${localValue}%` : `${storeValue}%`}
-                            {isLoading && (
-                                <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                            )}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            {children}
+                            <span className={`text-sm font-mono px-2 py-1 rounded flex items-center gap-1 ${isLoading ? 'bg-yellow-700' : 'bg-gray-700'}`}>
+                                {isLoading ? `${storeValue}%  →  ${localValue}%` : `${storeValue}%`}
+                                {isLoading && (
+                                    <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                )}
+                            </span>
+                        </div>
                     </div>
                     <div className="flex items-center space-x-2">
                         {!allowedValues &&(<button
@@ -142,34 +148,31 @@ export const OverrideControls = () => {
                             disabled={!isConnected}
                         >
                             -10%
-                        </button>)}                <input
-                        type="range"
-                        min={min}
-                        max={max}
-                        step={step}
-                        value={localValue}
-                        onChange={(e) => {
-                            const v = Number(e.target.value);
+                        </button>)}
+                        <input
+                            type="range"
+                            min={min}
+                            max={max}
+                            step={step}
+                            value={localValue}
+                            onChange={(e) => {
+                                const v = Number(e.target.value);
 
-                            if (allowedValues && !allowedValues.includes(v)) {
-                                // Find nearest allowed value
-                                const nearest = allowedValues.reduce((prev, curr) =>
-                                    Math.abs(curr - v) < Math.abs(prev - v) ? curr : prev
-                                );
-                                setLocalValue(
-                                    nearest
-                                );
-                            } else {
-                                setLocalValue(
-                                    v
-                                );
-                            }
-                        }}
-                        className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={!isConnected}
-                        onMouseUp={() => onCommit(localValue)}
-                        onTouchEnd={() => onCommit(localValue)}
-                    />
+                                if (allowedValues && !allowedValues.includes(v)) {
+                                    // Find nearest allowed value
+                                    const nearest = allowedValues.reduce((prev, curr) =>
+                                        Math.abs(curr - v) < Math.abs(prev - v) ? curr : prev
+                                    );
+                                    setLocalValue(nearest);
+                                } else {
+                                    setLocalValue(v);
+                                }
+                            }}
+                            className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!isConnected}
+                            onMouseUp={() => onCommit(localValue)}
+                            onTouchEnd={() => onCommit(localValue)}
+                        />
                         {!allowedValues && (<button
                             onClick={() => {onCommit(Math.min(max, storeValue + 10))}}
                             className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -182,9 +185,6 @@ export const OverrideControls = () => {
             </div>
         );
     }
-
-
-
 
     return (
         <div className="bg-gray-800 p-4 rounded-lg">
@@ -205,14 +205,22 @@ export const OverrideControls = () => {
                     onCommit={handleFeedOverride}
                     min={10}
                     max={200}
-                />
+                >
+                    <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700">
+                        {feedrate.toFixed(0)} mm/min
+                    </span>
+                </SliderControl>
                 <SliderControl
                     label="Spindle Speed Override"
                     value={spindleSpeedOverridePercent}
                     onCommit={handleSpindleOverride}
                     min={10}
                     max={200}
-                />
+                >
+                    <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700">
+                        {spindleSpeed.toFixed(0)} RPM
+                    </span>
+                </SliderControl>
             </div>
         </div>
     );
