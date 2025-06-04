@@ -1,6 +1,6 @@
 import {type GCodeCommand, Plane, type Point3D6Axis} from "../../types/GCodeTypes.ts";
 import {Vector3} from 'three';
-import { findCircleIntersection} from "../../app/findCircleIntersection.ts";
+import {determineHelixPointOrder, intersectSphereHelix} from "../../app/intersectSphereHelix.ts";
 export function reverseGCode(
     toolPathsOrg: GCodeCommand[],
     currentLine: number,
@@ -50,27 +50,38 @@ export function reverseGCode(
                 const centerPoint = new Vector3(curentGCodeCommand.arcCenter!.x, curentGCodeCommand.arcCenter!.y, curentGCodeCommand.arcCenter!.z);
 
                 const radius = startPoint.distanceTo(centerPoint);
-                let pitch = 0 ;
-                if(curentGCodeCommand.activePlane == Plane.XY) {
 
-                    pitch = Math.abs(curentGCodeCommand.startPoint.z - curentGCodeCommand.endPoint!.z);
-                }
-                else if(curentGCodeCommand.activePlane == Plane.YZ) {
+                if (endPoint.distanceTo(centerPoint) - radius != 0) {
+                    let pitch = 0 ;
+                    if(curentGCodeCommand.activePlane == Plane.XY) {
 
-                    pitch = Math.abs(curentGCodeCommand.startPoint.x - curentGCodeCommand.endPoint!.x);
+                        pitch = Math.abs(curentGCodeCommand.startPoint.z - curentGCodeCommand.endPoint!.z);
+                    }
+                    else if(curentGCodeCommand.activePlane == Plane.YZ) {
 
-                }
-                else if(curentGCodeCommand.activePlane == Plane.XZ) {
-                    pitch = Math.abs(curentGCodeCommand.startPoint.y - curentGCodeCommand.endPoint!.y);
+                        pitch = Math.abs(curentGCodeCommand.startPoint.x - curentGCodeCommand.endPoint!.x);
 
-                }
-                if (endPoint.distanceTo(centerPoint) - radius != 0 && pitch == 0) {
+                    }
+                    else if(curentGCodeCommand.activePlane == Plane.XZ) {
+                        pitch = Math.abs(curentGCodeCommand.startPoint.y - curentGCodeCommand.endPoint!.y);
 
-                    const intersectionPoint = findCircleIntersection(centerPoint,radius,currentPos,5,curentGCodeCommand.activePlane ?? Plane.XY,curentGCodeCommand.isClockwise ?? true )[1]!
+                    }
+
+                    let sphereRadius = 1;
+                    let intersectionPoints = intersectSphereHelix(currentPos,sphereRadius,centerPoint,radius,pitch,curentGCodeCommand.activePlane ?? Plane.XY,curentGCodeCommand.isClockwise ?? true )
+                    while (intersectionPoints.length == 0 && sphereRadius < pitch)
+                    {
+                        sphereRadius = sphereRadius + 1;
+                        intersectionPoints = intersectSphereHelix(currentPos,sphereRadius,centerPoint,radius,pitch,curentGCodeCommand.activePlane ?? Plane.XY,curentGCodeCommand.isClockwise ?? true )
+                    }
+
+                    const intersectionPointIndex = determineHelixPointOrder(radius,centerPoint,curentGCodeCommand.activePlane ?? Plane.XY,curentGCodeCommand.isClockwise ?? true,pitch,intersectionPoints[0]!,intersectionPoints[1]! )
+                    const intersectionPoint = intersectionPoints[intersectionPointIndex - 1];
+
 
                     console.warn(endPoint.distanceTo(centerPoint) - radius);
                     console.warn(intersectionPoint);
-                    console.warn(findCircleIntersection(centerPoint,radius,currentPos,1,curentGCodeCommand.activePlane ?? Plane.XY,curentGCodeCommand.isClockwise ?? true ));
+                    console.warn(intersectSphereHelix(currentPos,5,centerPoint,radius,pitch,curentGCodeCommand.activePlane ?? Plane.XY,curentGCodeCommand.isClockwise ?? true ));
                     reversedCode.push(`G1 X${ intersectionPoint?.x?.toFixed(3)} Y${intersectionPoint?.y?.toFixed(3)} Z${intersectionPoint?.z?.toFixed(3)} F${curentGCodeCommand.feedRate}`)
                     console.warn(reversedCode)
                     curentGCodeCommand =

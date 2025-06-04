@@ -1,5 +1,5 @@
 import {create} from "zustand/react";
-import type {GCodeCommand, GRBLState, Point3D} from "../types/GCodeTypes.ts";
+import type {GCodeCommand, GRBLState, Point3D, Point3D6Axis} from "../types/GCodeTypes.ts";
 import GRBLSerial from "./GRBLSerial.ts";
 
 export type BufferType =
@@ -21,8 +21,8 @@ interface CNCState {
     allGCodes?: string[]
     selectedGCodeLine?: number
 
-    machineCoordinate: Point3D
-    workPlaceCoordinateOffset: Point3D
+    machineCoordinate: Point3D6Axis
+    workPlaceCoordinateOffset: Point3D6Axis
     feedrate: number
     status: GRBLState
     spindleSpeed: number
