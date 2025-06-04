@@ -81,7 +81,7 @@ export const JogControls = () => {
             <div className="space-y-4">
                 <div className="flex space-x-4">
                     <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1">Feedrate (mm/min)</label>
+                        <label className="block text-sm font-medium mb-1" htmlFor={"Feedrate"}>Feedrate (mm/min)</label>
                         <input
                             id={"Feedrate"}
                             type="number"
@@ -93,7 +93,7 @@ export const JogControls = () => {
                         />
                     </div>
                     <div className="flex-1">
-                        {!continuousMode &&(<><label className="block text-sm font-medium mb-1">Distance
+                        {!continuousMode &&(<><label className="block text-sm font-medium mb-1" htmlFor={"Distance"}>Distance
                             (mm)</label><input
                             type="number"
                             id={"Distance"}

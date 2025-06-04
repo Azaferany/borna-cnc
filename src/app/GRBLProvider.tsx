@@ -5,16 +5,6 @@ import { Plane } from '../types/GCodeTypes.ts';
 import type { ActiveModes } from './store.ts';
 
 export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const status = useStore(x => x.status);
-    const availableBufferSlots = useStore(x => x.availableBufferSlots);
-    const machineCoordinate = useStore(x => x.machineCoordinate);
-    const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
-    const workPlaceCoordinateOffset = useStore(x => x.workPlaceCoordinateOffset);
-    const feedrate = useStore(x => x.feedrate);
-    const spindleSpeed = useStore(x => x.spindleSpeed);
-    const feedrateOverridePercent = useStore(x => x.feedrateOverridePercent);
-    const rapidSpeedOverridePercent = useStore(x => x.rapidSpeedOverridePercent);
-    const spindleSpeedOverridePercent = useStore(x => x.spindleSpeedOverridePercent);
     const isConnected = useStore(x => x.isConnected);
     const eventSource = useStore(x => x.eventSource);
 
@@ -29,7 +19,6 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updateRapidSpeedOverridePercent = useStore(x => x.updateRapidSpeedOverridePercent);
     const updateSpindleSpeedOverridePercent = useStore(x => x.updateSpindleSpeedOverridePercent);
     const updateGCodeOffsets = useStore(x => x.updateGCodeOffsets);
-    const gCodeOffsets = useStore(x => x.gCodeOffsets);
 
     const updateActiveModes = useStore(x => x.updateActiveModes);
 
@@ -81,67 +70,46 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (gRBLStatus) {
             const {state, MPos, WCO, FS, Ov, Ln, Bf} = gRBLStatus;
 
-            if(status != state)
-                updateStatus(state);
+            updateStatus(state);
 
             if(Bf) {
                 const newAvailableBufferSlots = Bf.map(Number)[0];
-                if (newAvailableBufferSlots !== availableBufferSlots) {
-                    updateAvailableBufferSlots(newAvailableBufferSlots);
-                }
+                updateAvailableBufferSlots(newAvailableBufferSlots);
             }
             if(MPos) {
                 const [mx, my, mz] = MPos.map(Number);
-                if (machineCoordinate.x !== mx ||
-                    machineCoordinate.y !== my ||
-                    machineCoordinate.z !== mz) {
-                    updateMachineCoordinate({ x: mx, y: my, z: mz });
-                }
+
+                updateMachineCoordinate({ x: mx, y: my, z: mz });
             }
 
             if(Ln) {
                 const lineNumber = Number(Ln);
-                if (selectedGCodeLine !== lineNumber) {
-                    selectGCodeLine(lineNumber);
-                }
+                selectGCodeLine(lineNumber);
             }
             if(WCO) {
                 const [wx, wy, wz] = WCO.map(Number);
-                if (workPlaceCoordinateOffset.x !== wx ||
-                    workPlaceCoordinateOffset.y !== wy ||
-                    workPlaceCoordinateOffset.z !== wz) {
-                    updateWorkPlaceCoordinateOffset({x: wx, y: wy, z: wz});
-                }
+
+                updateWorkPlaceCoordinateOffset({x: wx, y: wy, z: wz});
             }
 
             if(FS) {
                 const [newFeedrate, newSpindleSpeed] = FS.map(Number);
-                if (newFeedrate !== feedrate) {
-                    updateFeedrate(newFeedrate);
-                }
-                if (newSpindleSpeed !== spindleSpeed) {
-                    updateSpindleSpeed(newSpindleSpeed);
-                }
+
+                updateFeedrate(newFeedrate);
+                updateSpindleSpeed(newSpindleSpeed);
             }
 
             if(Ov) {
                 const [newFeedrateOverridePercent, newRapidSpeedOverridePercent, newSpindleSpeedOverridePercent] = Ov.map(Number);
-                if (feedrateOverridePercent !== newFeedrateOverridePercent) {
-                    updateFeedrateOverridePercent(newFeedrateOverridePercent);
-                }
-                if (rapidSpeedOverridePercent !== newRapidSpeedOverridePercent) {
-                    updateRapidSpeedOverridePercent(newRapidSpeedOverridePercent);
-                }
-                if (spindleSpeedOverridePercent !== newSpindleSpeedOverridePercent) {
-                    updateSpindleSpeedOverridePercent(newSpindleSpeedOverridePercent);
-                }
+                updateFeedrateOverridePercent(newFeedrateOverridePercent);
+                updateRapidSpeedOverridePercent(newRapidSpeedOverridePercent);
+                updateSpindleSpeedOverridePercent(newSpindleSpeedOverridePercent);
             }
         }
-    }, [status, availableBufferSlots, machineCoordinate, selectedGCodeLine, workPlaceCoordinateOffset, 
-        feedrate, spindleSpeed, feedrateOverridePercent, rapidSpeedOverridePercent, spindleSpeedOverridePercent,
-        updateStatus, updateAvailableBufferSlots, updateMachineCoordinate, selectGCodeLine, 
-        updateWorkPlaceCoordinateOffset, updateFeedrate, updateSpindleSpeed, 
-        updateFeedrateOverridePercent, updateRapidSpeedOverridePercent, updateSpindleSpeedOverridePercent]);
+    }, [selectGCodeLine, updateAvailableBufferSlots, updateFeedrate,
+        updateFeedrateOverridePercent, updateMachineCoordinate, updateRapidSpeedOverridePercent,
+        updateSpindleSpeed, updateSpindleSpeedOverridePercent,
+        updateStatus, updateWorkPlaceCoordinateOffset]);
 
     const sendCommand = async (command: string) => {
         await eventSource?.send(command);
@@ -190,18 +158,20 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (offsetMatch) {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const [_, offsetType, x, y, z] = offsetMatch;
-                updateGCodeOffsets({
-                    ...gCodeOffsets,
-                    [offsetType]: {
-                        x: parseFloat(x),
-                        y: parseFloat(y),
-                        z: parseFloat(z)
-                    }
+                updateGCodeOffsets(perv => {
+                        return {
+                            ...perv,
+                            [offsetType]: {
+                                x: parseFloat(x),
+                                y: parseFloat(y),
+                                z: parseFloat(z)
+                            }
+                        }
                 });
 
             }
         }
-    },[gCodeOffsets, updateGCodeOffsets]);
+    },[updateGCodeOffsets]);
 
     const handleActiveModes =useCallback((event: CustomEvent<string>) => {
         const line = event.detail;
@@ -211,9 +181,9 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const modes = modesMatch[1].split(' ');
                 const activeModes: ActiveModes = {
                     WorkCoordinateSystem: modes.find(m => m.startsWith('G5')) as "G54" | "G55" | "G56" | "G57" | "G58" | "G59" || "G54",
-                    Plane: modes.find(m => m === 'G17') ? Plane.XY : 
-                           modes.find(m => m === 'G18') ? Plane.XZ : 
-                           modes.find(m => m === 'G19') ? Plane.YZ : Plane.XY,
+                    Plane: modes.find(m => m === 'G17') ? Plane.XY :
+                        modes.find(m => m === 'G18') ? Plane.XZ :
+                            modes.find(m => m === 'G19') ? Plane.YZ : Plane.XY,
                     UnitsType: modes.find(m => m === 'G21') ? "millimeters" : "inches",
                     PositioningMode: modes.find(m => m === 'G90') ? "Absolute" : "Relative"
                 };

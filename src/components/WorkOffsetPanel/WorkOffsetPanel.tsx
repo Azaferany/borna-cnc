@@ -18,10 +18,10 @@ const WorkOffsetPanel: React.FC = () => {
   const handleSubmit = (point : Point3D6Axis, offset: string) => {
     const command = `G10 L2 P${+offset.slice(1)-53} X${point.x} Y${point.y} Z${point.z}`;
     sendCommand(command);
-    updateGCodeOffsets({
-      ...gCodeOffsets,
+    updateGCodeOffsets(perv => ({
+      ...perv,
       [offset]: { ...point }
-    });
+    }));
     setEditingOffset(null);
   };
 
@@ -162,8 +162,8 @@ const WorkOffsetPanel: React.FC = () => {
 
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <label className="w-8 text-gray-300 font-medium">X:</label>
-                      <input name={"x"}
+                      <label className="w-8 text-gray-300 font-medium" htmlFor={"x"}>X:</label>
+                      <input name={"x"} id={"x"}
                         type="number"
                         value={editingOffset !== offset ? values.x : undefined}
                         className={`flex-1 px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -175,8 +175,8 @@ const WorkOffsetPanel: React.FC = () => {
                       />
                     </div>
                     <div className="flex items-center gap-2">
-                      <label className="w-8 text-gray-300 font-medium">Y:</label>
-                      <input name={"y"}
+                      <label className="w-8 text-gray-300 font-medium" htmlFor={"y"}>Y:</label>
+                      <input name={"y"} id={"y"}
                         type="number"
                         value={editingOffset !== offset ? values.y : undefined}
                         className={`flex-1 px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -188,8 +188,8 @@ const WorkOffsetPanel: React.FC = () => {
                       />
                     </div>
                     <div className="flex items-center gap-2">
-                      <label className="w-8 text-gray-300 font-medium">Z:</label>
-                      <input name={"z"}
+                      <label className="w-8 text-gray-300 font-medium" htmlFor={"z"}>Z:</label>
+                      <input name={"z"} id={"z"}
                         type="number"
                         value={editingOffset !== offset ? values.z : undefined}
                         className={`flex-1 px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${

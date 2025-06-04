@@ -35,8 +35,16 @@ export const Scene3D = () => {
                     <span>Feed moves (G1)</span>
                 </div>
                 <div className="flex items-center gap-2 mb-1">
-                    <div className="w-4 h-4 bg-green-500"></div>
+                    <div className="w-4 h-4 bg-pink-400"></div>
                     <span>Arc moves (G2/G3)</span>
+                </div>
+                <div className="flex items-center gap-2 mb-1">
+                    <div className="w-4 h-4 bg-blue-600"></div>
+                    <span>Running</span>
+                </div>
+                <div className="flex items-center gap-2 mb-1">
+                    <div className="w-4 h-4 bg-green-700"></div>
+                    <span>Done</span>
                 </div>
             </div>
             <Canvas shadows camera={{
@@ -81,30 +89,74 @@ export const Scene3D = () => {
                 {(completeData?.feedMovePoints  || completeData?.rapidMovePoints || completeData?.arkMovePoints) && (
                     <>
 
-                        {completeData?.feedMovePoints.map(value => (
+                        {completeData?.feedMovePoints.map((value,i) => (
 
                             <SpatialPartition
-                                points={value.flatMap(x=>x.points)}
+                                key={`${i}feedMovePoints`}
+
+                                points={value
+                                    .filter(x=>x.gCodeLineNumber > (selectedGCodeLine ?? 0))
+                                    .flatMap(x=>x.points)}
                                 color={new Color(0xffa500)}
                                 lineWidth={2}/>
 
                         ))}
-
-
-                        {completeData?.rapidMovePoints.map(value => (
+                        {completeData?.feedMovePoints.map((value,i) => (
 
                             <SpatialPartition
-                                points={value.flatMap(x=>x.points)}
+                                key={`${i}feedMovePointsDone`}
+
+                                points={value
+                                    .filter(x=>x.gCodeLineNumber < (selectedGCodeLine ?? 0))
+                                    .flatMap(x=>x.points)}
+                                color={new Color(0x008236)}
+                                lineWidth={3.5}/>
+
+                        ))}
+
+
+                        {completeData?.rapidMovePoints.map((value,i) => (
+
+                            <SpatialPartition
+                                key={`${i}rapidMovePoints`}
+                                points={value
+                                    .filter(x=>x.gCodeLineNumber > (selectedGCodeLine ?? 0))
+                                    .flatMap(x=>x.points)}
                                 color={new Color(0xff0000)}
                                 lineWidth={1.5}/>
 
                         ))}
-                        {completeData?.arkMovePoints.map(value => (
+                        {completeData?.rapidMovePoints.map((value,i) => (
 
                             <SpatialPartition
-                                points={value.flatMap(x=>x.points)}
-                                color={new Color(0x008000)}
+                                key={`${i}rapidMovePointsDone`}
+                                points={value
+                                    .filter(x=>x.gCodeLineNumber < (selectedGCodeLine ?? 0))
+                                    .flatMap(x=>x.points)}
+                                color={new Color(0x008236)}
+                                lineWidth={3.5}/>
+
+                        ))}
+                        {completeData?.arkMovePoints.map((value,i) => (
+
+                            <SpatialPartition
+                                key={`${i}arkMovePoints`}
+                                points={value
+                                    .filter(x=>x.gCodeLineNumber > (selectedGCodeLine ?? 0))
+                                    .flatMap(x=>x.points)}
+                                color={new Color(0xfb64b6)}
                                 lineWidth={2}/>
+
+                        ))}
+                        {completeData?.arkMovePoints.map((value,i) => (
+
+                            <SpatialPartition
+                                key={`${i}arkMovePointsDone`}
+                                points={value
+                                    .filter(x=>x.gCodeLineNumber < (selectedGCodeLine ?? 0))
+                                    .flatMap(x=>x.points)}
+                                color={new Color(0x008236)}
+                                lineWidth={3.5}/>
 
                         ))}
 
@@ -112,7 +164,7 @@ export const Scene3D = () => {
                             <SpatialPartition
                                 points={processor.getGCodePoints(findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes)!).points}
                                 color={new Color(0x0000ff)}
-                                lineWidth={5}/>
+                                lineWidth={7}/>
                         )}
                     </>
                     )}

@@ -60,8 +60,8 @@ interface CNCState {
     updateFeedrateOverridePercent:(feedrateOverridePercent:number) =>void,
     updateRapidSpeedOverridePercent:(rapidSpeedOverridePercent:number) =>void,
     updateSpindleSpeedOverridePercent:(spindleSpeedOverridePercent:number) =>void,
-    updateAvailableBufferSlots:(availableBufferSlots:number) =>void,
-    updateGCodeOffsets:(gCodeOffsets:GCodeOffsets) =>void,
+    updateAvailableBufferSlots:(availableBufferSlots: number) =>void,
+    updateGCodeOffsets:(fn: (perv:GCodeOffsets) => GCodeOffsets) =>void,
     updateActiveModes:(activeModes:ActiveModes) =>void,
 
     lastSentLine: number;
@@ -113,6 +113,7 @@ export const useStore = create<CNCState>((set) => ({
     updateSpindleSpeedOverridePercent:(spindleSpeedOverridePercent) =>set({ spindleSpeedOverridePercent }),
     updateAvailableBufferSlots:(availableBufferSlots) =>set({ availableBufferSlots }),
     updateLastSentLine: (line: number) => set({ lastSentLine: line }),
-    updateGCodeOffsets: (gCodeOffsets) => set({ gCodeOffsets }),
+    updateGCodeOffsets: (fn) =>
+        set(({gCodeOffsets})  => ({gCodeOffsets: fn(gCodeOffsets)})),
     updateActiveModes: (activeModes) => set({ activeModes }),
 }))

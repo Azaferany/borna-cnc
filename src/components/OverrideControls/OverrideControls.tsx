@@ -130,7 +130,7 @@ export const OverrideControls = () => {
             <div className="space-y-2">
                 <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                        <label className="text-sm font-medium">{label}</label>
+                        <label className="text-sm font-medium" htmlFor={label.replace(" ",'')}>{label}</label>
                         <div className="flex items-center gap-2">
                             {children}
                             <span className={`text-sm font-mono px-2 py-1 rounded flex items-center gap-1 ${isLoading ? 'bg-yellow-700' : 'bg-gray-700'}`}>
@@ -150,6 +150,7 @@ export const OverrideControls = () => {
                             -10%
                         </button>)}
                         <input
+                            id={label.replace(" ",'')}
                             type="range"
                             min={min}
                             max={max}
