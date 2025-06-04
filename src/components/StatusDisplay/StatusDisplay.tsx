@@ -99,7 +99,18 @@ export const StatusDisplay = () => {
 
     return (
         <div className="bg-gray-800 p-4 rounded-lg space-y-4">
-            <h2 className="text-xl font-bold">Position</h2>
+            <div className="flex items-center gap-4">
+                <h2 className="text-xl font-bold">Position</h2>
+                <span className={`px-4 py-1.5 text-base font-bold rounded-full ${
+                    status === 'Run' ? 'bg-green-500 text-white' :
+                    status === 'Idle' ? 'bg-blue-500 text-white' :
+                    status === 'Alarm' ? 'bg-red-500 text-white' :
+                    status === 'Hold' ? 'bg-yellow-500 text-black' :
+                    'bg-gray-500 text-white'
+                }`}>
+                    {status || 'Unknown'}
+                </span>
+            </div>
             <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-1 mb-2 text-sm font-medium">
                 <div className="flex items-center justify-center gap-1">
                     <button

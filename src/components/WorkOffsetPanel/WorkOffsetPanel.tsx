@@ -27,7 +27,7 @@ const WorkOffsetPanel: React.FC = () => {
 
   return (
     <div className="bg-gray-800 rounded-lg">
-      <button 
+      <div
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full p-3 flex items-center justify-between text-white hover:bg-gray-700 transition-colors duration-200"
       >
@@ -67,7 +67,7 @@ const WorkOffsetPanel: React.FC = () => {
             </svg>
           )}
         </button>
-      </button>
+      </div>
       
       <div className={`overflow-hidden transition-all duration-200 ease-out ${isExpanded ? 'h-auto' : 'h-0'}`}>
         <div className="p-4 pt-2 transform transition-transform duration-200 ease-out" style={{ transform: `translateY(${isExpanded ? '0' : '-100%'})` }}>
