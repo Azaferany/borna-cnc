@@ -120,7 +120,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const pollStatusInterval = setInterval(async () => {
             await sendCommand('?');
-        }, 100); // Poll every 80ms
+        }, 80); // Poll every 80ms
         const pollGCodeOffsetsInterval = setInterval(async () => {
             await sendCommand('$#');
         }, 600); // Poll every 5s

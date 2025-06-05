@@ -14,6 +14,7 @@ export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
     baudRate: number;
     keepReading = false;
     private writer: WritableStreamDefaultWriter<Uint8Array> | null = null;
+    private reader: ReadableStreamDefaultReader<string> | null = null;
 
     constructor({ baudRate = 115200 } = {}) {
         super();
@@ -36,7 +37,11 @@ export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
             }
             // Only set up event listeners after port is successfully opened
 
-            await this.port.open({ baudRate: this.baudRate });
+
+            try {
+                await this.port.open({baudRate: this.baudRate});
+            }
+            catch { /* empty */ }
             this._connectListener()
             this.port.addEventListener("disconnect", this._disconnectListener);
             this.keepReading = true;
@@ -68,6 +73,11 @@ export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
             if (this.writer) {
                 this.writer.releaseLock();
                 this.writer = null;
+            }
+            // Release the writer if it exists
+            if (this.reader) {
+                await this.reader.cancel();
+                this.reader = null;
             }
             
             if (this.port) {
@@ -125,7 +135,7 @@ export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
             .pipeThrough(new TextDecoderStream())
             .pipeThrough(splitter)
             .getReader();
-
+        this.reader = reader;
         let pendingStatusLine = "";
 
         try {
