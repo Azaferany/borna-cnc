@@ -7,15 +7,16 @@ import {findGCodeCommandOrLatestBaseOnLine} from "../../app/findGCodeCommandOrLa
 import {Vector3} from "three";
 import {Plane} from "../../types/GCodeTypes.ts";
 import {determineHelixPointOrder, intersectSphereHelix} from "../../app/intersectSphereHelix.ts";
+import {useShallow} from "zustand/react/shallow";
 
 export const StartButton = () => {
     const { isSending, bufferType, startSending, stopSending } = useGCodeBufferContext();
     const { sendCommand } = useGRBL();
-    const allGCodes = useStore(s => s.allGCodes);
+    const allGCodes = useStore(useShallow(s => s.allGCodes));
     const status = useStore(s => s.status);
     const selectedGCodeLine = useStore(s => s.selectedGCodeLine);
-    const machineCoordinate = useStore(s => s.machineCoordinate);
-    const toolPathGCodes = useStore(s => s.toolPathGCodes);
+    const machineCoordinate = useStore(useShallow(s => s.machineCoordinate));
+    const toolPathGCodes = useStore(useShallow(s => s.toolPathGCodes));
 
     const [error, setError] = useState<string | null>(null);
 

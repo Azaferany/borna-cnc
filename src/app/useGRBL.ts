@@ -3,7 +3,7 @@ import {useShallow} from "zustand/react/shallow";
 
 export const useGRBL = () => {
     const eventSource = useStore(useShallow(x=>x.eventSource));
-    const isConnected = useStore(useShallow(x=>x.isConnected));
+    const isConnected = useStore(x=>x.isConnected);
     if (!eventSource) {
         throw new Error('useGRBL must be used within a GRBLProvider');
     }

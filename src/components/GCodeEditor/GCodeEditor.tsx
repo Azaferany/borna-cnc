@@ -7,6 +7,7 @@ import 'ace-builds/src-noconflict/ext-language_tools';
 import {useStore} from "../../app/store.ts";
 import {OpenFileButton} from "../OpenFileButton/OpenFileButton.tsx";
 import {addLineNumbers, cleanGCodeText, parseGCode} from "../../app/GcodeParserUtils.ts";
+import {useShallow} from "zustand/react/shallow";
 
 // Define G-code completions
 const gcodeCompletions = [
@@ -59,10 +60,10 @@ export const GCodeEditor = () => {
   const editorRef = useRef<AceEditor>(null);
   const [isHovered, setIsHovered] = useState(false);
   const loadToolPathGCodes = useStore(x => x.loadToolPathGCodes);
-  const allGCodes = useStore(x => x.allGCodes);
+  const allGCodes = useStore(useShallow(x => x.allGCodes));
   const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
   const selectGCodeLine = useStore(x => x.selectGCodeLine);
-  const toolPathGCodes = useStore(x => x.toolPathGCodes);
+  const toolPathGCodes = useStore(useShallow(x => x.toolPathGCodes));
   const isSending = useStore(x => x.isSending);
 
   useEffect(() => {

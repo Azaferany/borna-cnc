@@ -5,13 +5,14 @@ import { useStore } from "../../app/store.ts";
 import { reverseGCode } from "./reverseGCode.ts";
 import { useGCodeBufferContext } from "../../app/GCodeBufferContext.ts";
 import { useState } from 'react';
+import {useShallow} from "zustand/react/shallow";
 
 export const PreviousButton = () => {
     const { sendCommand } = useGRBL();
     const status = useStore(s => s.status);
-    const machineCoordinate = useStore(s => s.machineCoordinate);
+    const machineCoordinate = useStore(useShallow(s => s.machineCoordinate));
     const selectedGCodeLine = useStore(s => s.selectedGCodeLine);
-    const toolPathGCodes = useStore(s => s.toolPathGCodes);
+    const toolPathGCodes = useStore(useShallow(s => s.toolPathGCodes));
     const { isSending, bufferType, startSending, stopSending } = useGCodeBufferContext();
     const [error, setError] = useState<string | null>(null);
 

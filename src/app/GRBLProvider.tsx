@@ -3,10 +3,11 @@ import { useStore } from './store.ts';
 import type { GRBLState } from '../types/GCodeTypes.ts';
 import { Plane } from '../types/GCodeTypes.ts';
 import type { ActiveModes } from './store.ts';
+import {useShallow} from "zustand/react/shallow";
 
 export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const isConnected = useStore(x => x.isConnected);
-    const eventSource = useStore(x => x.eventSource);
+    const eventSource = useStore(useShallow(x => x.eventSource));
 
     const updateStatus = useStore(x => x.updateStatus);
     const updateAvailableBufferSlots = useStore(x => x.updateAvailableBufferSlots);

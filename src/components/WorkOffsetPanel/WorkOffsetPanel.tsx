@@ -2,12 +2,13 @@ import React, { useState} from 'react';
 import { useGRBL } from "../../app/useGRBL.ts";
 import { useStore } from "../../app/store.ts";
 import type {Point3D6Axis} from "../../types/GCodeTypes.ts";
+import {useShallow} from "zustand/react/shallow";
 
 const WorkOffsetPanel: React.FC = () => {
   const { sendCommand } = useGRBL();
-  const gCodeOffsets = useStore(state => state.gCodeOffsets);
+  const gCodeOffsets = useStore(useShallow(state => state.gCodeOffsets));
   const updateGCodeOffsets = useStore(state => state.updateGCodeOffsets);
-  const activeModes = useStore(state => state.activeModes);
+  const activeModes = useStore(useShallow(state => state.activeModes));
   const [editingOffset, setEditingOffset] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 

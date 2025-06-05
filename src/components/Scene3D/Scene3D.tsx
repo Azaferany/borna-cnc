@@ -9,12 +9,13 @@ import {SpatialPartition} from "./SpatialPartition.tsx";
 import {processor} from "./GCodeToPointProcessor.ts";
 import {ToolHead} from "./ToolHead.tsx";
 import {findGCodeCommandOrLatestBaseOnLine} from "../../app/findGCodeCommandOrLatestBaseOnLine.ts";
+import {useShallow} from "zustand/react/shallow";
 
 
 export const Scene3D = () => {
-    const toolPathGCodes = useStore(x => x.toolPathGCodes);
+    const toolPathGCodes = useStore(useShallow(x => x.toolPathGCodes));
     const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
-    const machineCoordinate = useStore(x => x.machineCoordinate);
+    const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
     const [completeData, setCompleteData] = useState<GCodePointData | null>(null);
     useEffect(() => {
             setCompleteData(processor.processCommands(toolPathGCodes ??[]))

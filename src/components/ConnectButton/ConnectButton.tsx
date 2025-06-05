@@ -1,8 +1,9 @@
 import {useStore} from "../../app/store.ts";
+import {useShallow} from "zustand/react/shallow";
 
 export const ConnectButton = ({ className = '' }: { className?: string }) => {
     const  isConnected = useStore(x => x.isConnected);
-    const  eventSource = useStore(x => x.eventSource);
+    const  eventSource = useStore(useShallow(x => x.eventSource));
     return (
         <button
             onClick={()=> {

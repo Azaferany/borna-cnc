@@ -1,8 +1,9 @@
 import {useStore} from "./store.ts";
 import {type DependencyList, useEffect} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 export const useGRBLListener = (listener : (line :string)=>void, deps?: DependencyList,unFilterInternal?: boolean) => {
-    const eventSource = useStore(state => state.eventSource);
+    const eventSource = useStore(useShallow(state => state.eventSource));
     if (!eventSource) {
         throw new Error('useGRBLListener must be used within a GRBLProvider');
     }

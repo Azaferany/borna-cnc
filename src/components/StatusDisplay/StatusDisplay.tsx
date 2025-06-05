@@ -54,11 +54,11 @@ export const StatusDisplay = () => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(true);
     const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
     const workPlaceCoordinateOffset = useStore(useShallow(x => x.workPlaceCoordinateOffset));
-    const status = useStore(useShallow(x => x.status));
-    const isSending = useStore(useShallow(x => x.isSending));
-    const lastSentLine = useStore(useShallow(x => x.lastSentLine));
-    const availableBufferSlots = useStore(useShallow(x => x.availableBufferSlots));
-    const selectedGCodeLine = useStore(useShallow(x => x.selectedGCodeLine));
+    const status = useStore(x => x.status);
+    const isSending = useStore(x => x.isSending);
+    const lastSentLine = useStore(x => x.lastSentLine);
+    const availableBufferSlots = useStore(x => x.availableBufferSlots);
+    const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
     const gCodeOffsets = useStore(useShallow(x => x.gCodeOffsets));
     const activeModes = useStore(useShallow(x => x.activeModes));
     const { sendCommand } = useGRBL();
