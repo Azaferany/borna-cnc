@@ -3,7 +3,6 @@ import {type GCodeCommand, type GCodeOffsets, Plane, type Point3D6Axis} from "..
 export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,activeGCodeOffset: keyof GCodeOffsets} ): GCodeCommand[] => {
     const parsedCommands: GCodeCommand[] = [];
 
-
     let currentPosition: Omit<Point3D6Axis,"a"|"b"|"c"> & {a:number,b:number,c:number} =
         {
             x: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].x : 0,
@@ -16,9 +15,11 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
 
     let currentFeedRate = 0;
     let currentworkSpace:keyof GCodeOffsets= workSpaces?.activeGCodeOffset;
-
     let isIncrementalMode = false;
     let currentPlane : Plane = Plane.XY;
+    let isMachineCoordinates = false;
+    let isInches = false;
+
     // Process all lines
     lineLoop : for (let currentLine = 0; currentLine < lines.length; currentLine++) {
         const line = lines[currentLine];
@@ -62,6 +63,8 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             else if (value === 2 || value === 3) {
                                 command.isArcMove = true;
                                 command.isClockwise = value === 2;
+                            } else if (value === 4) {
+                                // Dwell - handled by command code
                             } else if (value === 17) {
                                 command.activePlane = Plane.XY;
                                 currentPlane = Plane.XY;
@@ -74,6 +77,48 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                                 command.activePlane = Plane.YZ;
                                 currentPlane = Plane.YZ;
                             }
+                            else if (value === 20) {
+                                isInches = true;
+                            }
+                            else if (value === 21) {
+                                isInches = false;
+                            }
+                            else if (value === 28 || value === 30) {
+                                // Home position - handled by command code
+                            }
+                            else if (value === 53) {
+                                isMachineCoordinates = true;
+                            }
+                            else if (value === 54) {
+                                command.activeWorkSpace = "G54"
+                                currentworkSpace = "G54";
+                                isMachineCoordinates = false;
+                            }
+                            else if (value === 55) {
+                                command.activeWorkSpace = "G55"
+                                currentworkSpace = "G55";
+                                isMachineCoordinates = false;
+                            }
+                            else if (value === 56) {
+                                command.activeWorkSpace = "G56"
+                                currentworkSpace = "G56";
+                                isMachineCoordinates = false;
+                            }
+                            else if (value === 57) {
+                                command.activeWorkSpace = "G57"
+                                currentworkSpace = "G57";
+                                isMachineCoordinates = false;
+                            }
+                            else if (value === 58) {
+                                command.activeWorkSpace = "G58"
+                                currentworkSpace = "G58";
+                                isMachineCoordinates = false;
+                            }
+                            else if (value === 59) {
+                                command.activeWorkSpace = "G59"
+                                currentworkSpace = "G59";
+                                isMachineCoordinates = false;
+                            }
                             else if (value === 90) {
                                 command.isIncremental = false
                                 isIncrementalMode = false;
@@ -81,36 +126,14 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                                 command.isIncremental = true
                                 isIncrementalMode = true;
                             }
-
-                            else if (value === 54) {
-                                command.activeWorkSpace = "G54"
-                                currentworkSpace = "G54";
-                            }
-                            else if (value === 55) {
-                                command.activeWorkSpace = "G55"
-                                currentworkSpace = "G55";
-                            }
-                            else if (value === 56) {
-                                command.activeWorkSpace = "G56"
-                                currentworkSpace = "G56";
-                            }
-                            else if (value === 57) {
-                                command.activeWorkSpace = "G57"
-                                currentworkSpace = "G57";
-                            }
-                            else if (value === 58) {
-                                command.activeWorkSpace = "G58"
-                                currentworkSpace = "G58";
-                            }
-                            else if (value === 59) {
-                                command.activeWorkSpace = "G59"
-                                currentworkSpace = "G59";
-                            }
-                            else {
-                                continue lineLoop;
-                            }
                             break;
                         case 'M':
+                            command.commandCode = word;
+                            // Handle M codes (M0-M9)
+                            if (value >= 0 && value <= 9) {
+                                // M codes are handled by command code
+                            }
+                            break;
                         case 'T':
                             command.commandCode = word;
                             break;
@@ -141,30 +164,48 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                         case 'I':
                             command.arcCenter = {x: value+ command.startPoint.x , y : command.arcCenter?.y ?? command.startPoint.y ?? 0, z : command.arcCenter?.z  ?? command.startPoint.z ?? 0};
                             hasMove = true;
-
                             break;
                         case 'J':
                             command.arcCenter = {x: command.arcCenter?.x  ?? command.startPoint.x ?? 0  , y : value  + command.startPoint.y, z : command.arcCenter?.z  ?? command.startPoint.z ?? 0};
                             hasMove = true;
-
                             break;
                         case 'K':
                             command.arcCenter = {x: command.arcCenter?.x  ?? command.startPoint.x ?? 0 , y : command.arcCenter?.y  ?? command.startPoint.y ?? 0, z : value+ command.startPoint.z};
                             hasMove = true;
-
                             break;
                         case 'F':
                             command.feedRate = value;
                             if(value > 0) currentFeedRate = value;
-
+                            break;
+                        case 'P':
+                            // Dwell time for G4
+                            if (command.commandCode === 'G4') {
+                                command.dwellTime = value;
+                            }
+                            break;
                     }
             }
 
             if (hasMove) {
-                command.endPoint = { x: newX - workSpaces.offsets[command.activeWorkSpace].x, y: newY, z: newZ, a: newA, b: newB, c: newC };
+                // Convert to machine coordinates if needed
+                if (!isMachineCoordinates) {
+                    command.endPoint = { 
+                        x: newX - workSpaces.offsets[command.activeWorkSpace].x, 
+                        y: newY - workSpaces.offsets[command.activeWorkSpace].y, 
+                        z: newZ - workSpaces.offsets[command.activeWorkSpace].z, 
+                        a: newA - (workSpaces.offsets[command.activeWorkSpace].a ?? 0), 
+                        b: newB - (workSpaces.offsets[command.activeWorkSpace].b ?? 0), 
+                        c: newC - (workSpaces.offsets[command.activeWorkSpace].c ?? 0) 
+                    };
+                } else {
+                    command.endPoint = { x: newX, y: newY, z: newZ, a: newA, b: newB, c: newC };
+                }
                 parsedCommands.push(command as GCodeCommand);
 
                 currentPosition = { x: newX, y: newY, z: newZ, a: newA, b: newB, c: newC };
+            } else {
+                // Add non-movement commands
+                parsedCommands.push(command as GCodeCommand);
             }
         }
     }
@@ -194,14 +235,47 @@ export const addLineNumbers = (lines: string[]): string[] => {
             return numbered;
         });
 }
-export const cleanGCodeText = (text: string) : string[] => {
-
-    const cleanedLines = text
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line !== '')
-        .filter(x=>!x.startsWith(";"));
-
+export const cleanGCodeText = (text: string): string[] => {
+    // Split into lines and trim each line
+    const lines = text.split('\n').map(line => {
+        // Remove comments (everything after and including ;)
+        const commentIndex = line.indexOf(';');
+        return commentIndex >= 0 ? line.substring(0, commentIndex).trim() : line.trim();
+    });
+    
+    const cleanedLines: string[] = [];
+    
+    for (const line of lines) {
+        // Skip empty lines
+        if (line === '') {
+            continue;
+        }
+        
+        // Split the line into words
+        const words = line.split(/\s+/);
+        const processedWords: string[] = [];
+        
+        for (const word of words) {
+            // Skip empty words
+            if (!word) continue;
+            
+            // Handle G53 specially - keep it with the next word
+            if (word === 'G53' && words.length > 1) {
+                const nextWord = words[words.indexOf(word) + 1];
+                if (nextWord) {
+                    processedWords.push(`${word} ${nextWord}`);
+                    continue;
+                }
+            }
+            
+            // Add the word to processed words
+            processedWords.push(word);
+        }
+        
+        // Add each processed word as a separate line
+        cleanedLines.push(...processedWords);
+    }
+    
     return cleanedLines;
 }
 export function extractLineNumber(gcodeLine : string) {
