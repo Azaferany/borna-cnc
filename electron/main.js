@@ -36,7 +36,6 @@ function createWindow () {
             console.log('serial-port-removed FIRED WITH', port)
             // Optionally update portList to remove the port
         })
-
         event.preventDefault()
         if (portList && portList.length > 0) {
             callback(portList[0].portId)

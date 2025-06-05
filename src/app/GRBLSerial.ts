@@ -81,7 +81,7 @@ export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
             }
             
             if (this.port) {
-                await this.port.forget();
+                this.port.close();
                 this.port = null;
             }
 

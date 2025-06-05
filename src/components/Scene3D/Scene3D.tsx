@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid } from '@react-three/drei';
+import {OrbitControls, Grid} from '@react-three/drei';
 import {CoordinateAxes} from "./CoordinateAxes.tsx";
 import {useStore} from "../../app/store.ts";
 import {useEffect, useState} from "react";
@@ -47,14 +47,15 @@ export const Scene3D = () => {
                     <span>Done</span>
                 </div>
             </div>
-            <Canvas shadows camera={{
-                fov: 45,
-                position: [50, -50,   200]
-            }}>
+            <Canvas shadows  camera={{
+                fov: 20,
+                position: [50, -50,   200],
+                far: 100000,
+                near: 0.1,
 
+            }}>
                 <OrbitControls
                     enabled={true}
-
                     enablePan={true}
                     enableZoom={true}
                     enableRotate={true}
@@ -66,17 +67,16 @@ export const Scene3D = () => {
                 <CoordinateAxes />
 
                 <Grid
-                    args={[100, 100]}
+                    args={[5000, 5000]}
                     cellSize={10}
                     cellThickness={0.5}
                     cellColor="#6b7280"
                     sectionSize={100}
                     sectionThickness={1}
                     sectionColor="#9ca3af"
-                    fadeDistance={500}
-                    fadeStrength={0.5}
+                    fadeDistance={10000}
+                    fadeStrength={2}
                     followCamera={false}
-                    infiniteGrid
                     rotation={[Math.PI / 2, 0, 0]}
                 />
                 {machineCoordinate &&(

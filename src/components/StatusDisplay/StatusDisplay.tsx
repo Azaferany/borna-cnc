@@ -1,21 +1,66 @@
 import { useStore } from '../../app/store';
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { ChevronUpIcon, ChevronDownIcon, HomeIcon, ArrowPathIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/solid';
 import { useGRBL } from '../../app/useGRBL';
 import { Plane } from '../../types/GCodeTypes';
 import { UnitDisplay } from '../UnitDisplay/UnitDisplay';
+import {useShallow} from "zustand/react/shallow";
+
+const CoordRow = memo(({ axis, workOffset, machine, onSetZero, onReset, onHome }: { 
+    axis: string; 
+    workOffset: number; 
+    machine: number;
+    onSetZero: (axis: string) => void;
+    onReset: (axis: string) => void;
+    onHome: (axis: string) => void;
+}) => (
+    <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-1 py-1 border-b border-gray-700 items-center">
+        <div className="font-bold text-gray-300 flex items-center justify-center gap-1">
+            <button
+                onClick={() => onHome(axis)}
+                className="w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1"
+                title={`Home ${axis} axis`}
+            >
+                <HomeIcon className="w-4 h-4 font-bold" />
+            </button>
+            {axis}
+        </div>
+        <div className="text-blue-400 flex items-center justify-center">{(-workOffset + machine).toFixed(3)}</div>
+        <div className="text-green-400 flex items-center justify-center">{machine.toFixed(3)}</div>
+        <div className="font-bold text-gray-300 flex gap-1">
+            <button
+                onClick={() => onSetZero(axis)}
+                className="w-full px-1 py-1 mr-1 text-[10px] bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded transition-colors flex items-center justify-center gap-1"
+                title={`Set ${axis} to zero`}
+            >
+                <span>Zero</span>
+                <ArrowUturnLeftIcon className="w-4 h-4 font-bold" />
+
+            </button>
+            <button
+                onClick={() => onReset(axis)}
+                className="w-full px-1 py-1 mr-1 text-[10px] bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded transition-colors flex items-center justify-center gap-1"
+                title={`Reset ${axis} offset`}
+            >
+                <span>Reset</span>
+                <ArrowPathIcon className="w-4 h-4 font-bold" />
+
+            </button>
+        </div>
+    </div>
+));
 
 export const StatusDisplay = () => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(true);
-    const machineCoordinate = useStore(x => x.machineCoordinate);
-    const workPlaceCoordinateOffset = useStore(x => x.workPlaceCoordinateOffset);
-    const status = useStore(x => x.status);
-    const isSending = useStore(x => x.isSending);
-    const lastSentLine = useStore(x => x.lastSentLine);
-    const availableBufferSlots = useStore(x => x.availableBufferSlots);
-    const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
-    const gCodeOffsets = useStore(x => x.gCodeOffsets);
-    const activeModes = useStore(x => x.activeModes);
+    const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
+    const workPlaceCoordinateOffset = useStore(useShallow(x => x.workPlaceCoordinateOffset));
+    const status = useStore(useShallow(x => x.status));
+    const isSending = useStore(useShallow(x => x.isSending));
+    const lastSentLine = useStore(useShallow(x => x.lastSentLine));
+    const availableBufferSlots = useStore(useShallow(x => x.availableBufferSlots));
+    const selectedGCodeLine = useStore(useShallow(x => x.selectedGCodeLine));
+    const gCodeOffsets = useStore(useShallow(x => x.gCodeOffsets));
+    const activeModes = useStore(useShallow(x => x.activeModes));
     const { sendCommand } = useGRBL();
 
     const handleSetZero = async (axis: string) => {
@@ -44,54 +89,6 @@ export const StatusDisplay = () => {
             console.error('Error homing axis:', error);
         }
     };
-
-    const ZeroButton = ({ axis }: { axis: string }) => (
-        <button
-            onClick={() => handleSetZero(axis)}
-            className="w-full px-1 py-1 mr-1 text-[10px] bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded transition-colors flex items-center justify-center gap-1"
-            title={`Set ${axis} to zero`}
-        >
-            <ArrowUturnLeftIcon className="w-4 h-4 font-bold" />
-            <span>Zero</span>
-        </button>
-    );
-
-    const ResetButton = ({ axis }: { axis: string }) => (
-        <button
-            onClick={() => handleReset(axis)}
-            className="w-full px-1 py-1 mr-1 text-[10px] bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded transition-colors flex items-center justify-center gap-1"
-            title={`Reset ${axis} offset`}
-        >
-            <ArrowPathIcon className="w-4 h-4 font-bold" />
-            <span>Reset</span>
-        </button>
-    );
-
-    const HomeButton = ({ axis }: { axis: string }) => (
-        <button
-            onClick={() => handleHome(axis)}
-            className="w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1"
-            title={`Home ${axis} axis`}
-        >
-            <HomeIcon className="w-4 h-4 font-bold" />
-        </button>
-    );
-
-    const CoordRow = ({ axis, workOffset, machine }: { axis: string; workOffset: number; machine: number }) => (
-        <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-1 py-1 border-b border-gray-700 items-center">
-            <div className="font-bold text-gray-300 flex items-center justify-center gap-1">
-                <HomeButton axis={axis} />
-                {axis}
-
-            </div>
-            <div className="text-blue-400 flex items-center justify-center">{(-workOffset + machine).toFixed(3)}</div>
-            <div className="text-green-400 flex items-center justify-center">{machine.toFixed(3)}</div>
-            <div className="font-bold text-gray-300 flex gap-1">
-                <ZeroButton axis={axis} />
-                <ResetButton axis={axis} />
-            </div>
-        </div>
-    );
 
     const InfoRow = ({ label, value }: { label: string; value: string | number }) => (
         <div className="flex justify-between py-2 border-b border-gray-700">
@@ -134,9 +131,30 @@ export const StatusDisplay = () => {
                 <div className="text-green-400 text-xs flex items-center justify-center text-center">Temporary Work Offset</div>
             </div>
             <div className="space-y-0">
-                <CoordRow axis="X" workOffset={workPlaceCoordinateOffset?.x ?? 0} machine={machineCoordinate?.x ?? 0} />
-                <CoordRow axis="Y" workOffset={workPlaceCoordinateOffset?.y ?? 0} machine={machineCoordinate?.y ??0} />
-                <CoordRow axis="Z" workOffset={workPlaceCoordinateOffset?.z ?? 0} machine={machineCoordinate?.z ?? 0} />
+                <CoordRow 
+                    axis="X" 
+                    workOffset={workPlaceCoordinateOffset?.x ?? 0} 
+                    machine={machineCoordinate?.x ?? 0} 
+                    onSetZero={handleSetZero}
+                    onReset={handleReset}
+                    onHome={handleHome}
+                />
+                <CoordRow 
+                    axis="Y" 
+                    workOffset={workPlaceCoordinateOffset?.y ?? 0} 
+                    machine={machineCoordinate?.y ?? 0} 
+                    onSetZero={handleSetZero}
+                    onReset={handleReset}
+                    onHome={handleHome}
+                />
+                <CoordRow 
+                    axis="Z" 
+                    workOffset={workPlaceCoordinateOffset?.z ?? 0} 
+                    machine={machineCoordinate?.z ?? 0} 
+                    onSetZero={handleSetZero}
+                    onReset={handleReset}
+                    onHome={handleHome}
+                />
             </div>
 
             {(isSending || status == "Run") && (

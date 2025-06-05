@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 out/
+release-builds/win-unpacked
+release-builds/builder-debug.yml
