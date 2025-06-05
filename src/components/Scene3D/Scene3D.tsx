@@ -10,6 +10,7 @@ import {processor} from "./GCodeToPointProcessor.ts";
 import {ToolHead} from "./ToolHead.tsx";
 import {findGCodeCommandOrLatestBaseOnLine} from "../../app/findGCodeCommandOrLatestBaseOnLine.ts";
 import {useShallow} from "zustand/react/shallow";
+import {OffsetMarkers} from "./OffsetMarkers.tsx";
 
 
 export const Scene3D = () => {
@@ -80,6 +81,7 @@ export const Scene3D = () => {
                     followCamera={false}
                     rotation={[Math.PI / 2, 0, 0]}
                 />
+                <OffsetMarkers />
                 {machineCoordinate &&(
                     <ToolHead position={machineCoordinate}
                               gCodeCommand={selectedGCodeLine && toolPathGCodes ? findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes) : undefined}
