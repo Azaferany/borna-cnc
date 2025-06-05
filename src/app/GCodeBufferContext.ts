@@ -2,7 +2,7 @@ import {
     createContext,
     useContext,
 } from "react";
-import type {BufferType} from "./store.ts";
+import type {BufferType} from "../types/GCodeTypes.ts";
 
 
 interface GCodeBufferContextType {

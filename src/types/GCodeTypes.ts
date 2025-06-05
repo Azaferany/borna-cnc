@@ -6,7 +6,19 @@ export enum Plane {
     YZ = 2
 }
 
+export type BufferType =
+    | "GCodeFile"
+    | "GCodeFileInReverse";
 
+export interface GCodeOffsets {
+    G54: Point3D6Axis;
+    G55: Point3D6Axis;
+    G56: Point3D6Axis;
+    G57: Point3D6Axis;
+    G58: Point3D6Axis;
+    G59: Point3D6Axis;
+    G92: Point3D6Axis;
+}
 export interface Point3D {
     x: number;
     y: number;
@@ -43,6 +55,7 @@ export interface GCodeCommand {
     lineNumber: number;
     rawCommand: string;
     commandCode?:string;
+    activeWorkSpace: keyof GCodeOffsets
 
     startPoint: Point3D6Axis;
     endPoint?: Point3D6Axis;

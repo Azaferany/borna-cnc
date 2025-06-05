@@ -1,7 +1,6 @@
-import {type GCodeCommand, Plane, type Point3D6Axis} from "../types/GCodeTypes.ts";
-import type {GCodeOffsets} from "./store.ts";
+import {type GCodeCommand, type GCodeOffsets, Plane, type Point3D6Axis} from "../types/GCodeTypes.ts";
 
-export const parseGCode = (lines: string[],workSpaces?: {offsets: GCodeOffsets,activeGCodeOffset: keyof GCodeOffsets} ): GCodeCommand[] => {
+export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,activeGCodeOffset: keyof GCodeOffsets} ): GCodeCommand[] => {
     const parsedCommands: GCodeCommand[] = [];
 
 
@@ -16,6 +15,7 @@ export const parseGCode = (lines: string[],workSpaces?: {offsets: GCodeOffsets,a
         };
 
     let currentFeedRate = 0;
+    let currentworkSpace:keyof GCodeOffsets= workSpaces?.activeGCodeOffset;
 
     let isIncrementalMode = false;
     let currentPlane : Plane = Plane.XY;
@@ -36,6 +36,7 @@ export const parseGCode = (lines: string[],workSpaces?: {offsets: GCodeOffsets,a
                 isIncremental: isIncrementalMode,
                 startPoint: { ...currentPosition },
                 activePlane: currentPlane,
+                activeWorkSpace: currentworkSpace,
             };
 
             let hasMove = false;
@@ -79,6 +80,31 @@ export const parseGCode = (lines: string[],workSpaces?: {offsets: GCodeOffsets,a
                             } else if (value === 91) {
                                 command.isIncremental = true
                                 isIncrementalMode = true;
+                            }
+
+                            else if (value === 54) {
+                                command.activeWorkSpace = "G54"
+                                currentworkSpace = "G54";
+                            }
+                            else if (value === 55) {
+                                command.activeWorkSpace = "G55"
+                                currentworkSpace = "G55";
+                            }
+                            else if (value === 56) {
+                                command.activeWorkSpace = "G56"
+                                currentworkSpace = "G56";
+                            }
+                            else if (value === 57) {
+                                command.activeWorkSpace = "G57"
+                                currentworkSpace = "G57";
+                            }
+                            else if (value === 58) {
+                                command.activeWorkSpace = "G58"
+                                currentworkSpace = "G58";
+                            }
+                            else if (value === 59) {
+                                command.activeWorkSpace = "G59"
+                                currentworkSpace = "G59";
                             }
                             else {
                                 continue lineLoop;
@@ -135,7 +161,7 @@ export const parseGCode = (lines: string[],workSpaces?: {offsets: GCodeOffsets,a
             }
 
             if (hasMove) {
-                command.endPoint = { x: newX, y: newY, z: newZ, a: newA, b: newB, c: newC };
+                command.endPoint = { x: newX - workSpaces.offsets[command.activeWorkSpace].x, y: newY, z: newZ, a: newA, b: newB, c: newC };
                 parsedCommands.push(command as GCodeCommand);
 
                 currentPosition = { x: newX, y: newY, z: newZ, a: newA, b: newB, c: newC };

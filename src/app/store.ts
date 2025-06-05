@@ -1,20 +1,15 @@
 import {create} from "zustand/react";
-import {type GCodeCommand, type GRBLState, Plane, type Point3D6Axis} from "../types/GCodeTypes.ts";
+import {
+    type BufferType,
+    type GCodeCommand,
+    type GCodeOffsets,
+    type GRBLState,
+    Plane,
+    type Point3D6Axis
+} from "../types/GCodeTypes.ts";
 import GRBLSerial from "./GRBLSerial.ts";
 
-export type BufferType =
-    | "GCodeFile"
-    | "GCodeFileInReverse";
 
-export interface GCodeOffsets {
-    G54: Point3D6Axis;
-    G55: Point3D6Axis;
-    G56: Point3D6Axis;
-    G57: Point3D6Axis;
-    G58: Point3D6Axis;
-    G59: Point3D6Axis;
-    G92: Point3D6Axis;
-}
 
 export interface ActiveModes {
     WorkCoordinateSystem: "G54" | "G55" | "G56" | "G57" | "G58"  | "G59";
