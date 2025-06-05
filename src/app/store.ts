@@ -1,5 +1,5 @@
 import {create} from "zustand/react";
-import {type GCodeCommand, type GRBLState, Plane, type Point3D, type Point3D6Axis} from "../types/GCodeTypes.ts";
+import {type GCodeCommand, type GRBLState, Plane, type Point3D6Axis} from "../types/GCodeTypes.ts";
 import GRBLSerial from "./GRBLSerial.ts";
 
 export type BufferType =
@@ -53,8 +53,8 @@ interface CNCState {
     selectGCodeLine: (line: number) => void
 
     updateStatus:(status: GRBLState) => void
-    updateMachineCoordinate:(machineCoordinate: Point3D) => void
-    updateWorkPlaceCoordinateOffset:(workPlaceCoordinateOffset: Point3D) => void
+    updateMachineCoordinate:(machineCoordinate: Point3D6Axis) => void
+    updateWorkPlaceCoordinateOffset:(workPlaceCoordinateOffset: Point3D6Axis) => void
     updateFeedrate:(feedrate: number) => void
     updateSpindleSpeed:(spindleSpeed: number) => void
     updateFeedrateOverridePercent:(feedrateOverridePercent:number) =>void,

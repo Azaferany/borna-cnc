@@ -5,14 +5,7 @@ export enum Plane {
     XZ = 1,
     YZ = 2
 }
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-export enum MoveType {
-    Rapid,
-    Linear,
-    Arc,
-    Unknown,
-}
+
 
 export interface Point3D {
     x: number;
@@ -50,19 +43,10 @@ export interface GCodeCommand {
     lineNumber: number;
     rawCommand: string;
     commandCode?:string;
-    moveType?:MoveType;
 
-    startPoint: Point3D;
-    endPoint?: Point3D;
-    arcCenter?: Point3D;
-
-    startA: number;
-    startB: number;
-    startC: number;
-
-    endA?: number;
-    endB?: number;
-    endC?: number;
+    startPoint: Point3D6Axis;
+    endPoint?: Point3D6Axis;
+    arcCenter?: Point3D6Axis;
 
     feedRate: number;
     isRapidMove?: boolean;

@@ -1,13 +1,20 @@
-import {type GCodeCommand, Plane, type Point3D} from "../types/GCodeTypes.ts";
+import {type GCodeCommand, Plane, type Point3D6Axis} from "../types/GCodeTypes.ts";
+import type {GCodeOffsets} from "./store.ts";
 
-export const parseGCode = (lines: string[]): GCodeCommand[] => {
+export const parseGCode = (lines: string[],workSpaces?: {offsets: GCodeOffsets,activeGCodeOffset: keyof GCodeOffsets} ): GCodeCommand[] => {
     const parsedCommands: GCodeCommand[] = [];
 
 
-    let currentPosition: Point3D = { x: 0, y: 0, z: 0 };
-    let currentA = 0;
-    let currentB = 0;
-    let currentC = 0;
+    let currentPosition: Omit<Point3D6Axis,"a"|"b"|"c"> & {a:number,b:number,c:number} =
+        {
+            x: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].x : 0,
+            y: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].y : 0,
+            z: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].z : 0,
+            a: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].a ?? 0 : 0,
+            b: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].b ?? 0 : 0,
+            c: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].c ?? 0 : 0
+        };
+
     let currentFeedRate = 0;
 
     let isIncrementalMode = false;
@@ -28,9 +35,6 @@ export const parseGCode = (lines: string[]): GCodeCommand[] => {
                 commandCode: 'G01',
                 isIncremental: isIncrementalMode,
                 startPoint: { ...currentPosition },
-                startA: currentA,
-                startB: currentB,
-                startC: currentC,
                 activePlane: currentPlane,
             };
 
@@ -38,9 +42,9 @@ export const parseGCode = (lines: string[]): GCodeCommand[] => {
             let newX = currentPosition.x;
             let newY = currentPosition.y;
             let newZ = currentPosition.z;
-            let newA = currentA;
-            let newB = currentB;
-            let newC = currentC;
+            let newA = currentPosition.a;
+            let newB = currentPosition.b;
+            let newC = currentPosition.c;
 
             for (const word of words) {
                 const code = word[0];
@@ -97,15 +101,15 @@ export const parseGCode = (lines: string[]): GCodeCommand[] => {
                             hasMove = true;
                             break;
                         case 'A':
-                            newA = isIncrementalMode ? currentA + value : value;
+                            newA = isIncrementalMode ? currentPosition.a + value : value;
                             hasMove = true;
                             break;
                         case 'B':
-                            newB = isIncrementalMode ? currentB + value : value;
+                            newB = isIncrementalMode ? currentPosition.b + value : value;
                             hasMove = true;
                             break;
                         case 'C':
-                            newC = isIncrementalMode ? currentC + value : value;
+                            newC = isIncrementalMode ? currentPosition.c + value : value;
                             hasMove = true;
                             break;
                         case 'I':
@@ -131,16 +135,10 @@ export const parseGCode = (lines: string[]): GCodeCommand[] => {
             }
 
             if (hasMove) {
-                command.endPoint = { x: newX, y: newY, z: newZ };
-                command.endA = newA;
-                command.endB = newB;
-                command.endC = newC;
+                command.endPoint = { x: newX, y: newY, z: newZ, a: newA, b: newB, c: newC };
                 parsedCommands.push(command as GCodeCommand);
 
-                currentPosition = { x: newX, y: newY, z: newZ };
-                currentA = newA;
-                currentB = newB;
-                currentC = newC;
+                currentPosition = { x: newX, y: newY, z: newZ, a: newA, b: newB, c: newC };
             }
         }
     }
