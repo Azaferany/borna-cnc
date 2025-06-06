@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState} from "react";
 import AceEditor from 'react-ace';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 import 'ace-builds/src-noconflict/mode-gcode';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/ext-language_tools';
+import 'ace-builds/src-noconflict/ext-searchbox';
 import {useStore} from "../../app/store.ts";
 import {OpenFileButton} from "../OpenFileButton/OpenFileButton.tsx";
 import {addLineNumbers, cleanGCodeText, parseGCode} from "../../app/GcodeParserUtils.ts";
@@ -194,6 +196,11 @@ export const GCodeEditor = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleFind = () => {
+    if (!editorRef.current?.editor) return;
+    editorRef.current.editor.execCommand('find');
+  };
+
   return (
       <div className="bg-gray-800 p-4 rounded-lg h-full flex flex-col">
         <div className="flex justify-between items-center mb-4">
@@ -209,11 +216,17 @@ export const GCodeEditor = () => {
           </div>
         </div>
         <div className="relative flex-1 min-h-0">
+          <button
+              onClick={handleFind}
+              className="absolute top-2 right-4 z-20 bg-gray-700 hover:bg-gray-600 active:bg-gray-800 px-1.5 py-1.5 rounded"
+              disabled={isSending}
+              title="Find (Ctrl+F)"
+          >
+            <MagnifyingGlassIcon className="h-4 w-4" />
+          </button>
           <AceEditor
               onCursorChange={(value) => {
-
                 const row = value.getCursor().row;
-
                 selectGCodeLine(row + 1);
               }}
               ref={editorRef}
@@ -241,12 +254,9 @@ export const GCodeEditor = () => {
                 fontSize: 14,
                 tabSize: 2,
               }}
-
               className="rounded"
           />
           {/* Transparent Overlay that blocks interaction */}
-
-
           {isSending &&(
               <div
                   className="absolute inset-0 z-10 bg-transparent pointer-events-auto flex items-center justify-center"
@@ -260,7 +270,6 @@ export const GCodeEditor = () => {
                 )}
               </div>
           )}
-
         </div>
       </div>
   );

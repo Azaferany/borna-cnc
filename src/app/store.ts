@@ -83,6 +83,8 @@ export const useStore = create<CNCState>((set) => ({
         G58:{x: 0, y: 0, z: 0},
         G59:{x: 0, y: 0, z: 0},
         G92:{x: 0, y: 0, z: 0},
+        G30:{x: 0, y: 0, z: 0},
+        G28:{x: 0, y: 0, z: 0},
     },
     workPlaceCoordinateOffset: {x: 0, y: 0, z: 0},
     activeModes:undefined,

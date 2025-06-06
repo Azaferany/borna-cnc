@@ -1,9 +1,11 @@
 import React, {useCallback, useEffect} from 'react';
 import { useStore } from './store.ts';
-import type { GRBLState } from '../types/GCodeTypes.ts';
+import type {GCodeOffsets, GRBLState} from '../types/GCodeTypes.ts';
 import { Plane } from '../types/GCodeTypes.ts';
 import type { ActiveModes } from './store.ts';
 import {useShallow} from "zustand/react/shallow";
+import {parseGCode} from "./GcodeParserUtils.ts";
+import {useShallowCompareEffect} from "react-use";
 
 export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const isConnected = useStore(x => x.isConnected);
@@ -24,6 +26,11 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updateActiveModes = useStore(x => x.updateActiveModes);
 
     const setIsConnected = useStore(x => x.setIsConnected);
+    const activeModes = useStore(useShallow(x => x.activeModes));
+    const gCodeOffsets = useStore(useShallow(x => x.gCodeOffsets));
+    const allGCodes = useStore(useShallow(x => x.allGCodes));
+    const loadToolPathGCodes = useStore(x => x.loadToolPathGCodes);
+
 
     function parseGrblStatus(report : string) : {state: GRBLState,MPos?:string[],WCO?:string[],FS?:string[],Ov?:string[],Ln?:string,Bf?:string[]} {
         // 1. Trim off angle‑brackets and any leading/trailing whitespace
@@ -116,6 +123,72 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await eventSource?.send(command);
     };
 
+
+
+    const connect = async () => {
+        setIsConnected(true);
+    }
+
+    const disconnect = async () => {
+        setIsConnected(false);
+        updateStatus("NotConnected");
+    };
+
+    const handleGCodeOffset = useCallback((event: CustomEvent<string>) => {
+        const line = event.detail;
+        if (line.startsWith('[') && line.endsWith(']') && !line.startsWith('[GC:')) {
+            const offsetMatch = line.match(/\[(G\d+):([\d.-]+),([\d.-]+),([\d.-]+)\]/);
+            if (offsetMatch) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const [_, offsetType  , x, y, z] = offsetMatch;
+                updateGCodeOffsets(perv => {
+                    if(perv[offsetType as keyof GCodeOffsets].x != parseFloat(x) || perv[offsetType as keyof GCodeOffsets].y != parseFloat(y) ||perv[offsetType as keyof GCodeOffsets].z != parseFloat(z))
+                        return {
+                            ...perv,
+                            [offsetType]: {
+                                x: parseFloat(x),
+                                y: parseFloat(y),
+                                z: parseFloat(z)
+                            }
+                        }
+                    else return  perv
+                });
+
+            }
+        }
+    },[updateGCodeOffsets]);
+
+    const handleActiveModes =useCallback((event: CustomEvent<string>) => {
+        const line = event.detail;
+        if (line.startsWith('[GC:') && line.endsWith(']')) {
+            const modesMatch = line.match(/\[GC:(.*?)\]/);
+            if (modesMatch) {
+                const modes = modesMatch[1].split(' ');
+                const activeModes: ActiveModes = {
+                    WorkCoordinateSystem: modes.find(m => m.startsWith('G5')) as "G54" | "G55" | "G56" | "G57" | "G58" | "G59" || "G54",
+                    Plane: modes.find(m => m === 'G17') ? Plane.XY :
+                        modes.find(m => m === 'G18') ? Plane.XZ :
+                            modes.find(m => m === 'G19') ? Plane.YZ : Plane.XY,
+                    UnitsType: modes.find(m => m === 'G21') ? "Millimeters" : "Inches",
+                    PositioningMode: modes.find(m => m === 'G90') ? "Absolute" : "Relative"
+                };
+                updateActiveModes(activeModes);
+            }
+        }
+    },[updateActiveModes]);
+
+
+    useShallowCompareEffect(() => {
+        if((allGCodes?.length ?? 0) === 0)
+            return;
+        const parsedCommands = parseGCode(allGCodes!,{
+            activeGCodeOffset:activeModes?.WorkCoordinateSystem ?? "G54",
+            offsets:gCodeOffsets
+        });
+
+        loadToolPathGCodes(allGCodes ?? [], parsedCommands)
+    }, [activeModes, gCodeOffsets]);
+
     useEffect(() => {
         if (!isConnected) return;
 
@@ -142,57 +215,6 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isConnected, eventSource]);
-
-    const connect = async () => {
-        setIsConnected(true);
-    }
-
-    const disconnect = async () => {
-        setIsConnected(false);
-        updateStatus("NotConnected");
-    };
-
-    const handleGCodeOffset = useCallback((event: CustomEvent<string>) => {
-        const line = event.detail;
-        if (line.startsWith('[') && line.endsWith(']') && !line.startsWith('[GC:')) {
-            const offsetMatch = line.match(/\[(G\d+):([\d.-]+),([\d.-]+),([\d.-]+)\]/);
-            if (offsetMatch) {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const [_, offsetType, x, y, z] = offsetMatch;
-                updateGCodeOffsets(perv => {
-                        return {
-                            ...perv,
-                            [offsetType]: {
-                                x: parseFloat(x),
-                                y: parseFloat(y),
-                                z: parseFloat(z)
-                            }
-                        }
-                });
-
-            }
-        }
-    },[updateGCodeOffsets]);
-
-    const handleActiveModes =useCallback((event: CustomEvent<string>) => {
-        const line = event.detail;
-        if (line.startsWith('[GC:') && line.endsWith(']')) {
-            const modesMatch = line.match(/\[GC:(.*?)\]/);
-            if (modesMatch) {
-                const modes = modesMatch[1].split(' ');
-                const activeModes: ActiveModes = {
-                    WorkCoordinateSystem: modes.find(m => m.startsWith('G5')) as "G54" | "G55" | "G56" | "G57" | "G58" | "G59" || "G54",
-                    Plane: modes.find(m => m === 'G17') ? Plane.XY :
-                        modes.find(m => m === 'G18') ? Plane.XZ :
-                            modes.find(m => m === 'G19') ? Plane.YZ : Plane.XY,
-                    UnitsType: modes.find(m => m === 'G21') ? "Millimeters" : "Inches",
-                    PositioningMode: modes.find(m => m === 'G90') ? "Absolute" : "Relative"
-                };
-                updateActiveModes(activeModes);
-            }
-        }
-    },[updateActiveModes]);
-
     useEffect(() => {
         // Initialize GRBL Serial
         const grblSerial = eventSource!;
@@ -217,4 +239,4 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [statusListenerAndParse, eventSource, handleGCodeOffset, handleActiveModes]);
 
     return <>{children}</>;
-}; 
+};
