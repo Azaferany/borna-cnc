@@ -10,6 +10,7 @@ let mainWindow;
 function createWindow () {
     mainWindow = new BrowserWindow({
         show: false,
+        icon: path.join(__dirname, '../public/vite.ico'),
         webPreferences: {
             preload: path.join(__dirname, '../electron/preload.js'),
             nodeIntegration: false,
