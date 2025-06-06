@@ -19,9 +19,10 @@ export const Scene3D = () => {
     const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
     const [completeData, setCompleteData] = useState<GCodePointData | null>(null);
     useEffect(() => {
-            setCompleteData(processor.processCommands(toolPathGCodes ??[]))
+        const x= processor.processCommands((toolPathGCodes ??[]).filter(x=>x.hasMove));
+        console.log(x)
+            setCompleteData(x)
     }, [toolPathGCodes]);
-
 
     return (
         <div className="w-full h-full min-h-[370px] relative">

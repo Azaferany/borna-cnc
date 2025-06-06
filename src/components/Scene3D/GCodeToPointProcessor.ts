@@ -103,18 +103,18 @@ class GCodeToPointProcessor {
         };
         const startMatrix = new Matrix4().makeRotationFromEuler(
             new Euler(
-                command.startA * Math.PI / 180,
-                command.startB * Math.PI / 180,
-                command.startC * Math.PI / 180,
+                command.startPoint.a * Math.PI / 180,
+                command.startPoint.b * Math.PI / 180,
+                command.startPoint.c * Math.PI / 180,
                 'XYZ'
             )
         );
 
         const endMatrix = new Matrix4().makeRotationFromEuler(
             new Euler(
-                (command.endA ?? 0) * Math.PI / 180,
-                (command.endB ?? 0) * Math.PI / 180,
-                (command.endC ?? 0) * Math.PI / 180,
+                (command.endPoint?.a ?? 0) * Math.PI / 180,
+                (command.endPoint?.b ?? 0) * Math.PI / 180,
+                (command.endPoint?.c ?? 0) * Math.PI / 180,
                 'XYZ'
             )
         );
@@ -231,8 +231,8 @@ class GCodeToPointProcessor {
 
         switch (plane) {
             case Plane.XZ:
-                startAngle = Math.atan2(start.z - center.z, start.x - center.x);
-                endAngle = Math.atan2(end.z - center.z, end.x - center.x);
+                startAngle = -Math.atan2(start.z - center.z, start.x - center.x);
+                endAngle = -Math.atan2(end.z - center.z, end.x - center.x);
                 radius = Math.sqrt(
                     Math.pow(start.x - center.x, 2) + Math.pow(start.z - center.z, 2)
                 );
@@ -275,9 +275,9 @@ class GCodeToPointProcessor {
             switch (plane) {
                 case Plane.XZ:
                     nextPoint = {
-                        x: center.x + radius * Math.sin(angle),
+                        x: center.x + radius * Math.cos(-angle),
                         y: start.y + (end.y - start.y) * fraction,
-                        z: center.z + radius * Math.cos(angle)
+                        z: center.z + radius * Math.sin(-angle)
                     };
                     break;
                 case Plane.YZ:

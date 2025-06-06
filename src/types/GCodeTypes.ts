@@ -11,6 +11,8 @@ export type BufferType =
     | "GCodeFileInReverse";
 
 export interface GCodeOffsets {
+    G28: Point3D6Axis;
+    G30: Point3D6Axis;
     G54: Point3D6Axis;
     G55: Point3D6Axis;
     G56: Point3D6Axis;
@@ -57,9 +59,9 @@ export interface GCodeCommand {
     commandCode?:string;
     activeWorkSpace: keyof GCodeOffsets
 
-    startPoint: Point3D6Axis;
-    endPoint?: Point3D6Axis;
-    arcCenter?: Point3D6Axis;
+    startPoint: Omit<Point3D6Axis,"a"|"b"|"c"> & {a:number,b:number,c:number};
+    endPoint?: Omit<Point3D6Axis,"a"|"b"|"c"> & {a:number,b:number,c:number};
+    arcCenter?: Point3D;
 
     feedRate: number;
     isRapidMove?: boolean;
@@ -67,6 +69,8 @@ export interface GCodeCommand {
     isClockwise?: boolean;
     isIncremental?: boolean;
     activePlane?: Plane;
+    dwellTime?: number;
+    hasMove: boolean;
 }
 
 export interface GCodePointData {

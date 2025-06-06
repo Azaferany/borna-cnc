@@ -1,27 +1,34 @@
 import {type GCodeCommand, type GCodeOffsets, Plane, type Point3D6Axis} from "../types/GCodeTypes.ts";
 
+const INCH_TO_MM = 25.4;
+
+const convertToMM = (value: number, isInches: boolean): number => {
+    return isInches ? value * INCH_TO_MM : value;
+};
+
 export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,activeGCodeOffset: keyof GCodeOffsets} ): GCodeCommand[] => {
     const parsedCommands: GCodeCommand[] = [];
 
     let currentPosition: Omit<Point3D6Axis,"a"|"b"|"c"> & {a:number,b:number,c:number} =
         {
-            x: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].x : 0,
-            y: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].y : 0,
-            z: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].z : 0,
-            a: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].a ?? 0 : 0,
-            b: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].b ?? 0 : 0,
-            c: workSpaces  ? workSpaces.offsets[workSpaces.activeGCodeOffset].c ?? 0 : 0
+            x: 0,
+            y: 0,
+            z: 0,
+            a: 0,
+            b: 0,
+            c: 0
         };
 
     let currentFeedRate = 0;
-    let currentworkSpace:keyof GCodeOffsets= workSpaces?.activeGCodeOffset;
+    let currentWorkSpace:keyof GCodeOffsets= workSpaces?.activeGCodeOffset;
     let isIncrementalMode = false;
     let currentPlane : Plane = Plane.XY;
-    let isMachineCoordinates = false;
     let isInches = false;
+    let isMachineCoordinates = false;
 
     // Process all lines
-    lineLoop : for (let currentLine = 0; currentLine < lines.length; currentLine++) {
+    for (let currentLine = 0; currentLine < lines.length; currentLine++) {
+
         const line = lines[currentLine];
         let trimmedLine = line.trim().toUpperCase();
 
@@ -37,16 +44,17 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                 isIncremental: isIncrementalMode,
                 startPoint: { ...currentPosition },
                 activePlane: currentPlane,
-                activeWorkSpace: currentworkSpace,
+                activeWorkSpace: currentWorkSpace,
+                hasMove: false
             };
 
             let hasMove = false;
-            let newX = currentPosition.x;
-            let newY = currentPosition.y;
-            let newZ = currentPosition.z;
-            let newA = currentPosition.a;
-            let newB = currentPosition.b;
-            let newC = currentPosition.c;
+            let newX: number | undefined  = undefined;
+            let newY: number | undefined  = undefined;
+            let newZ: number | undefined  = undefined;
+            let newA: number | undefined  = undefined;
+            let newB: number | undefined  = undefined;
+            let newC: number | undefined  = undefined;
 
             for (const word of words) {
                 const code = word[0];
@@ -63,6 +71,7 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             else if (value === 2 || value === 3) {
                                 command.isArcMove = true;
                                 command.isClockwise = value === 2;
+                                hasMove=true;
                             } else if (value === 4) {
                                 // Dwell - handled by command code
                             } else if (value === 17) {
@@ -83,40 +92,65 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             else if (value === 21) {
                                 isInches = false;
                             }
-                            else if (value === 28 || value === 30) {
-                                // Home position - handled by command code
+                            else if (value === 28 ) {
+                                command.isRapidMove = true;
+                                hasMove = true;
+
+                                newX = workSpaces.offsets.G28.x;
+                                newY = workSpaces.offsets.G28.y;
+                                newZ = workSpaces.offsets.G28.z;
+                                if(workSpaces.offsets.G28.a)
+                                    newA = workSpaces.offsets.G28.a;
+                                if(workSpaces.offsets.G28.b)
+                                    newB = workSpaces.offsets.G28.b;
+                                if(workSpaces.offsets.G28.c)
+                                    newC = workSpaces.offsets.G28.c;
                             }
+                            else if (value === 30 ) {
+                                // Home position - handled by command code
+                                command.isRapidMove = true;
+                                hasMove = true;
+
+                                newX = workSpaces.offsets.G30.x;
+                                newY = workSpaces.offsets.G30.y;
+                                newZ = workSpaces.offsets.G30.z;
+                                if(workSpaces.offsets.G30.a)
+                                    newA = workSpaces.offsets.G30.a;
+                                if(workSpaces.offsets.G30.b)
+                                    newB = workSpaces.offsets.G30.b;
+                                if(workSpaces.offsets.G30.c)
+                                    newC = workSpaces.offsets.G30.c;                            }
                             else if (value === 53) {
                                 isMachineCoordinates = true;
                             }
                             else if (value === 54) {
                                 command.activeWorkSpace = "G54"
-                                currentworkSpace = "G54";
+                                currentWorkSpace = "G54";
                                 isMachineCoordinates = false;
                             }
                             else if (value === 55) {
                                 command.activeWorkSpace = "G55"
-                                currentworkSpace = "G55";
+                                currentWorkSpace = "G55";
                                 isMachineCoordinates = false;
                             }
                             else if (value === 56) {
                                 command.activeWorkSpace = "G56"
-                                currentworkSpace = "G56";
+                                currentWorkSpace = "G56";
                                 isMachineCoordinates = false;
                             }
                             else if (value === 57) {
                                 command.activeWorkSpace = "G57"
-                                currentworkSpace = "G57";
+                                currentWorkSpace = "G57";
                                 isMachineCoordinates = false;
                             }
                             else if (value === 58) {
                                 command.activeWorkSpace = "G58"
-                                currentworkSpace = "G58";
+                                currentWorkSpace = "G58";
                                 isMachineCoordinates = false;
                             }
                             else if (value === 59) {
                                 command.activeWorkSpace = "G59"
-                                currentworkSpace = "G59";
+                                currentWorkSpace = "G59";
                                 isMachineCoordinates = false;
                             }
                             else if (value === 90) {
@@ -138,15 +172,15 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             command.commandCode = word;
                             break;
                         case 'X':
-                            newX = isIncrementalMode ? currentPosition.x + value : value;
+                            newX = isIncrementalMode ? currentPosition.x + convertToMM(value, isInches) : convertToMM(value, isInches);
                             hasMove = true;
                             break;
                         case 'Y':
-                            newY = isIncrementalMode ? currentPosition.y + value : value;
+                            newY = isIncrementalMode ? currentPosition.y + convertToMM(value, isInches) : convertToMM(value, isInches);
                             hasMove = true;
                             break;
                         case 'Z':
-                            newZ = isIncrementalMode ? currentPosition.z + value : value;
+                            newZ = isIncrementalMode ? currentPosition.z + convertToMM(value, isInches) : convertToMM(value, isInches);
                             hasMove = true;
                             break;
                         case 'A':
@@ -162,20 +196,32 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             hasMove = true;
                             break;
                         case 'I':
-                            command.arcCenter = {x: value+ command.startPoint.x , y : command.arcCenter?.y ?? command.startPoint.y ?? 0, z : command.arcCenter?.z  ?? command.startPoint.z ?? 0};
+                            command.arcCenter = {
+                                x: convertToMM(value, isInches) + command.startPoint.x,
+                                y: command.arcCenter?.y ?? command.startPoint.y ?? 0,
+                                z: command.arcCenter?.z ?? command.startPoint.z ?? 0
+                            };
                             hasMove = true;
                             break;
                         case 'J':
-                            command.arcCenter = {x: command.arcCenter?.x  ?? command.startPoint.x ?? 0  , y : value  + command.startPoint.y, z : command.arcCenter?.z  ?? command.startPoint.z ?? 0};
+                            command.arcCenter = {
+                                x: command.arcCenter?.x ?? command.startPoint.x ?? 0,
+                                y: convertToMM(value, isInches) + command.startPoint.y,
+                                z: command.arcCenter?.z ?? command.startPoint.z ?? 0
+                            };
                             hasMove = true;
                             break;
                         case 'K':
-                            command.arcCenter = {x: command.arcCenter?.x  ?? command.startPoint.x ?? 0 , y : command.arcCenter?.y  ?? command.startPoint.y ?? 0, z : value+ command.startPoint.z};
+                            command.arcCenter = {
+                                x: command.arcCenter?.x ?? command.startPoint.x ?? 0,
+                                y: command.arcCenter?.y ?? command.startPoint.y ?? 0,
+                                z: convertToMM(value, isInches) + command.startPoint.z
+                            };
                             hasMove = true;
                             break;
                         case 'F':
-                            command.feedRate = value;
-                            if(value > 0) currentFeedRate = value;
+                            command.feedRate = convertToMM(value, isInches);
+                            if(value > 0) currentFeedRate = convertToMM(value, isInches);
                             break;
                         case 'P':
                             // Dwell time for G4
@@ -186,23 +232,34 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                     }
             }
 
+            command.hasMove = hasMove;
             if (hasMove) {
                 // Convert to machine coordinates if needed
                 if (!isMachineCoordinates) {
-                    command.endPoint = { 
-                        x: newX - workSpaces.offsets[command.activeWorkSpace].x, 
-                        y: newY - workSpaces.offsets[command.activeWorkSpace].y, 
-                        z: newZ - workSpaces.offsets[command.activeWorkSpace].z, 
-                        a: newA - (workSpaces.offsets[command.activeWorkSpace].a ?? 0), 
-                        b: newB - (workSpaces.offsets[command.activeWorkSpace].b ?? 0), 
-                        c: newC - (workSpaces.offsets[command.activeWorkSpace].c ?? 0) 
+                    command.endPoint = {
+                        x: newX !== undefined? newX + workSpaces.offsets[command.activeWorkSpace].x : command.startPoint.x,
+                        y: newY !== undefined? newY + workSpaces.offsets[command.activeWorkSpace].y : command.startPoint.y,
+                        z: newZ !== undefined? newZ + workSpaces.offsets[command.activeWorkSpace].z : command.startPoint.z,
+
+                        a: newA !== undefined? newA + (workSpaces.offsets[command.activeWorkSpace].a ?? 0) : command.startPoint.a,
+                        b: newB !== undefined? newB + (workSpaces.offsets[command.activeWorkSpace].b ?? 0) : command.startPoint.b,
+                        c: newC !== undefined? newC + (workSpaces.offsets[command.activeWorkSpace].c ?? 0) : command.startPoint.c
                     };
+
                 } else {
-                    command.endPoint = { x: newX, y: newY, z: newZ, a: newA, b: newB, c: newC };
+                    command.endPoint = {
+                        x: newX !== undefined ? newX : command.startPoint.x,
+                        y: newY !== undefined ? newY : command.startPoint.y,
+                        z: newZ !== undefined ? newZ : command.startPoint.z,
+                        a: newA !== undefined ? newA : command.startPoint.a,
+                        b: newB !== undefined ? newB : command.startPoint.b,
+                        c: newC !== undefined ? newC : command.startPoint.c,
+                    };
                 }
+
                 parsedCommands.push(command as GCodeCommand);
 
-                currentPosition = { x: newX, y: newY, z: newZ, a: newA, b: newB, c: newC };
+                currentPosition = command.endPoint;
             } else {
                 // Add non-movement commands
                 parsedCommands.push(command as GCodeCommand);
@@ -240,42 +297,76 @@ export const cleanGCodeText = (text: string): string[] => {
     const lines = text.split('\n').map(line => {
         // Remove comments (everything after and including ;)
         const commentIndex = line.indexOf(';');
-        return commentIndex >= 0 ? line.substring(0, commentIndex).trim() : line.trim();
+        const lineWithoutComments = commentIndex >= 0 ? line.substring(0, commentIndex).trim() : line.trim();
+        // Remove N part (line number)
+        return lineWithoutComments.replace(/^N\d+\s*/, '').trim();
     });
-    
+
     const cleanedLines: string[] = [];
-    
-    for (const line of lines) {
-        // Skip empty lines
+    let lastLineComand = "G0";
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
         if (line === '') {
             continue;
         }
-        
+
         // Split the line into words
-        const words = line.split(/\s+/);
-        const processedWords: string[] = [];
-        
+        const words = line.split(/\s+/).map(x=>x.toUpperCase());
+        const commandWords: string[] = [];
+
+        // Process each word
         for (const word of words) {
             // Skip empty words
             if (!word) continue;
-            
-            // Handle G53 specially - keep it with the next word
-            if (word === 'G53' && words.length > 1) {
-                const nextWord = words[words.indexOf(word) + 1];
-                if (nextWord) {
-                    processedWords.push(`${word} ${nextWord}`);
-                    continue;
+
+            // Check if it's a G/M/T command
+            if (/^[GMT]/.test(word)) {
+                commandWords.push(word);
+            }
+        }
+        if(commandWords.find(x=>x === "G0" || x === "G00" || x==="G1" || x==="G01" || x==="G02" || x==="G2" || x==="G03" || x==="G3")) {
+            lastLineComand = commandWords.slice().reverse().find(x=>x === "G0" || x === "G00" || x==="G1" || x==="G01" || x==="G02" || x==="G2" || x==="G03" || x==="G3")!
+        }
+        // If we have commands, create separate lines for each
+        if (commandWords.length > 1) {
+            if(commandWords[0] ==="G53")
+            {
+                cleanedLines.push(line);
+                continue;
+            }
+            for (const command of commandWords) {
+                const commandIndex = words.findIndex(x=>x === command);
+                const nextCommandIndex = words.findIndex(x=>x === commandWords[commandWords.findIndex(x=>x === command) + 1]);
+                const gcodeWords = words.slice(commandIndex, nextCommandIndex);
+
+                if(gcodeWords.length === 1) {
+                    cleanedLines.push(gcodeWords.join(" "));
+                } else {
+                    if (!['G00', 'G01', 'G02', 'G03', 'G53',"G0","G1","G2","G3"].includes(command)) {
+                        // Check if it's a coordinate word
+                        cleanedLines.push(command);
+                        if(gcodeWords.slice(1).length > 0)
+                            cleanedLines.push(`${lastLineComand} ${gcodeWords.slice(1).join(" ")}`);
+                    } else {
+                        cleanedLines.push(gcodeWords.join(" "));
+                    }
                 }
             }
-            
-            // Add the word to processed words
-            processedWords.push(word);
+        } else if(commandWords.length == 1) {
+            // If no commands found, keep the original line
+            cleanedLines.push(words.join(" "));
         }
-        
-        // Add each processed word as a separate line
-        cleanedLines.push(...processedWords);
+        else if (commandWords.length == 0) {
+
+            if(words.find(x=>x.includes("X") || x.includes("Y") || x.includes("Z") || x.includes("A") || x.includes("B") || x.includes("C")))
+                cleanedLines.push(`${lastLineComand} ${words.join(" ")}`);
+            else
+                cleanedLines.push(words.join(" "));
+
+        }
     }
-    
+
     return cleanedLines;
 }
 export function extractLineNumber(gcodeLine : string) {

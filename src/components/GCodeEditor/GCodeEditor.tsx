@@ -64,14 +64,16 @@ export const GCodeEditor = () => {
   const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
   const selectGCodeLine = useStore(x => x.selectGCodeLine);
   const toolPathGCodes = useStore(useShallow(x => x.toolPathGCodes));
+  const gCodeOffsets = useStore(useShallow(x => x.gCodeOffsets));
+  const activeModes = useStore(useShallow(x => x.activeModes));
   const isSending = useStore(x => x.isSending);
 
   useEffect(() => {
 
 
-/*
-    editorRef.current.editor.session.addGutterDecoration(5,"gcode-line-highlight");
-*/
+    /*
+        editorRef.current.editor.session.addGutterDecoration(5,"gcode-line-highlight");
+    */
 
     if (!editorRef?.current?.editor) return;
 
@@ -110,7 +112,7 @@ export const GCodeEditor = () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         const linePrefix = line.substring(0, pos.column);
-        
+
         // Check if we're after a line number (N1, N2, etc.)
         const hasLineNumber = /^N\d+\s*$/.test(linePrefix);
         if (hasLineNumber) {
@@ -166,12 +168,15 @@ export const GCodeEditor = () => {
     });
   }, []);
 
-  const processGcode = (text: string) => {
+  const processGCode = (text: string) => {
 
     const cleanedLines = cleanGCodeText(text)
     const numberedLines = addLineNumbers(cleanedLines);
 
-    const parsedCommands = parseGCode(numberedLines);
+    const parsedCommands = parseGCode(numberedLines,{
+      activeGCodeOffset:activeModes?.WorkCoordinateSystem ?? "G54",
+      offsets:gCodeOffsets
+    });
 
     loadToolPathGCodes(numberedLines, parsedCommands)
   };
@@ -219,7 +224,7 @@ export const GCodeEditor = () => {
                 loadToolPathGCodes(value.split('\n'), toolPathGCodes ?? [])
               }}
               onBlur={() => {
-                processGcode(editorRef?.current?.editor.getValue() ?? "")
+                processGCode(editorRef?.current?.editor.getValue() ?? "")
               }}
               name="gcode-editor"
               editorProps={{ $blockScrolling: true }}
@@ -243,15 +248,15 @@ export const GCodeEditor = () => {
 
 
           {isSending &&(
-              <div 
-                className="absolute inset-0 z-10 bg-transparent pointer-events-auto flex items-center justify-center"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+              <div
+                  className="absolute inset-0 z-10 bg-transparent pointer-events-auto flex items-center justify-center"
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
               >
                 {isHovered && (
-                  <div className="bg-gray-900 text-white px-4 py-2 rounded shadow-lg">
-                    G-codes are locked while sending
-                  </div>
+                    <div className="bg-gray-900 text-white px-4 py-2 rounded shadow-lg">
+                      G-codes are locked while sending
+                    </div>
                 )}
               </div>
           )}
