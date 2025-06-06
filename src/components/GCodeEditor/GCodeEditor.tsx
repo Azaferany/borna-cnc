@@ -233,11 +233,20 @@ export const GCodeEditor = () => {
               highlightActiveLine={true}
               mode="gcode"
               value={allGCodes?.join('\n') ?? ""}
-              onChange={value =>{
-                loadToolPathGCodes(value.split('\n'), toolPathGCodes ?? [])
+              onChange={value => {
+                const newLines = value.split('\n');
+                // Only update if the content actually changed
+                if (JSON.stringify(newLines) !== JSON.stringify(allGCodes)) {
+                  loadToolPathGCodes(newLines, toolPathGCodes ?? []);
+                }
               }}
               onBlur={() => {
-                processGCode(editorRef?.current?.editor.getValue() ?? "")
+                const currentValue = editorRef?.current?.editor.getValue() ?? "";
+
+
+                if (JSON.stringify(currentValue.split('\n')) !== JSON.stringify(toolPathGCodes?.map(x=>x.rawCommand))) {
+                  processGCode(currentValue);
+                }
               }}
               name="gcode-editor"
               editorProps={{ $blockScrolling: true }}
