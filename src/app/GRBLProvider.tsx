@@ -13,6 +13,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const updateStatus = useStore(x => x.updateStatus);
     const updateAvailableBufferSlots = useStore(x => x.updateAvailableBufferSlots);
+    const updateDwell = useStore(x => x.updateDwell);
     const updateMachineCoordinate = useStore(x => x.updateMachineCoordinate);
     const selectGCodeLine = useStore(x => x.selectGCodeLine);
     const updateWorkPlaceCoordinateOffset = useStore(x => x.updateWorkPlaceCoordinateOffset);
@@ -32,7 +33,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const loadToolPathGCodes = useStore(x => x.loadToolPathGCodes);
 
 
-    function parseGrblStatus(report : string) : {state: GRBLState,MPos?:string[],WCO?:string[],FS?:string[],Ov?:string[],Ln?:string,Bf?:string[]} {
+    function parseGrblStatus(report : string) : {state: GRBLState,MPos?:string[],WCO?:string[],FS?:string[],Ov?:string[],Ln?:string,Bf?:string[],Dwell?:string[]} {
         // 1. Trim off angle‑brackets and any leading/trailing whitespace
         const inner = report.trim().replace(/^<|>$/g, '');
 
@@ -40,7 +41,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const tokens = inner.split('|');
 
         // 3. The first token (before the first '|') is the machine state
-        const result = {
+        const result : {state: GRBLState,MPos?:string[],WCO?:string[],FS?:string[],Ov?:string[],Ln?:string,Bf?:string[],Dwell?:string[]} = {
             state: tokens.shift()?.replace(":0","") as GRBLState,
         };
 
@@ -64,6 +65,9 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         });
 
+        if(result.state === "Idle" && +(result.Dwell?.[0] ?? "0") > 0)
+            result.state = "Run";
+
         return result;
     }
     // Parse GRBL status response
@@ -76,9 +80,14 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Example status: <Idle|MPos:0.000,0.000,0.000|WPos:0.000,0.000,0.000|F:0|S:0>
         const gRBLStatus = parseGrblStatus(response);
         if (gRBLStatus) {
-            const {state, MPos, WCO, FS, Ov, Ln, Bf} = gRBLStatus;
+            const {state, MPos, WCO, FS, Ov, Ln, Bf,Dwell} = gRBLStatus;
 
             updateStatus(state);
+
+            if(Dwell) {
+                const newDwellInfo = Dwell.map(Number);
+                updateDwell({RemainingSeconds: newDwellInfo[0],TotalSeconds: newDwellInfo[1]});
+            }
 
             if(Bf) {
                 const newAvailableBufferSlots = Bf.map(Number)[0];
@@ -114,10 +123,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 updateSpindleSpeedOverridePercent(newSpindleSpeedOverridePercent);
             }
         }
-    }, [selectGCodeLine, updateAvailableBufferSlots, updateFeedrate,
-        updateFeedrateOverridePercent, updateMachineCoordinate, updateRapidSpeedOverridePercent,
-        updateSpindleSpeed, updateSpindleSpeedOverridePercent,
-        updateStatus, updateWorkPlaceCoordinateOffset]);
+    }, [selectGCodeLine, updateAvailableBufferSlots, updateDwell, updateFeedrate, updateFeedrateOverridePercent, updateMachineCoordinate, updateRapidSpeedOverridePercent, updateSpindleSpeed, updateSpindleSpeedOverridePercent, updateStatus, updateWorkPlaceCoordinateOffset]);
 
     const sendCommand = async (command: string) => {
         await eventSource?.send(command);

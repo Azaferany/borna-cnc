@@ -179,14 +179,6 @@ export const StartButton = () => {
 
         try {
             setError(null);
-            // If machine is not in Idle state, send a soft reset first
-            if (status !== "Idle") {
-                await handleCommand('\x18'); // Soft reset
-                stopSending();
-                startSending(allGCodes ?? [],"GCodeFile");
-                return;
-            }
-
             await startSending(allGCodes ?? [], "GCodeFile");
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to start sending G-code');

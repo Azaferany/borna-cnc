@@ -5,6 +5,7 @@ import {GCodeBufferContext} from "./GCodeBufferContext.ts";
 import {extractLineNumber} from "./GcodeParserUtils.ts";
 import {useStore} from "./store.ts";
 import type {BufferType} from "../types/GCodeTypes.ts";
+import {useShallow} from "zustand/react/shallow";
 
 interface GCodeBufferProviderProps {
     children: ReactNode;
@@ -15,20 +16,33 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
     // Access dependencies from other hooks
     const { sendCommand, isConnected } = useGRBL();
     const selectedGCodeLine = useStore((s) => s.selectedGCodeLine);
+    const selectGCodeLine = useStore((s) => s.selectGCodeLine);
     const availableBufferSlots = useStore((s) => s.availableBufferSlots);
     const lastSentLine = useStore((s) => s.lastSentLine);
     const updateLastSentLine = useStore((s) => s.updateLastSentLine);
     const status = useStore((s) => s.status);
     const isSending = useStore((s) => s.isSending);
     const bufferType = useStore((s) => s.bufferType);
+    const dwell = useStore(useShallow((s) => s.dwell));
 
     const setIsSending = useStore((s) => s.setIsSending);
+
 
     // Component-specific state
     const [bufferGCodesList, setBufferGCodesList] = useState<string[]>([]);
     const [waitingForOk, setWaitingForOk] = useState<boolean>(false);
 
     const [IsAllLineSent, setIsAllLineSent] = useState(false)
+
+
+    useEffect(() => {
+        if(dwell.RemainingSeconds < 0 || !isSending || !selectedGCodeLine || bufferGCodesList.length === 0 || lastSentLine <= 0)
+            return;
+        const runningDwellIndex = bufferGCodesList.slice(selectedGCodeLine-1,lastSentLine - 1).findIndex(x=>x.includes("G4 P"))
+        selectGCodeLine(runningDwellIndex +1)
+    }, [isSending, dwell, selectedGCodeLine, bufferGCodesList, lastSentLine, selectGCodeLine]);
+
+
     /**
      * Halts the G-code sending process.
      */

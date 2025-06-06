@@ -6,7 +6,7 @@ import {useStore} from "../../app/store.ts";
 export const Console = () => {
     const [command, setCommand] = useState('');
     const historyEndRef = useRef<HTMLDivElement>(null);
-    const store = useStore(x=>x.status);
+    const status = useStore(x=>x.status);
     const { isConnected, sendCommand } = useGRBL();
     const [history, setHistory] = useState<string[]>([]);
     
@@ -99,7 +99,7 @@ export const Console = () => {
         e.preventDefault();
         if (command.trim()) {
             const c= command.trim();
-            if(c.includes("$") && store != "Idle")
+            if(c.includes("$") && (status != "Idle" && status !== "Alarm" ))
             {
                 setHistory(prev => [...prev, `> ${command}`]);
 

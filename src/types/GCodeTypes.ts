@@ -42,7 +42,6 @@ export type ArcIJk = {
 export type GRBLState =
     | "NotConnected"
     | "Idle"
-    | "Dwell"
     | "Run"
     | "Hold"
     | "Alarm"

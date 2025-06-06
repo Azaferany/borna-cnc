@@ -17,7 +17,10 @@ export interface ActiveModes {
     UnitsType: "Millimeters" | "Inches";
     PositioningMode: "Absolute" | "Relative";
 }
-
+export interface DwellInfo {
+    RemainingSeconds:number,
+    TotalSeconds:number
+}
 interface CNCState {
     isConnected: boolean;
     setIsConnected: (isConnected: boolean) => void;
@@ -43,6 +46,7 @@ interface CNCState {
     rapidSpeedOverridePercent: number,
     spindleSpeedOverridePercent: number,
     availableBufferSlots: number,
+    dwell: DwellInfo,
 
     loadToolPathGCodes: (allGCodes: string[],GCodes: GCodeCommand[]) => void
     selectGCodeLine: (line: number) => void
@@ -58,6 +62,7 @@ interface CNCState {
     updateAvailableBufferSlots:(availableBufferSlots: number) =>void,
     updateGCodeOffsets:(fn: (perv:GCodeOffsets) => GCodeOffsets) =>void,
     updateActiveModes:(activeModes:ActiveModes) =>void,
+    updateDwell:(dwell:DwellInfo) =>void,
 
     lastSentLine: number;
     updateLastSentLine: (line: number) => void;
@@ -95,6 +100,10 @@ export const useStore = create<CNCState>((set) => ({
     rapidSpeedOverridePercent: 100,
     spindleSpeedOverridePercent: 100,
     availableBufferSlots : 15,
+    dwell : {
+        RemainingSeconds:0,
+        TotalSeconds:0
+    },
 
     lastSentLine: -1,
 
@@ -113,4 +122,5 @@ export const useStore = create<CNCState>((set) => ({
     updateGCodeOffsets: (fn) =>
         set(({gCodeOffsets})  => ({gCodeOffsets: fn(gCodeOffsets)})),
     updateActiveModes: (activeModes) => set({ activeModes }),
+    updateDwell: (dwell) => set({ dwell }),
 }))
