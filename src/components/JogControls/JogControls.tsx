@@ -25,10 +25,6 @@ export const JogControls = () => {
         }
 
         try {
-            if (axis === 'HOME') {
-                await sendCommand('$H');
-                return;
-            }
 
             // Format the jog command
             const distance = direction * (continuousMode ? 1000 : stepSize); // Use large distance for continuous mode
@@ -129,11 +125,11 @@ export const JogControls = () => {
 
                     {renderJogButton('X', -1, 'X-')}
                     <button 
-                        className="p-3 bg-gray-700 hover:bg-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed" 
-                        onClick={() => handleJog('HOME', 0)}
+                        className="p-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-400 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => setContinuousMode(!continuousMode)}
                         disabled={!isConnected}
                     >
-                        HOME
+                        {continuousMode ? "___" : ". . . "}
                     </button>
                     {renderJogButton('X', 1, 'X+')}
 

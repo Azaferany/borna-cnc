@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {useGRBL} from "../../app/useGRBL.ts";
 import {useGRBLListener} from "../../app/useGRBLListener.ts";
+import {useStore} from "../../app/store.ts";
 
 export const Console = () => {
     const [command, setCommand] = useState('');
     const historyEndRef = useRef<HTMLDivElement>(null);
+    const store = useStore(x=>x.status);
     const { isConnected, sendCommand } = useGRBL();
     const [history, setHistory] = useState<string[]>([]);
     
@@ -16,6 +18,13 @@ export const Console = () => {
     const [ShowStatusResponse, setShowStatusResponse] = useState(false)
     const [ShowGCodeOffsetResponse, setShowGCodeOffsetResponse] = useState(false)
     const [ShowActiveModesResponse, setShowActiveModesResponse] = useState(false)
+
+    const clearHistory = () => {
+        setHistory([]);
+        setCommandHistory([]);
+        setHistoryIndex(-1);
+        setTempCommand('');
+    };
 
     // Listen for incoming messages
     useGRBLListener((line: string) => {
@@ -90,6 +99,13 @@ export const Console = () => {
         e.preventDefault();
         if (command.trim()) {
             const c= command.trim();
+            if(c.includes("$") && store != "Idle")
+            {
+                setHistory(prev => [...prev, `> ${command}`]);
+
+                setHistory(prev => [...prev, "$ Only Work In Idle State"]);
+                return;
+            }
             if(c == "?")
             {
                 setShowStatusResponse(true)
@@ -122,6 +138,12 @@ export const Console = () => {
         <div className="bg-gray-800 p-4 rounded-lg min-h-[218px] flex flex-col">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Console</h2>
+                <button
+                    onClick={clearHistory}
+                    className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 rounded active:bg-red-800"
+                >
+                    Clear
+                </button>
             </div>
             <div className="h-40 max-h-[400px] bg-gray-900 rounded p-2 mb-4 overflow-y-auto custom-scrollbar" ref={historyEndRef}>
                 <div className="space-y-1 font-mono text-sm">

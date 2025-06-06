@@ -13,6 +13,10 @@ export const useGRBLListener = (listener : (line :string)=>void, deps?: Dependen
         const eventHandler = (event:Event)=>{
             const customEvent = event as CustomEvent;
             const line = customEvent.detail;
+
+            if (line == "error:8") {
+                return;
+            }
             if ((line.startsWith('<') && line.endsWith('>')) && !unFilterInternal) {
                 return;
             }

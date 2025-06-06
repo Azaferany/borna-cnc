@@ -1,4 +1,4 @@
-import { ArrowPathIcon } from '@heroicons/react/24/solid';
+import {StopIcon} from '@heroicons/react/24/solid';
 import { useGRBL } from "../../app/useGRBL.ts";
 import { useStore } from "../../app/store.ts";
 
@@ -23,12 +23,12 @@ export const ResetButton = () => {
 
     return (
         <button
-            className={`bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-900 p-3 rounded flex flex-col items-center justify-center transition-colors duration-150 ${(!isConnected || status === "Door") ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`bg-red-600 hover:bg-red-700 active:bg-red-900 p-3 rounded flex flex-col items-center justify-center transition-colors duration-150 ${(!isConnected || status === "Door") ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={() => handleReset()}
             disabled={!isConnected}
         >
-            <ArrowPathIcon className="h-6 w-6" />
-            <span className="text-sm mt-1">Reset</span>
+            <StopIcon className="h-6 w-6" />
+            <span className="text-sm mt-1">Stop!</span>
         </button>
     );
 }; 

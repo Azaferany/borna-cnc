@@ -3,7 +3,6 @@ import {StartButton} from "../StartButton/StartButton.tsx";
 import {PreviousButton} from "../PreviousButton/PreviousButton.tsx";
 import {PauseButton} from "../PauseButton/PauseButton.tsx";
 import {ResetButton} from "../ResetButton/ResetButton.tsx";
-import {StopButton} from "../StopButton/StopButton.tsx";
 
 export const ControlButtons = () => {
 
@@ -15,9 +14,9 @@ export const ControlButtons = () => {
                 <PauseButton />
                 <StartButton/>
             </div>
-            <div className="grid grid-cols-2 gap-4 items-center mt-4">
+            <div className="grid grid-cols-1 gap-4 items-center mt-4">
                 <ResetButton />
-                <StopButton />
+                {/*<StopButton />*/}
             </div>
         </div>
     );

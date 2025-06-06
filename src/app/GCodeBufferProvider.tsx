@@ -1,9 +1,10 @@
 import React, {type ReactNode, useCallback, useEffect, useMemo, useState} from "react";
 import {useGRBL} from "./useGRBL.ts";
-import {type BufferType, useStore} from "./store.ts";
 import {useGRBLListener} from "./useGRBLListener.ts";
 import {GCodeBufferContext} from "./GCodeBufferContext.ts";
 import {extractLineNumber} from "./GcodeParserUtils.ts";
+import {useStore} from "./store.ts";
+import type {BufferType} from "../types/GCodeTypes.ts";
 
 interface GCodeBufferProviderProps {
     children: ReactNode;
