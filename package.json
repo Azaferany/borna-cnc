@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "vite": "vite",
     "dev": "concurrently \"vite\" \"cross-env NODE_ENV=development electron . --inspect\"",
-    "build": "vite build",
+    "build": "vite build | npx electron-builder",
     "start": "vite build | electron ."
   },
   "dependencies": {
