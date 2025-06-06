@@ -56,7 +56,9 @@ export type CargoPricingType =
 export interface GCodeCommand {
     lineNumber: number;
     rawCommand: string;
-    commandCode?:string;
+    commandCode:string;
+    commandCodeNumber:number;
+    commandCodeType: "G" | "M" | "T";
     activeWorkSpace: keyof GCodeOffsets
 
     startPoint: Omit<Point3D6Axis,"a"|"b"|"c"> & {a:number,b:number,c:number};

@@ -41,6 +41,8 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                 rawCommand: trimmedLine,
                 lineNumber:currentLine,
                 commandCode: 'G01',
+                commandCodeNumber: 1,
+                commandCodeType: 'G',
                 isIncremental: isIncrementalMode,
                 startPoint: { ...currentPosition },
                 activePlane: currentPlane,
@@ -66,6 +68,8 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             break;
                         case 'G':
                             command.commandCode = word;
+                            command.commandCodeNumber = value;
+                            command.commandCodeType = "G";
                             if (value === 0) command.isRapidMove = true;
                             else if (value === 1) command.isRapidMove = false;
                             else if (value === 2 || value === 3) {
@@ -163,6 +167,8 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             break;
                         case 'M':
                             command.commandCode = word;
+                            command.commandCodeNumber = value;
+                            command.commandCodeType = "M";
                             // Handle M codes (M0-M9)
                             if (value >= 0 && value <= 9) {
                                 // M codes are handled by command code
@@ -170,6 +176,8 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             break;
                         case 'T':
                             command.commandCode = word;
+                            command.commandCodeNumber = value;
+                            command.commandCodeType = "T";
                             break;
                         case 'X':
                             newX = isIncrementalMode ? currentPosition.x + convertToMM(value, isInches) : convertToMM(value, isInches);
@@ -233,7 +241,7 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
             }
 
             command.hasMove = hasMove;
-            if (hasMove) {
+            if (hasMove && [0,1,2,3].includes(command.commandCodeNumber) && command.commandCodeType === "G") {
                 // Convert to machine coordinates if needed
                 if (!isMachineCoordinates) {
                     command.endPoint = {
@@ -293,13 +301,31 @@ export const addLineNumbers = (lines: string[]): string[] => {
         });
 }
 export const cleanGCodeText = (text: string): string[] => {
+    // Valid G-code letters
+    const validLetters = ['G', 'M', 'T', 'N', 'X', 'Y', 'Z', 'F', 'S', 'H', 'D', 'I', 'J', 'K', 'L', 'P', 'R', 'Q', 'A', 'B', 'C'];
+
     // Split into lines and trim each line
     const lines = text.split('\n').map(line => {
+        line = line.replace(/^N\d+\s*/, '');
+        
+        // Skip lines that start with numbers or %
+        if (/^\s*[\d%]/.test(line)) {
+            return '';
+        }
+
+        // Skip lines that don't start with valid G-code letters
+        const firstChar = line.trim().charAt(0).toUpperCase();
+        if (!validLetters.includes(firstChar)) {
+            return '';
+        }
+
         // Remove comments (everything after and including ;)
-        const commentIndex = line.indexOf(';');
-        const lineWithoutComments = commentIndex >= 0 ? line.substring(0, commentIndex).trim() : line.trim();
-        // Remove N part (line number)
-        return lineWithoutComments.replace(/^N\d+\s*/, '').trim();
+        let commentIndex = line.indexOf(';');
+        let lineWithoutComments = commentIndex >= 0 ? line.substring(0, commentIndex).trim() : line.trim();
+        commentIndex = lineWithoutComments.indexOf('(');
+        lineWithoutComments = commentIndex >= 0 ? lineWithoutComments.substring(0, commentIndex).trim() : lineWithoutComments.trim();
+
+        return lineWithoutComments.trim();
     });
 
     const cleanedLines: string[] = [];
@@ -343,7 +369,7 @@ export const cleanGCodeText = (text: string): string[] => {
                 if(gcodeWords.length === 1) {
                     cleanedLines.push(gcodeWords.join(" "));
                 } else {
-                    if (!['G00', 'G01', 'G02', 'G03', 'G53',"G0","G1","G2","G3"].includes(command)) {
+                    if (!['G00', 'G01', 'G02', 'G03',"G0","G1","G2","G3", 'G53',"G43","G38.2","G38.3","G38.4","G38.5"].includes(command)) {
                         // Check if it's a coordinate word
                         cleanedLines.push(command);
                         if(gcodeWords.slice(1).length > 0)
