@@ -135,8 +135,7 @@ export const JogControls = () => {
                 className={`w-full p-3 flex items-center justify-between text-white transition-colors duration-200 ${
                     isMachineRunning ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-700'
                 }`}
-            ><label htmlFor="hs-color-input" className="block text-sm font-medium mb-2 dark:text-white">Color picker</label>
-                <input type="color" className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700" id="hs-color-input" value="#2563eb" title="Choose your color" />
+            >
                 <div className="flex items-center gap-3">
                     <h2 className="text-xl font-bold">Jog Controls</h2>
                     {isMachineRunning && (
