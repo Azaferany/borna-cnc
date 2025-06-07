@@ -297,6 +297,7 @@ class GCodeToPointProcessor {
             }
             points.push(nextPoint);
         }
+        points.push(end);
 
         return points;
     }

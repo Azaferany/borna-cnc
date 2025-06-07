@@ -171,7 +171,14 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             command.commandCodeType = "M";
                             // Handle M codes (M0-M9)
                             if (value >= 0 && value <= 9) {
-                                // M codes are handled by command code
+                                if(value == 2 || value == 30)
+                                {
+                                    currentPlane = Plane.XY;
+                                    currentWorkSpace = "G54"
+                                    isInches = false;
+                                    isIncrementalMode = false;
+
+                                }
                             }
                             break;
                         case 'T':

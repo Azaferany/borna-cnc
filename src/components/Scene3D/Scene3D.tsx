@@ -21,6 +21,7 @@ export const Scene3D = () => {
     const [cameraPreset, setCameraPreset] = useState<keyof typeof CAMERA_PRESETS | null>(null);
     const [showBoundingBox, setShowBoundingBox] = useState(true);
     const [boundingBox, setBoundingBox] = useState<Box3 | null>(null);
+    const [cameraControlsOpen, setCameraControlsOpen] = useState(false);
 
     // Color states
     const [rapidMoveColor, setRapidMoveColor] = useState("#ff0000");
@@ -58,10 +59,10 @@ export const Scene3D = () => {
             <div className="absolute top-4 left-4 z-10 bg-black/40 p-4 rounded text-white shadow-xl">
                 <h4 className="font-bold mb-2">Legend</h4>
                 <div className="flex items-center gap-2 mb-2">
-                    <input 
-                        type="color" 
+                    <input
+                        type="color"
                         id="rapid-move-color"
-                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700" 
+                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
                         value={rapidMoveColor}
                         onChange={(e) => setRapidMoveColor(e.target.value)}
                         title="Choose rapid move color"
@@ -69,10 +70,10 @@ export const Scene3D = () => {
                     <label htmlFor="rapid-move-color" className="cursor-pointer">Rapid moves (G0)</label>
                 </div>
                 <div className="flex items-center gap-2 mb-2">
-                    <input 
-                        type="color" 
+                    <input
+                        type="color"
                         id="feed-move-color"
-                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700" 
+                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
                         value={feedMoveColor}
                         onChange={(e) => setFeedMoveColor(e.target.value)}
                         title="Choose feed move color"
@@ -80,10 +81,10 @@ export const Scene3D = () => {
                     <label htmlFor="feed-move-color" className="cursor-pointer">Feed moves (G1)</label>
                 </div>
                 <div className="flex items-center gap-2 mb-2">
-                    <input 
-                        type="color" 
+                    <input
+                        type="color"
                         id="arc-move-color"
-                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700" 
+                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
                         value={arcMoveColor}
                         onChange={(e) => setArcMoveColor(e.target.value)}
                         title="Choose arc move color"
@@ -91,10 +92,10 @@ export const Scene3D = () => {
                     <label htmlFor="arc-move-color" className="cursor-pointer">Arc moves (G2/G3)</label>
                 </div>
                 <div className="flex items-center gap-2 mb-2">
-                    <input 
-                        type="color" 
+                    <input
+                        type="color"
                         id="running-color"
-                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700" 
+                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
                         value={runningColor}
                         onChange={(e) => setRunningColor(e.target.value)}
                         title="Choose running color"
@@ -102,10 +103,10 @@ export const Scene3D = () => {
                     <label htmlFor="running-color" className="cursor-pointer">Running</label>
                 </div>
                 <div className="flex items-center gap-2 mb-2">
-                    <input 
-                        type="color" 
+                    <input
+                        type="color"
                         id="done-color"
-                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700" 
+                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
                         value={doneColor}
                         onChange={(e) => setDoneColor(e.target.value)}
                         title="Choose done color"
@@ -113,50 +114,68 @@ export const Scene3D = () => {
                     <label htmlFor="done-color" className="cursor-pointer">Done</label>
                 </div>
             </div>
-            
-            {/* Camera Controls */}
-            <div className="absolute top-4 right-4 z-10 bg-black/40 p-4 rounded text-white shadow-xl">
-                <h4 className="font-bold mb-2">Camera Controls</h4>
-                <div className="flex flex-col gap-2">
-                    <button 
-                        onClick={() => setCameraPreset('top')}
-                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
-                    >
-                        Top View
-                    </button>
-                    <button 
-                        onClick={() => setCameraPreset('front')}
-                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
-                    >
-                        Front View
-                    </button>
-                    <button 
-                        onClick={() => setCameraPreset('side')}
-                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
-                    >
-                        Side View
-                    </button>
-                    <button 
-                        onClick={() => setCameraPreset('iso')}
-                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
-                    >
-                        Isometric View
-                    </button>
-                </div>
-            </div>
 
-            {/* Bounding Box Toggle */}
-            <div className="absolute bottom-4 right-4 z-10 bg-black/40 p-4 rounded text-white shadow-xl">
-                <div className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        id="show-bounding-box"
-                        checked={showBoundingBox}
-                        onChange={(e) => setShowBoundingBox(e.target.checked)}
-                        className="w-4 h-4"
-                    />
-                    <label htmlFor="show-bounding-box" className="cursor-pointer">Show Bounding Box</label>
-                </div>
+            {/* Camera Controls - Collapsible */}
+            <div className="absolute top-4 right-4 z-10 bg-black/40 rounded text-white shadow-xl">
+                <button
+                    onClick={() => setCameraControlsOpen(!cameraControlsOpen)}
+                    className="w-full px-4 py-2 text-left font-bold hover:bg-black/20 rounded flex items-center justify-between"
+                >
+                  <span className={`transform mr-3 transition-transform ${!cameraControlsOpen ? 'rotate-180' : ''}`}>
+                    <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+            </svg>
+                    </span>
+                    Camera Controls
+
+                </button>
+
+                {cameraControlsOpen && (
+                    <div className="p-4 pt-0">
+                        <div className="flex flex-col gap-2 mb-3">
+                            <button
+                                onClick={() => setCameraPreset('top')}
+                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+                            >
+                                Top View
+                            </button>
+                            <button
+                                onClick={() => setCameraPreset('front')}
+                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+                            >
+                                Front View
+                            </button>
+                            <button
+                                onClick={() => setCameraPreset('side')}
+                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+                            >
+                                Side View
+                            </button>
+                            <button
+                                onClick={() => setCameraPreset('iso')}
+                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+                            >
+                                Isometric View
+                            </button>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-2 border-t border-gray-600">
+                            <input
+                                type="checkbox"
+                                id="show-bounding-box"
+                                checked={showBoundingBox}
+                                onChange={(e) => setShowBoundingBox(e.target.checked)}
+                                className="w-4 h-4"
+                            />
+                            <label htmlFor="show-bounding-box" className="cursor-pointer text-sm">Show Bounding Box</label>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <Canvas shadows camera={{
@@ -277,7 +296,7 @@ export const Scene3D = () => {
                                 lineWidth={7}/>
                         )}
                     </>
-                    )}
+                )}
 
                 {/* Add your CNC visualization components here */}
             </Canvas>
