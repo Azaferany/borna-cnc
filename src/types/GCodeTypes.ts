@@ -63,6 +63,7 @@ export interface GCodeCommand {
 
     startPoint: Omit<Point3D6Axis,"a"|"b"|"c"> & {a:number,b:number,c:number};
     endPoint?: Omit<Point3D6Axis,"a"|"b"|"c"> & {a:number,b:number,c:number};
+
     arcCenter?: Point3D;
 
     feedRate: number;
