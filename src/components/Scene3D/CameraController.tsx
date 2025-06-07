@@ -1,0 +1,97 @@
+
+// Camera presets
+import {Vector3, Box3,PerspectiveCamera} from "three";
+import {useThree} from "@react-three/fiber";
+import {useEffect, useRef, useState} from "react";
+import {OrbitControls} from "@react-three/drei";
+import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const CAMERA_PRESETS = {
+    top: { offset: new Vector3(0, 0, 1) },
+    front: { offset: new Vector3(0, 1, 0) },
+    side: { offset: new Vector3(-1, 0, 0) },
+    iso: { offset: new Vector3(1, -1, 1) }
+};
+
+// Camera Controller Component
+export const CameraController = ({ preset, boundingBox }: { preset: keyof typeof CAMERA_PRESETS | null, boundingBox: Box3 | null }) => {
+    const { camera } = useThree();
+    const controlsRef = useRef<OrbitControlsImpl>(null);
+    const [hasInitialized, setHasInitialized] = useState(false);
+
+    const calculateCameraDistance = (box: Box3, camera: PerspectiveCamera) => {
+        const size = new Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+
+        // Convert FOV to radians
+        const fovRad = camera.fov * (Math.PI / 180);
+
+        // Calculate the distance needed to make the object take up 80% of the view width
+        // tan(fov/2) = (objectSize/2) / distance
+        // distance = (objectSize/2) / tan(fov/2)
+        // We want objectSize to be 80% of the view, so we divide by 0.8
+        return (maxDim / 3) / Math.cosh(fovRad / 2) / 0.8;
+    };
+
+    useEffect(() => {
+        if (preset && controlsRef.current && boundingBox && camera instanceof PerspectiveCamera) {
+            const center = new Vector3(0,0,0);
+            boundingBox.getCenter(center);
+
+            // Calculate camera distance
+            const cameraDistance = calculateCameraDistance(boundingBox, camera);
+
+            // Get the offset direction from the preset
+            const { offset } = CAMERA_PRESETS[preset];
+
+            // Normalize the offset and scale by camera distance
+            const normalizedOffset = offset.clone().normalize().multiplyScalar(cameraDistance);
+
+            // Position the camera
+            camera.position.set(
+                center.x + normalizedOffset.x,
+                center.y + normalizedOffset.y,
+                center.z + normalizedOffset.z
+            );
+
+            // Set the target to the center of the box
+            controlsRef.current.target.copy(center);
+            controlsRef.current.update();
+        }
+    }, [preset, camera, boundingBox]);
+
+    useEffect(() => {
+        if (boundingBox && !hasInitialized && controlsRef.current && camera instanceof PerspectiveCamera) {
+            // Calculate the center of the bounding box
+            const center = new Vector3(0,0,0);
+            boundingBox?.getCenter(center);
+
+            // Calculate camera distance
+            const cameraDistance = calculateCameraDistance(boundingBox, camera);
+
+            // Position the camera
+            camera.position.set(
+                center.x + cameraDistance,
+                center.y - cameraDistance,
+                center.z + cameraDistance
+            );
+
+            // Set the target to the center of the box
+            controlsRef.current.target.copy(center);
+            controlsRef.current.update();
+
+            setHasInitialized(true);
+        }
+    }, [boundingBox, camera, hasInitialized]);
+
+    return <OrbitControls
+        ref={controlsRef}
+        enabled={true}
+        enablePan={true}
+        enableZoom={true}
+        enableRotate={true}
+        enableDamping={true}
+    />;
+};

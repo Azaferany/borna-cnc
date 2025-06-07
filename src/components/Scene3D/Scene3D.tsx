@@ -1,23 +1,26 @@
 import { Canvas } from '@react-three/fiber';
-import {OrbitControls, Grid} from '@react-three/drei';
+import { Grid} from '@react-three/drei';
 import {CoordinateAxes} from "./CoordinateAxes.tsx";
 import {useStore} from "../../app/store.ts";
 import {useEffect, useState} from "react";
 import type {GCodePointData} from "../../types/GCodeTypes.ts";
-import {Color} from "three";
+import {Color, Vector3, Box3, Box3Helper} from "three";
 import {SpatialPartition} from "./SpatialPartition.tsx";
 import {processor} from "./GCodeToPointProcessor.ts";
 import {ToolHead} from "./ToolHead.tsx";
 import {findGCodeCommandOrLatestBaseOnLine} from "../../app/findGCodeCommandOrLatestBaseOnLine.ts";
 import {useShallow} from "zustand/react/shallow";
 import {OffsetMarkers} from "./OffsetMarkers.tsx";
-
+import {type CAMERA_PRESETS, CameraController} from "./CameraController.tsx";
 
 export const Scene3D = () => {
     const toolPathGCodes = useStore(useShallow(x => x.toolPathGCodes));
     const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
     const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
     const [completeData, setCompleteData] = useState<GCodePointData | null>(null);
+    const [cameraPreset, setCameraPreset] = useState<keyof typeof CAMERA_PRESETS | null>(null);
+    const [showBoundingBox, setShowBoundingBox] = useState(true);
+    const [boundingBox, setBoundingBox] = useState<Box3 | null>(null);
 
     // Color states
     const [rapidMoveColor, setRapidMoveColor] = useState("#ff0000");
@@ -27,9 +30,27 @@ export const Scene3D = () => {
     const [doneColor, setDoneColor] = useState("#008236");
 
     useEffect(() => {
-        const x= processor.processCommands((toolPathGCodes ??[]).filter(x=>x.hasMove));
-        console.log(x)
-            setCompleteData(x)
+        const completeData= processor.processCommands((toolPathGCodes ??[]).filter(x=>x.hasMove));
+        setCompleteData(completeData)
+
+        const allPoints = completeData ? [
+            ...completeData.feedMovePoints.flatMap(group =>
+                group.flatMap(point => point.points.map(p => new Vector3(p.x, p.y, p.z)))
+            ),
+            ...completeData.rapidMovePoints.flatMap(group =>
+                group.flatMap(point => point.points.map(p => new Vector3(p.x, p.y, p.z)))
+            ),
+            ...completeData.arkMovePoints.flatMap(group =>
+                group.flatMap(point => point.points.map(p => new Vector3(p.x, p.y, p.z)))
+            )
+        ] : [];
+
+        if (allPoints.length > 0) {
+            const box = new Box3().setFromPoints(allPoints);
+            box.expandByScalar(20);
+            setBoundingBox(box);
+        }
+
     }, [toolPathGCodes]);
 
     return (
@@ -92,20 +113,59 @@ export const Scene3D = () => {
                     <label htmlFor="done-color" className="cursor-pointer">Done</label>
                 </div>
             </div>
-            <Canvas shadows  camera={{
-                fov: 20,
-                position: [50, -50,   200],
+            
+            {/* Camera Controls */}
+            <div className="absolute top-4 right-4 z-10 bg-black/40 p-4 rounded text-white shadow-xl">
+                <h4 className="font-bold mb-2">Camera Controls</h4>
+                <div className="flex flex-col gap-2">
+                    <button 
+                        onClick={() => setCameraPreset('top')}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+                    >
+                        Top View
+                    </button>
+                    <button 
+                        onClick={() => setCameraPreset('front')}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+                    >
+                        Front View
+                    </button>
+                    <button 
+                        onClick={() => setCameraPreset('side')}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+                    >
+                        Side View
+                    </button>
+                    <button 
+                        onClick={() => setCameraPreset('iso')}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+                    >
+                        Isometric View
+                    </button>
+                </div>
+            </div>
+
+            {/* Bounding Box Toggle */}
+            <div className="absolute bottom-4 right-4 z-10 bg-black/40 p-4 rounded text-white shadow-xl">
+                <div className="flex items-center gap-2">
+                    <input
+                        type="checkbox"
+                        id="show-bounding-box"
+                        checked={showBoundingBox}
+                        onChange={(e) => setShowBoundingBox(e.target.checked)}
+                        className="w-4 h-4"
+                    />
+                    <label htmlFor="show-bounding-box" className="cursor-pointer">Show Bounding Box</label>
+                </div>
+            </div>
+
+            <Canvas shadows camera={{
+                fov: 60,
+                position: [50, -50, 200],
                 far: 100000,
                 near: 0.1,
-
             }}>
-                <OrbitControls
-                    enabled={true}
-                    enablePan={true}
-                    enableZoom={true}
-                    enableRotate={true}
-                    enableDamping={true}
-                />
+                <CameraController preset={cameraPreset} boundingBox={boundingBox} />
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[10, 10, 10]} intensity={1} castShadow />
                 <pointLight position={[10, 10, 10]} />
@@ -130,6 +190,10 @@ export const Scene3D = () => {
                               gCodeCommand={selectedGCodeLine && toolPathGCodes ? findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes) : undefined}
                     />
 
+                )}
+
+                {showBoundingBox && boundingBox && (
+                    <primitive object={new Box3Helper(boundingBox, new Color(0x00ff00))} />
                 )}
 
                 {(completeData?.feedMovePoints  || completeData?.rapidMovePoints || completeData?.arkMovePoints) && (
