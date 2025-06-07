@@ -46,6 +46,21 @@ export const JogControls = () => {
         }
     };
 
+    const handleDiagonalJog = async (axis1: string, direction1: number, axis2: string, direction2: number) => {
+        if (!isConnected || isMachineRunning) {
+            console.error("Not connected to GRBL device or machine is running");
+            return;
+        }
+
+        try {
+            const distance = (continuousMode ? 500 : stepSize);
+            const command = `$J=G91 ${axis1}${(direction1 * distance).toFixed(3)} ${axis2}${(direction2 * distance).toFixed(3)} F${feedrate}`;
+            await sendCommand(command);
+        } catch (error) {
+            console.error('Error sending diagonal jog command:', error);
+        }
+    };
+
     const handleJogStart = (axis: string, direction: number) => {
         if (continuousMode) {
             setActiveButton(`${axis}${direction}`);
@@ -60,6 +75,19 @@ export const JogControls = () => {
         }
     };
 
+    const handleDiagonalJogStart = (axis1: string, direction1: number, axis2: string, direction2: number) => {
+        if (continuousMode) {
+            setActiveButton(`${axis1}${direction1}${axis2}${direction2}`);
+            handleDiagonalJog(axis1, direction1, axis2, direction2);
+        }
+    };
+
+    const handleDiagonalClick = (axis1: string, direction1: number, axis2: string, direction2: number) => {
+        if (!continuousMode) {
+            handleDiagonalJog(axis1, direction1, axis2, direction2);
+        }
+    };
+
     const handleClick = (axis: string, direction: number) => {
         if (!continuousMode) {
             handleJog(axis, direction);
@@ -68,13 +96,30 @@ export const JogControls = () => {
 
     const renderJogButton = (axis: string, direction: number, label: string) => (
         <button 
-            className={`p-3 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`p-3 px-6 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
                 activeButton === `${axis}${direction}` 
                     ? 'bg-blue-600 hover:bg-blue-500' 
                     : 'bg-gray-700 hover:bg-gray-600 active:bg-gray-400'
             }`}
             onClick={() => handleClick(axis, direction)}
             onMouseDown={() => handleJogStart(axis, direction)}
+            onMouseUp={handleJogEnd}
+            onMouseLeave={handleJogEnd}
+            disabled={!isConnected || isMachineRunning}
+        >
+            {label}
+        </button>
+    );
+
+    const renderDiagonalJogButton = (axis1: string, direction1: number, axis2: string, direction2: number, label: string) => (
+        <button 
+            className={`p-3 px-6 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+                activeButton === `${axis1}${direction1}${axis2}${direction2}` 
+                    ? 'bg-blue-600 hover:bg-blue-500' 
+                    : 'bg-gray-700 hover:bg-gray-600 active:bg-gray-400'
+            }`}
+            onClick={() => handleDiagonalClick(axis1, direction1, axis2, direction2)}
+            onMouseDown={() => handleDiagonalJogStart(axis1, direction1, axis2, direction2)}
             onMouseUp={handleJogEnd}
             onMouseLeave={handleJogEnd}
             disabled={!isConnected || isMachineRunning}
@@ -90,11 +135,12 @@ export const JogControls = () => {
                 className={`w-full p-3 flex items-center justify-between text-white transition-colors duration-200 ${
                     isMachineRunning ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-700'
                 }`}
-            >
+            ><label htmlFor="hs-color-input" className="block text-sm font-medium mb-2 dark:text-white">Color picker</label>
+                <input type="color" className="p-1 h-10 w-14 block bg-white border border-gray-200 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700" id="hs-color-input" value="#2563eb" title="Choose your color" />
                 <div className="flex items-center gap-3">
                     <h2 className="text-xl font-bold">Jog Controls</h2>
                     {isMachineRunning && (
-                        <span className="px-2 py-1 bg-red-600 rounded-md text-xs font-medium">
+                        <span className="px-2 py-1 bg-red-600 rounded-md text-xs font-sm">
                             Jogging Disabled - Machine Running
                         </span>
                     )}
@@ -181,24 +227,31 @@ export const JogControls = () => {
                             </label>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-2 max-w-[240px] mx-auto">
-                            {renderJogButton('Y', 1, 'Y+')}
-                            {renderJogButton('Z', 1, 'Z+')}
-                            {renderJogButton('A', 1, 'A+')}
-
-                            {renderJogButton('X', -1, 'X-')}
-                            <button 
-                                className="p-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-400 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                                onClick={() => setContinuousMode(!continuousMode)}
-                                disabled={!isConnected || isMachineRunning}
-                            >
-                                {continuousMode ? "___" : ". . . "}
-                            </button>
-                            {renderJogButton('X', 1, 'X+')}
-
-                            {renderJogButton('Y', -1, 'Y-')}
-                            {renderJogButton('Z', -1, 'Z-')}
-                            {renderJogButton('A', -1, 'A-')}
+                        <div className="flex gap-4 justify-center">
+                            <div className="grid grid-cols-3 gap-2">
+                                {renderDiagonalJogButton('X', 1, 'Y', 1, '↖️')}
+                                {renderJogButton('Y', 1, 'Y+')}
+                                {renderDiagonalJogButton('X', -1, 'Y', 1, '↗️')}
+                                
+                                {renderJogButton('X', -1, 'X-')}
+                                <button 
+                                    className="p-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-400 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={() => setContinuousMode(!continuousMode)}
+                                    disabled={!isConnected || isMachineRunning}
+                                >
+                                    {continuousMode ? "___" : ". . . "}
+                                </button>
+                                {renderJogButton('X', 1, 'X+')}
+                                
+                                {renderDiagonalJogButton('X', 1, 'Y', -1, '↙️')}
+                                {renderJogButton('Y', -1, 'Y-')}
+                                {renderDiagonalJogButton('X', -1, 'Y', -1, '↘️')}
+                            </div>
+                            
+                            <div className="grid grid-cols-1 gap-2 justify-between">
+                                {renderJogButton('Z', 1, 'Z+')}
+                                {renderJogButton('Z', -1, 'Z-')}
+                            </div>
                         </div>
                     </div>
                 </div>

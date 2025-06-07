@@ -9,6 +9,7 @@ import {useShallowCompareEffect} from "react-use";
 
 export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const isConnected = useStore(x => x.isConnected);
+    const isSending = useStore(x => x.isSending);
     const eventSource = useStore(useShallow(x => x.eventSource));
 
     const updateStatus = useStore(x => x.updateStatus);
@@ -85,11 +86,15 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
             updateStatus(state);
 
             if(Dwell) {
+
                 const newDwellInfo = Dwell.map(Number);
                 updateDwell({RemainingSeconds: newDwellInfo[0],TotalSeconds: newDwellInfo[1]});
+                updateStatus(newDwellInfo[0] > 0 ? "Run" : state);
+
             }
             else {
                 updateDwell({RemainingSeconds: 0,TotalSeconds: 0});
+                updateStatus(state);
 
             }
 
@@ -205,26 +210,32 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const pollStatusInterval = setInterval(async () => {
             await sendCommand('?');
         }, 70); // Poll every 80ms
-        const pollGCodeOffsetsInterval = setInterval(async () => {
-            await sendCommand('$#');
-        }, 600); // Poll every 5s
-        const pollActiveModesInterval = setInterval(async () => {
-            await sendCommand('$G');
-        }, 1000); // Poll every 5s
-        try {
-            sendCommand('$#');
-            sendCommand('$G');
-        }
-        catch {
-            console.log('Error sending command');
+
+        let pollGCodeOffsetsInterval:  NodeJS.Timeout | undefined;
+        let pollActiveModesInterval:  NodeJS.Timeout | undefined;
+        if(!isSending) {
+            pollGCodeOffsetsInterval = setInterval(async () => {
+                await sendCommand('$#');
+            }, 600); // Poll every 5s
+            pollActiveModesInterval = setInterval(async () => {
+                await sendCommand('$G');
+            }, 1000); // Poll every 5s
+            try {
+                sendCommand('$#');
+                sendCommand('$G');
+            } catch {
+                console.log('Error sending command');
+            }
         }
         return () => {
             clearInterval(pollStatusInterval)
-            clearInterval(pollGCodeOffsetsInterval)
-            clearInterval(pollActiveModesInterval)
+            if (pollGCodeOffsetsInterval)
+                clearInterval(pollGCodeOffsetsInterval)
+            if (pollActiveModesInterval)
+                clearInterval(pollActiveModesInterval)
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isConnected, eventSource]);
+    }, [isConnected, eventSource,isSending]);
     useEffect(() => {
         // Initialize GRBL Serial
         const grblSerial = eventSource!;

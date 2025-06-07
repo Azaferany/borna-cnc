@@ -29,6 +29,7 @@ export const OpenFileButton: React.FC<OpenFileButtonProps> = ({ className }) => 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
+            event.target.value = "";
             const reader = new FileReader();
             reader.onload = (e) => {
                 const text = e.target?.result;

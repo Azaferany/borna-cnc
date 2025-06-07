@@ -105,7 +105,7 @@ export const useStore = create<CNCState>((set) => ({
         TotalSeconds:0
     },
 
-    lastSentLine: -1,
+    lastSentLine: 0,
 
     loadToolPathGCodes: (allGCodes,toolPathGCodes,) => set({ toolPathGCodes, allGCodes }),
     selectGCodeLine: (line) => set({ selectedGCodeLine: line }),

@@ -50,7 +50,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
     const stopSending =useCallback(() => {
         console.debug('Stopping G-code send process');
         setIsSending(false); // Update Zustand store
-        updateLastSentLine(-1); // Update Zustand store
+        updateLastSentLine(0); // Update Zustand store
         setWaitingForOk(false); // Reset local state
     },[setIsSending, updateLastSentLine]); // Dependencies for useCallback
 
@@ -82,10 +82,10 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             return;
         }
 
-        const nextLineIndex = lastSentLine + 1; // Calculate the index of the next line to send
+        const nextLineIndex = lastSentLine; // Calculate the index of the next line to send
         const totalLines = bufferGCodesList?.length ?? 0;
 
-        if ((lastSentLine - (selectedGCodeLine ?? 0)) > 10 ) {
+        if ((lastSentLine - (selectedGCodeLine ?? 0)) > 15 ) {
             console.debug('AttemptSendNextLine skipped:', { buffered: (lastSentLine - (selectedGCodeLine ?? 0)), availableBufferSlots });
             return;
         }
@@ -113,7 +113,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         });
 
         await handleCommand(lineToSend); // Send the command
-        updateLastSentLine(nextLineIndex); // Update the last sent line index
+        updateLastSentLine(nextLineIndex + 1); // Update the last sent line index
     },[availableBufferSlots, bufferGCodesList, handleCommand, lastSentLine, selectedGCodeLine, updateLastSentLine, waitingForOk])
 
 
@@ -147,7 +147,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             // Set the buffer with the provided G-code lines
             setBufferGCodesList(gCodes); // Update local state
             setIsSending(true,bufferType); // Update Zustand store
-            updateLastSentLine(-1); // Reset to -1 to start from line 0 (Zustand store)
+            updateLastSentLine(0); // Reset to 0 to start from line 1 (Zustand store)
             setWaitingForOk(false); // Ensure not waiting for 'ok' when starting (local state)
         },
         [isConnected, setIsSending, updateLastSentLine] // Dependencies for useCallback
@@ -157,9 +157,9 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         const moveGCodes = bufferGCodesList
             .map(x=> x.split(';')[0].toUpperCase())
             .filter(x=>x.includes("G0") || x.includes("G1")|| x.includes("G2"));
-        if(IsAllLineSent && selectedGCodeLine === extractLineNumber(moveGCodes[moveGCodes.length -1]))
+        if(IsAllLineSent && (selectedGCodeLine === extractLineNumber(moveGCodes[moveGCodes.length -1]) || status === "Idle"))
             stopSending()
-    }, [bufferGCodesList, IsAllLineSent, selectedGCodeLine, stopSending]);
+    }, [bufferGCodesList, IsAllLineSent, selectedGCodeLine, stopSending, status]);
     /**
      * Effect hook to manage the G-code sending process.
      * It triggers `sendNextLine` based on various conditions.
@@ -176,7 +176,6 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             stopSending(); // Calls the memoized stopSending from context
             return;
         }
-
         // If connected, sending, not waiting for 'ok', and GRBL is not on hold or homing, try to send the next line
         if (
             isConnected &&

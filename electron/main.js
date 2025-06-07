@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { powerSaveBlocker } from 'electron';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,6 +25,9 @@ function createWindow () {
     });
     mainWindow.maximize();
     mainWindow.show();
+
+    powerSaveBlocker.start('prevent-app-suspension');
+    powerSaveBlocker.start('prevent-display-sleep');
 
     mainWindow.webContents.session.on('select-serial-port', (event, portList, webContents, callback) => {
         // Add listeners to handle ports being added or removed before the callback for `select-serial-port`
