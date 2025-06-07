@@ -18,6 +18,14 @@ export const Scene3D = () => {
     const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
     const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
     const [completeData, setCompleteData] = useState<GCodePointData | null>(null);
+
+    // Color states
+    const [rapidMoveColor, setRapidMoveColor] = useState("#ff0000");
+    const [feedMoveColor, setFeedMoveColor] = useState("#ffa500");
+    const [arcMoveColor, setArcMoveColor] = useState("#fb64b6");
+    const [runningColor, setRunningColor] = useState("#0000ff");
+    const [doneColor, setDoneColor] = useState("#008236");
+
     useEffect(() => {
         const x= processor.processCommands((toolPathGCodes ??[]).filter(x=>x.hasMove));
         console.log(x)
@@ -26,28 +34,62 @@ export const Scene3D = () => {
 
     return (
         <div className="w-full h-full min-h-[370px] relative">
-            <div className="absolute top-4 left-4 z-10 bg-transparent p-4 rounded text-white shadow-xl">
-
+            <div className="absolute top-4 left-4 z-10 bg-black/40 p-4 rounded text-white shadow-xl">
                 <h4 className="font-bold mb-2">Legend</h4>
-                <div className="flex items-center gap-2 mb-1">
-                    <div className="w-4 h-4 bg-red-500"></div>
-                    <span>Rapid moves (G0)</span>
+                <div className="flex items-center gap-2 mb-2">
+                    <input 
+                        type="color" 
+                        id="rapid-move-color"
+                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700" 
+                        value={rapidMoveColor}
+                        onChange={(e) => setRapidMoveColor(e.target.value)}
+                        title="Choose rapid move color"
+                    />
+                    <label htmlFor="rapid-move-color" className="cursor-pointer">Rapid moves (G0)</label>
                 </div>
-                <div className="flex items-center gap-2 mb-1">
-                    <div className="w-4 h-4 bg-yellow-500"></div>
-                    <span>Feed moves (G1)</span>
+                <div className="flex items-center gap-2 mb-2">
+                    <input 
+                        type="color" 
+                        id="feed-move-color"
+                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700" 
+                        value={feedMoveColor}
+                        onChange={(e) => setFeedMoveColor(e.target.value)}
+                        title="Choose feed move color"
+                    />
+                    <label htmlFor="feed-move-color" className="cursor-pointer">Feed moves (G1)</label>
                 </div>
-                <div className="flex items-center gap-2 mb-1">
-                    <div className="w-4 h-4 bg-pink-400"></div>
-                    <span>Arc moves (G2/G3)</span>
+                <div className="flex items-center gap-2 mb-2">
+                    <input 
+                        type="color" 
+                        id="arc-move-color"
+                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700" 
+                        value={arcMoveColor}
+                        onChange={(e) => setArcMoveColor(e.target.value)}
+                        title="Choose arc move color"
+                    />
+                    <label htmlFor="arc-move-color" className="cursor-pointer">Arc moves (G2/G3)</label>
                 </div>
-                <div className="flex items-center gap-2 mb-1">
-                    <div className="w-4 h-4 bg-blue-600"></div>
-                    <span>Running</span>
+                <div className="flex items-center gap-2 mb-2">
+                    <input 
+                        type="color" 
+                        id="running-color"
+                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700" 
+                        value={runningColor}
+                        onChange={(e) => setRunningColor(e.target.value)}
+                        title="Choose running color"
+                    />
+                    <label htmlFor="running-color" className="cursor-pointer">Running</label>
                 </div>
-                <div className="flex items-center gap-2 mb-1">
-                    <div className="w-4 h-4 bg-green-700"></div>
-                    <span>Done</span>
+                <div className="flex items-center gap-2 mb-2">
+                    <input 
+                        type="color" 
+                        id="done-color"
+                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700" 
+                        value={doneColor}
+                        onChange={(e) => setDoneColor(e.target.value)}
+                        title="Choose done color"
+                    />
+                    <label htmlFor="done-color" className="cursor-pointer">Done</label>
                 </div>
             </div>
             <Canvas shadows  camera={{
@@ -101,7 +143,7 @@ export const Scene3D = () => {
                                 points={value
                                     .filter(x=>x.gCodeLineNumber > (selectedGCodeLine ?? 0))
                                     .flatMap(x=>x.points)}
-                                color={new Color(0xffa500)}
+                                color={new Color(feedMoveColor)}
                                 lineWidth={2}/>
 
                         ))}
@@ -113,7 +155,7 @@ export const Scene3D = () => {
                                 points={value
                                     .filter(x=>x.gCodeLineNumber < (selectedGCodeLine ?? 0))
                                     .flatMap(x=>x.points)}
-                                color={new Color(0x008236)}
+                                color={new Color(doneColor)}
                                 lineWidth={3.5}/>
 
                         ))}
@@ -126,7 +168,7 @@ export const Scene3D = () => {
                                 points={value
                                     .filter(x=>x.gCodeLineNumber > (selectedGCodeLine ?? 0))
                                     .flatMap(x=>x.points)}
-                                color={new Color(0xff0000)}
+                                color={new Color(rapidMoveColor)}
                                 lineWidth={1.5}/>
 
                         ))}
@@ -137,7 +179,7 @@ export const Scene3D = () => {
                                 points={value
                                     .filter(x=>x.gCodeLineNumber < (selectedGCodeLine ?? 0))
                                     .flatMap(x=>x.points)}
-                                color={new Color(0x008236)}
+                                color={new Color(doneColor)}
                                 lineWidth={3.5}/>
 
                         ))}
@@ -148,7 +190,7 @@ export const Scene3D = () => {
                                 points={value
                                     .filter(x=>x.gCodeLineNumber > (selectedGCodeLine ?? 0))
                                     .flatMap(x=>x.points)}
-                                color={new Color(0xfb64b6)}
+                                color={new Color(arcMoveColor)}
                                 lineWidth={2}/>
 
                         ))}
@@ -159,7 +201,7 @@ export const Scene3D = () => {
                                 points={value
                                     .filter(x=>x.gCodeLineNumber < (selectedGCodeLine ?? 0))
                                     .flatMap(x=>x.points)}
-                                color={new Color(0x008236)}
+                                color={new Color(doneColor)}
                                 lineWidth={3.5}/>
 
                         ))}
@@ -167,7 +209,7 @@ export const Scene3D = () => {
                         {selectedGCodeLine && selectedGCodeLine > 0 && toolPathGCodes && findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes.filter(x=>x.hasMove)) != null && (
                             <SpatialPartition
                                 points={processor.getGCodePoints(findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes.filter(x=>x.hasMove))!).points}
-                                color={new Color(0x0000ff)}
+                                color={new Color(runningColor)}
                                 lineWidth={7}/>
                         )}
                     </>
