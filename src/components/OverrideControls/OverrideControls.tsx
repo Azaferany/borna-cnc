@@ -188,9 +188,9 @@ export const OverrideControls = () => {
     };
 
     return (
-        <div className="bg-gray-800 p-4 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Override Controls</h2>
-            <div className="space-y-4">
+        <div className="bg-gray-800 p-4 rounded-lg h-full">
+            <h2 className="text-xl font-bold mb-8">Override Controls</h2>
+            <div className="space-y-7">
                 <SliderControl
                     label="Rapid Speed Override"
                     value={rapidSpeedOverridePercent}

@@ -36,7 +36,7 @@ function HomePage() {
 
                             </div>
                             <div className="col-span-4 h-[370px]">
-                                <JogControls />
+                                <OverrideControls/>
 
                             </div>
                             <div className="col-span-12">
@@ -46,9 +46,10 @@ function HomePage() {
                     </div>
 
                     {/* Right column - Controls */}
-                    <div className="col-span-3 space-y-4">
+                    <div className="col-span-3 space-y-4 pt-2.5">
                         <StatusDisplay />
-                        <OverrideControls/>
+                        <JogControls />
+
                         <Console />
                     </div>
                 </div>

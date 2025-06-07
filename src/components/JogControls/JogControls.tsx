@@ -1,14 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGRBL } from "../../app/useGRBL.ts";
 import { UnitDisplay } from "../UnitDisplay/UnitDisplay";
 import { FeedrateUnitDisplay } from "../UnitDisplay/FeedrateUnitDisplay";
+import { useStore } from "../../app/store.ts";
 
 export const JogControls = () => {
     const [feedrate, setFeedrate] = useState(100);
     const [stepSize, setStepSize] = useState(1);
     const [continuousMode, setContinuousMode] = useState(false);
     const [activeButton, setActiveButton] = useState<string | null>(null);
+    const [isExpanded, setIsExpanded] = useState(false);
     const { sendCommand, isConnected } = useGRBL();
+    const status = useStore(state => state.status);
+    const isSending = useStore(state => state.isSending);
+    const isMachineRunning = status === "Run" || status === "Hold" || isSending;
+
+    useEffect(() => {
+        if (isMachineRunning) {
+            setIsExpanded(false);
+        }
+    }, [isMachineRunning]);
 
     const stopJog = async () => {
         try {
@@ -19,13 +30,12 @@ export const JogControls = () => {
     };
 
     const handleJog = async (axis: string, direction: number) => {
-        if (!isConnected) {
-            console.error("Not connected to GRBL device");
+        if (!isConnected || isMachineRunning) {
+            console.error("Not connected to GRBL device or machine is running");
             return;
         }
 
         try {
-
             // Format the jog command
             const distance = direction * (continuousMode ? 1000 : stepSize); // Use large distance for continuous mode
             const command = `$J=G91 ${axis}${distance.toFixed(3)} F${feedrate}`;
@@ -67,75 +77,130 @@ export const JogControls = () => {
             onMouseDown={() => handleJogStart(axis, direction)}
             onMouseUp={handleJogEnd}
             onMouseLeave={handleJogEnd}
-            disabled={!isConnected}
+            disabled={!isConnected || isMachineRunning}
         >
             {label}
         </button>
     );
 
     return (
-        <div className="bg-gray-800 p-4 rounded-lg h-full">
-            <h2 className="text-xl font-bold mb-4">Jog Controls</h2>
-            <div className="space-y-4">
-                <div className="flex space-x-4">
-                    <div className="flex-1">
-                        <label className="block text-sm font-medium mb-1" htmlFor={"Feedrate"}>Feedrate (<FeedrateUnitDisplay/>)</label>
-                        <input
-                            id={"Feedrate"}
-                            type="number"
-                            value={feedrate}
-                            onChange={(e) => setFeedrate(Number(e.target.value))}
-                            className="w-full bg-gray-700 rounded px-3 py-2 text-white"
-                            min={1}
-                            max={10000}
-                        />
-                    </div>
-                    <div className="flex-1">
-                        {!continuousMode &&(<><label className="block text-sm font-medium mb-1" htmlFor={"Distance"}>Distance (<UnitDisplay/>)</label><input
-                            type="number"
-                            id={"Distance"}
-                            value={stepSize}
-                            onChange={(e) => setStepSize(Number(e.target.value))}
-                            className={`w-full bg-gray-700 rounded px-3 py-2 text-white ${continuousMode ? "cursor-not-allowed" : ""}`}
-                            disabled={continuousMode}
-                            min={0.001}
-                            max={1000}/></>)
-                        }
-                        {continuousMode && (<label className="block text-sm font-medium mt-6">Hold button to jog, release to stop</label>)}
-                    </div>
+        <div className="bg-gray-800 rounded-lg">
+            <div
+                onClick={() => !isMachineRunning && setIsExpanded(!isExpanded)}
+                className={`w-full p-3 flex items-center justify-between text-white transition-colors duration-200 ${
+                    isMachineRunning ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-700'
+                }`}
+            >
+                <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-bold">Jog Controls</h2>
+                    {isMachineRunning && (
+                        <span className="px-2 py-1 bg-red-600 rounded-md text-xs font-medium">
+                            Jogging Disabled - Machine Running
+                        </span>
+                    )}
                 </div>
+                {!isMachineRunning &&(<button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (isMachineRunning)
+                            return;
 
-                <div className="flex items-center space-x-2 mb-4">
-                    <input
-                        type="checkbox"
-                        checked={continuousMode}
-                        onChange={(e) => setContinuousMode(e.target.checked)}
-                        className="rounded bg-gray-700"
-                        id="continuous-mode"
-                    />
-                    <label htmlFor="continuous-mode" className="text-sm font-medium">
-                        Continuous Mode
-                    </label>
-                </div>
+                        setIsExpanded(!isExpanded);
+                    }}
+                    className={`p-1 rounded-md transition-colors duration-200 flex items-center gap-1 ${
+                        isMachineRunning ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-600'
+                    }`}
+                    disabled={isMachineRunning}
+                >
+                    <span className="text-sm font-medium">{isExpanded ? 'Close' : 'Open Details'}</span>
+                    {isExpanded ? (
+                        <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7"/>
+                        </svg>
+                    ) : (
+                        <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    )}
+                </button>)}
+            </div>
+            
+            <div className={`overflow-hidden transition-all duration-200 ease-out ${isExpanded ? 'h-auto' : 'h-0'}`}>
+                <div className="p-4 pt-2 transform transition-transform duration-200 ease-out" style={{ transform: `translateY(${isExpanded ? '0' : '-100%'})` }}>
+                    <div className="space-y-1">
+                        <div className="flex space-x-4">
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium mb-1" htmlFor={"Feedrate"}>Feedrate (<FeedrateUnitDisplay/>)</label>
+                                <input
+                                    id={"Feedrate"}
+                                    type="number"
+                                    value={feedrate}
+                                    onChange={(e) => setFeedrate(Number(e.target.value))}
+                                    className="w-full bg-gray-700 rounded px-3 py-2 text-white"
+                                    min={1}
+                                    max={10000}
+                                    disabled={isMachineRunning}
+                                />
+                            </div>
+                            <div className="flex-1">
+                                {!continuousMode &&(<><label className="block text-sm font-medium mb-1" htmlFor={"Distance"}>Distance (<UnitDisplay/>)</label><input
+                                    type="number"
+                                    id={"Distance"}
+                                    value={stepSize}
+                                    onChange={(e) => setStepSize(Number(e.target.value))}
+                                    className={`w-full bg-gray-700 rounded px-3 py-2 text-white ${continuousMode || isMachineRunning ? "cursor-not-allowed" : ""}`}
+                                    disabled={continuousMode || isMachineRunning}
+                                    min={0.001}
+                                    max={1000}/></>)
+                                }
+                                {continuousMode && (<label className="block text-sm font-medium mt-6">Hold button to jog, release to stop</label>)}
+                            </div>
+                        </div>
 
-                <div className="grid grid-cols-3 gap-2 max-w-[240px] mx-auto">
-                    {renderJogButton('Y', 1, 'Y+')}
-                    {renderJogButton('Z', 1, 'Z+')}
-                    {renderJogButton('A', 1, 'A+')}
+                        <div className="flex items-center space-x-2 mb-4">
+                            <input
+                                type="checkbox"
+                                checked={continuousMode}
+                                onChange={(e) => setContinuousMode(e.target.checked)}
+                                className="rounded bg-gray-700"
+                                id="continuous-mode"
+                                disabled={isMachineRunning}
+                            />
+                            <label htmlFor="continuous-mode" className="text-sm font-medium">
+                                Continuous Mode
+                            </label>
+                        </div>
 
-                    {renderJogButton('X', -1, 'X-')}
-                    <button 
-                        className="p-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-400 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => setContinuousMode(!continuousMode)}
-                        disabled={!isConnected}
-                    >
-                        {continuousMode ? "___" : ". . . "}
-                    </button>
-                    {renderJogButton('X', 1, 'X+')}
+                        <div className="grid grid-cols-3 gap-2 max-w-[240px] mx-auto">
+                            {renderJogButton('Y', 1, 'Y+')}
+                            {renderJogButton('Z', 1, 'Z+')}
+                            {renderJogButton('A', 1, 'A+')}
 
-                    {renderJogButton('Y', -1, 'Y-')}
-                    {renderJogButton('Z', -1, 'Z-')}
-                    {renderJogButton('A', -1, 'A-')}
+                            {renderJogButton('X', -1, 'X-')}
+                            <button 
+                                className="p-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-400 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={() => setContinuousMode(!continuousMode)}
+                                disabled={!isConnected || isMachineRunning}
+                            >
+                                {continuousMode ? "___" : ". . . "}
+                            </button>
+                            {renderJogButton('X', 1, 'X+')}
+
+                            {renderJogButton('Y', -1, 'Y-')}
+                            {renderJogButton('Z', -1, 'Z-')}
+                            {renderJogButton('A', -1, 'A-')}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
