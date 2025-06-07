@@ -14,11 +14,11 @@ export function reverseGCode(
     const IsXChanges = !!toolPaths.find(g=>g?.endPoint?.x !== g.startPoint.x);
     const IsYChanges = !!toolPaths.find(g=>g?.endPoint?.y !== g.startPoint.y);
     const IsZChanges = !!toolPaths.find(g=>g?.endPoint?.z !== g.startPoint.z);
-    const IsAChanges = !!toolPaths.find(g=>(g?.endA ?? 0) !== g.startA);
-    const IsBChanges = !!toolPaths.find(g=>(g?.endB ?? 0) !== g.startB);
-    const IsCChanges = !!toolPaths.find(g=>(g?.endC ?? 0) !== g.startC);
+    const IsAChanges = !!toolPaths.find(g=>(g?.endPoint?.a ?? 0) !== g.startPoint.a);
+    const IsBChanges = !!toolPaths.find(g=>(g?.endPoint?.b ?? 0) !== g.startPoint.b);
+    const IsCChanges = !!toolPaths.find(g=>(g?.endPoint?.c ?? 0) !== g.startPoint.c);
     for (let i = currentLine; i >= 1; i--) {
-        let curentGCodeCommand = toolPaths.find(x=>x.lineNumber == i)
+        let curentGCodeCommand = toolPaths.find(x=>x.lineNumber == i)!
 
         if(!curentGCodeCommand) {
             continue;
@@ -39,10 +39,12 @@ export function reverseGCode(
                 curentGCodeCommand =
                     {
                         ...curentGCodeCommand,
-                        endPoint:{...currentPos},
-                        endA:currentPos.a,
-                        endB:currentPos.b,
-                        endC: currentPos.c
+                        endPoint:{
+                            ...currentPos,
+                            a: currentPos.a ?? curentGCodeCommand.endPoint?.a ?? 0,
+                            b: currentPos.b ?? curentGCodeCommand.endPoint?.b ?? 0,
+                            c: currentPos.c ?? curentGCodeCommand.endPoint?.c ?? 0,
+                        },
                     }
 
                 const startPoint = new Vector3(curentGCodeCommand.startPoint.x, curentGCodeCommand.startPoint.y, curentGCodeCommand.startPoint.z);
@@ -87,7 +89,7 @@ export function reverseGCode(
                     curentGCodeCommand =
                         {
                             ...curentGCodeCommand,
-                            endPoint:{...intersectionPoint},
+                            endPoint:{...curentGCodeCommand.endPoint!,...intersectionPoint},
 
                         }
                 }
@@ -131,13 +133,13 @@ export function reverseGCode(
             reversedGCodeCode +=` Z${curentGCodeCommand.startPoint.z}`
 
         if (IsAChanges)
-            reversedGCodeCode +=` A${curentGCodeCommand.startA}`
+            reversedGCodeCode +=` A${curentGCodeCommand.startPoint.a}`
 
         if (IsBChanges)
-            reversedGCodeCode +=` B${curentGCodeCommand.startB}`
+            reversedGCodeCode +=` B${curentGCodeCommand.startPoint.b}`
 
         if (IsCChanges)
-            reversedGCodeCode +=` C${curentGCodeCommand.startC}`
+            reversedGCodeCode +=` C${curentGCodeCommand.startPoint.c}`
 
         reversedGCodeCode +=` F${curentGCodeCommand.feedRate}`
 
