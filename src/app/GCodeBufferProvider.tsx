@@ -36,7 +36,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
 
 
     useEffect(() => {
-        if(dwell.RemainingSeconds < 0 || !isSending || !selectedGCodeLine || bufferGCodesList.length === 0 || lastSentLine <= 0)
+        if(dwell.RemainingSeconds <= 0 || !isSending || !selectedGCodeLine || bufferGCodesList.length === 0 || lastSentLine <= 0)
             return;
         const runningDwellIndex = bufferGCodesList.slice(selectedGCodeLine-1,lastSentLine - 1).findIndex(x=>x.includes("G4 P"))
         selectGCodeLine(runningDwellIndex +1)
