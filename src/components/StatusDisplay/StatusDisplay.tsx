@@ -109,7 +109,7 @@ export const StatusDisplay = () => {
 
     const handleHome = async (axis: string) => {
         try {
-            await sendCommand(`$H${axis}`);
+            await sendCommand(`$H${axis === "XYZ" ? "" : axis}`);
         } catch (error) {
             console.error('Error homing axis:', error);
         }

@@ -1,19 +1,22 @@
 // PreviousButton.tsx
 import { BackwardIcon } from '@heroicons/react/24/solid';
-import { useGRBL } from "../../app/useGRBL.ts";
 import { useStore } from "../../app/store.ts";
 import { reverseGCode } from "./reverseGCode.ts";
 import { useGCodeBufferContext } from "../../app/GCodeBufferContext.ts";
 import { useState } from 'react';
 import {useShallow} from "zustand/react/shallow";
+import {
+    useResetGRBLWithoutResettingActiveGModes,
+} from "../../app/useResetGRBLWithoutResettingActiveModes.ts";
 
 export const PreviousButton = () => {
-    const { sendCommand } = useGRBL();
+    const { resetGRBLWithoutResettingActiveGModes } = useResetGRBLWithoutResettingActiveGModes()
     const status = useStore(s => s.status);
     const machineCoordinate = useStore(useShallow(s => s.machineCoordinate));
     const selectedGCodeLine = useStore(s => s.selectedGCodeLine);
     const toolPathGCodes = useStore(useShallow(s => s.toolPathGCodes));
-    const { isSending, bufferType, startSending, stopSending } = useGCodeBufferContext();
+    const gCodeOffsets = useStore(useShallow(s => s.gCodeOffsets));
+    const { isSending, bufferType, stopSending,startSending } = useGCodeBufferContext();
     const [error, setError] = useState<string | null>(null);
 
     const isDisabled =
@@ -25,26 +28,15 @@ export const PreviousButton = () => {
 
     const buttonText = isSendingRunning ? (status == "Hold" ? "Sending Paused" : 'Sending...') : 'Previous';
 
-    const handleCommand = async (command: string) => {
-        try {
-            console.log('Sending command:', command);
-            await sendCommand(command);
-        } catch (error) {
-            console.error('Error sending command:', error);
-            stopSending();
-            setError('Failed to send command to machine');
-        }
-    };
-
     const handlePrevious = async () => {
         if (isDisabled) return;
 
         try {
             setError(null);
-            const reversedCommands = reverseGCode(toolPathGCodes, selectedGCodeLine, machineCoordinate);
+            const reversedCommands = reverseGCode(toolPathGCodes, selectedGCodeLine, machineCoordinate,gCodeOffsets);
 
             // First, send the soft reset
-            await handleCommand('\x18'); // Soft reset
+            await resetGRBLWithoutResettingActiveGModes(); // Soft reset
 
             stopSending();
             startSending(reversedCommands,"GCodeFileInReverse")

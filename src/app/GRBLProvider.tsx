@@ -88,6 +88,10 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const newDwellInfo = Dwell.map(Number);
                 updateDwell({RemainingSeconds: newDwellInfo[0],TotalSeconds: newDwellInfo[1]});
             }
+            else {
+                updateDwell({RemainingSeconds: 0,TotalSeconds: 0});
+
+            }
 
             if(Bf) {
                 const newAvailableBufferSlots = Bf.map(Number)[0];
@@ -200,9 +204,9 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const pollStatusInterval = setInterval(async () => {
             await sendCommand('?');
-        }, 80); // Poll every 80ms
+        }, 70); // Poll every 80ms
         const pollGCodeOffsetsInterval = setInterval(async () => {
-            await sendCommand('$#');
+            //await sendCommand('$#');
         }, 600); // Poll every 5s
         const pollActiveModesInterval = setInterval(async () => {
             await sendCommand('$G');

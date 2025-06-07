@@ -9,7 +9,7 @@ export const JogControls = () => {
     const [stepSize, setStepSize] = useState(1);
     const [continuousMode, setContinuousMode] = useState(false);
     const [activeButton, setActiveButton] = useState<string | null>(null);
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(true);
     const { sendCommand, isConnected } = useGRBL();
     const status = useStore(state => state.status);
     const isSending = useStore(state => state.isSending);

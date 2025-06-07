@@ -7,8 +7,8 @@ import {
     Plane,
     type Point3D6Axis
 } from "../types/GCodeTypes.ts";
+import GRBLWebSocket from "./GRBLWebSocket.ts";
 import GRBLSerial from "./GRBLSerial.ts";
-
 
 
 export interface ActiveModes {

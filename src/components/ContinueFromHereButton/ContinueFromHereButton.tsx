@@ -17,6 +17,7 @@ export const ContinueFromHereButton = () => {
     const selectedGCodeLine = useStore(s => s.selectedGCodeLine);
     const machineCoordinate = useStore(useShallow(s => s.machineCoordinate));
     const toolPathGCodes = useStore(useShallow(s => s.toolPathGCodes));
+    const gCodeOffsets = useStore(useShallow(s => s.gCodeOffsets));
 
     const [error, setError] = useState<string | null>(null);
 
@@ -35,9 +36,7 @@ export const ContinueFromHereButton = () => {
         if (status === "Hold" && bufferType === "GCodeFileInReverse" && isSending && (allGCodes?.length ?? 0) > 0) {
             try {
                 setError(null);
-
                 const gCodeLines = [...(allGCodes ?? [])].slice((selectedGCodeLine ?? 0)-1)
-                console.warn(gCodeLines)
                 const currentGCodeCommand =
                     findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine ?? 0, toolPathGCodes ?? [])!
 
@@ -51,6 +50,7 @@ export const ContinueFromHereButton = () => {
                             endB:machineCoordinate.b,
                             endC: machineCoordinate.c
                         }
+                    const activeOffset = gCodeOffsets[curentGCodeCommand.activeWorkSpace];
 
                     const startPoint = new Vector3(curentGCodeCommand.startPoint.x, curentGCodeCommand.startPoint.y, curentGCodeCommand.startPoint.z);
                     const endPoint = new Vector3(curentGCodeCommand.endPoint!.x, curentGCodeCommand.endPoint!.y, curentGCodeCommand.endPoint!.z);
@@ -84,12 +84,6 @@ export const ContinueFromHereButton = () => {
                         const intersectionPointIndex = determineHelixPointOrder(radius,centerPoint,curentGCodeCommand.activePlane ?? Plane.XY,curentGCodeCommand.isClockwise ?? true,pitch,intersectionPoints[0]!,intersectionPoints[1]! )
                         const intersectionPoint = intersectionPoints.slice().reverse()[intersectionPointIndex - 1];
 
-
-                        console.warn(endPoint.distanceTo(centerPoint) - radius);
-                        console.warn(machineCoordinate);
-                        console.warn(`G1 X${ intersectionPoint.x.toFixed(3)} Y${intersectionPoint.y.toFixed(3)} Z${intersectionPoint.z.toFixed(3)} F${curentGCodeCommand.feedRate}`)
-
-
                         curentGCodeCommand = {
                             ...curentGCodeCommand,
                             endPoint:{...intersectionPoint}
@@ -118,7 +112,7 @@ export const ContinueFromHereButton = () => {
                         else if(curentGCodeCommand.activePlane == Plane.XZ) {
                             gCodeLines.unshift("G18")
                         }
-                        gCodeLines.unshift(`G1 X${ intersectionPoint.x.toFixed(3)} Y${intersectionPoint.y.toFixed(3)} Z${intersectionPoint.z.toFixed(3)} F${curentGCodeCommand.feedRate}`)
+                        gCodeLines.unshift(`G1 X${((intersectionPoint?.x ?? 0) - (activeOffset?.x ?? 0)).toFixed(3)} Y${((intersectionPoint?.y ?? 0) - (activeOffset?.y ?? 0)).toFixed(3)} Z${((intersectionPoint?.z ?? 0) - (activeOffset?.z ?? 0)).toFixed(3)} F${curentGCodeCommand.feedRate}`)
 
                     }
 

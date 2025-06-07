@@ -6,6 +6,7 @@ import {extractLineNumber} from "./GcodeParserUtils.ts";
 import {useStore} from "./store.ts";
 import type {BufferType} from "../types/GCodeTypes.ts";
 import {useShallow} from "zustand/react/shallow";
+import { Plane } from "../types/GCodeTypes.ts";
 
 interface GCodeBufferProviderProps {
     children: ReactNode;
@@ -62,7 +63,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         try {
             console.debug('Sending command:', command);
             await sendCommand(command);
-            setWaitingForOk(false); // Set true as we are now waiting for an 'ok'
+            setWaitingForOk(true); // Set true as we are now waiting for an 'ok'
         } catch (error) {
             console.error('Error sending command:', error);
             stopSending(); // Stop sending on error (calls the memoized stopSending from context)
@@ -211,6 +212,78 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             //stopSending(); // Stop sending on GRBL error (calls the memoized stopSending)
         }
     });
+
+    // Add effect to update active modes based on G-code history
+    useEffect(() => {
+        if (!selectedGCodeLine || !bufferGCodesList.length) return;
+
+        const currentModes = useStore.getState().activeModes;
+        if (!currentModes) return;
+
+        const updatedModes = { ...currentModes };
+        let foundWorkCoord = false;
+        let foundPlane = false;
+        let foundUnits = false;
+        let foundPositioning = false;
+
+        // Scan backwards from selected line to find most recent mode commands
+        for (let i = selectedGCodeLine - 1; i >= 0; i--) {
+            const line = bufferGCodesList[i];
+            
+            // Skip if we've found all modes
+            if (foundWorkCoord && foundPlane && foundUnits && foundPositioning) break;
+
+            // Check work coordinate system (G54-G59)
+            if (!foundWorkCoord) {
+                const workCoordMatch = line.match(/G(5[4-9])/);
+                if (workCoordMatch) {
+                    updatedModes.WorkCoordinateSystem = `G${workCoordMatch[1]}` as "G54" | "G55" | "G56" | "G57" | "G58" | "G59";
+                    foundWorkCoord = true;
+                }
+            }
+
+            // Check plane selection (G17, G18, G19)
+            if (!foundPlane) {
+                if (line.includes('G17')) {
+                    updatedModes.Plane = Plane.XY;
+                    foundPlane = true;
+                } else if (line.includes('G18')) {
+                    updatedModes.Plane = Plane.XZ;
+                    foundPlane = true;
+                } else if (line.includes('G19')) {
+                    updatedModes.Plane = Plane.YZ;
+                    foundPlane = true;
+                }
+            }
+
+            // Check units (G20, G21)
+            if (!foundUnits) {
+                if (line.includes('G20')) {
+                    updatedModes.UnitsType = "Inches";
+                    foundUnits = true;
+                } else if (line.includes('G21')) {
+                    updatedModes.UnitsType = "Millimeters";
+                    foundUnits = true;
+                }
+            }
+
+            // Check positioning mode (G90, G91)
+            if (!foundPositioning) {
+                if (line.includes('G90')) {
+                    updatedModes.PositioningMode = "Absolute";
+                    foundPositioning = true;
+                } else if (line.includes('G91')) {
+                    updatedModes.PositioningMode = "Relative";
+                    foundPositioning = true;
+                }
+            }
+        }
+
+        // Only update if any changes were made
+        if (JSON.stringify(updatedModes) !== JSON.stringify(currentModes)) {
+            useStore.getState().updateActiveModes(updatedModes);
+        }
+    }, [selectedGCodeLine, bufferGCodesList]);
 
     // Memoize the context value to prevent unnecessary re-renders of consumers
     const contextValue = useMemo(

@@ -15,7 +15,7 @@ export default class GRBLWebSocket extends TypedEventTarget<GRBLWebSocketEventMa
     private reconnectTimeout: number = 1000; // Start with 1 second
     private lastMassage?: string; // Start with 1 second
 
-    constructor({ url = 'ws://192.168.5.1:80' } = {}) {
+    constructor({ url = 'ws://192.168.5.1' } = {}) {
         super();
         this.url = url;
         this.socket = null;
@@ -35,22 +35,26 @@ export default class GRBLWebSocket extends TypedEventTarget<GRBLWebSocketEventMa
             this.socket.onmessage = (event) => {
                 const
                     data = event.data.trim();
-                if (data) {// Ignore 'ok' responses that come after messages starting with '<'
+                const lines = data.split(/\r?\n/);
+                for (const line of lines) {
+                    if (line) {// Ignore 'ok' responses that come after messages starting with '<'
+                        if ((line?.startsWith("<") ||
+                            line?.startsWith("[")) && line?.endsWith("ok")) {
+                            this.dispatchTypedEvent("data", new CustomEvent("data", { detail: line.replace('ok','').trim() }));
 
-                    if (data?.startsWith("<") && data?.endsWith("ok")) {
-                        this.dispatchTypedEvent("data", new CustomEvent("data", { detail: data.replace('ok','').trim() }));
-
-                    }
-                    else {
-                        if(data == 'ok' && this.lastMassage?.startsWith("<") && this.lastMassage?.endsWith(">"))
-                        {
-                            return
                         }
-                        this.lastMassage = data;
-                        this.dispatchTypedEvent("data", new CustomEvent("data", { detail: data }));
+                        else {
+                            if(line == 'ok' && ((this.lastMassage?.startsWith("<") && this.lastMassage?.endsWith(">")) || (this.lastMassage?.startsWith('[') && this.lastMassage?.endsWith(']'))))
+                            {
+                                return
+                            }
+                            this.lastMassage = line;
+                            this.dispatchTypedEvent("data", new CustomEvent("data", { detail: line }));
 
+                        }
                     }
                 }
+
             };
 
             this.socket.onerror = (error) => {
@@ -92,9 +96,6 @@ export default class GRBLWebSocket extends TypedEventTarget<GRBLWebSocketEventMa
         if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
             throw new Error("WebSocket is not connected");
         }
-        if(command == "$H")
-            return;
-
         this.socket.send(command + '\n');
     }
 }
