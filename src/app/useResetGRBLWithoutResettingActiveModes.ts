@@ -43,13 +43,13 @@ export const useResetGRBLWithoutResettingActiveGModes = () => {
                     
                     setIsResetting(false);
                 }
-            }, 100);
+            }, 40);
 
             // Clear interval after 5 seconds if status doesn't change
             setTimeout(() => {
                 clearInterval(checkStatus);
                 setIsResetting(false);
-            }, 5000);
+            }, 2000);
         } catch (error) {
             console.error('Error resetting GRBL:', error);
             setIsResetting(false);

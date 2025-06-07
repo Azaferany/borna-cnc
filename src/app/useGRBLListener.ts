@@ -29,10 +29,7 @@ export const useGRBLListener = (listener : (line :string)=>void, deps?: Dependen
                 return;
             }
 
-            if(line == "ok" && !unFilterInternal)
-            {
-                return;
-            }
+
             //filter status check stuff
 
             listener(line);
