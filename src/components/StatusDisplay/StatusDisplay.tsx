@@ -6,30 +6,6 @@ import { Plane } from '../../types/GCodeTypes';
 import { UnitDisplay } from '../UnitDisplay/UnitDisplay';
 import {useShallow} from "zustand/react/shallow";
 
-const DwellInfo = memo(() => {
-    const dwell = useStore(useShallow(x => x.dwell));
-    const progress = dwell.TotalSeconds > 0 ? (dwell.RemainingSeconds / dwell.TotalSeconds) * 100 : 0;
-    
-    if (dwell.RemainingSeconds <= 0) return null;
-    
-    return (
-        <div className="flex items-center gap-2 bg-gray-700 px-3 py-1 rounded-full">
-            <div className="flex items-center gap-2.5">
-                <div className="animate-spin h-4.5 w-4.5 border-3 border-blue-500 border-t-transparent rounded-full" />
-                <div className="text-sm font-medium text-gray-200">Dwell</div>
-            </div>
-            <div className="w-full h-2 bg-gray-600 rounded-full overflow-hidden">
-                <div 
-                    className="h-full bg-blue-500 transition-all duration-1000 ease-linear"
-                    style={{ width: `${progress}%` }}
-                />
-            </div>
-            <div className="text-sm font-medium text-gray-200">
-                {dwell.RemainingSeconds.toFixed(1)}s
-            </div>
-        </div>
-    );
-});
 
 const CoordRow = memo(({ axis, workOffset, machine, onSetZero, onReset, onHome }: { 
     axis: string; 
@@ -215,8 +191,6 @@ export const StatusDisplay = () => {
                     </div>
                 </div>
             )}
-            <DwellInfo />
-
             {activeModes && (
                 <div className="space-y-2">
                     <h2 className="text-xl font-bold mb-4">Active Modes :</h2>
