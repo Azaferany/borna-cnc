@@ -7,20 +7,22 @@ import { UnitDisplay } from '../UnitDisplay/UnitDisplay';
 import {useShallow} from "zustand/react/shallow";
 
 
-const CoordRow = memo(({ axis, workOffset, machine, onSetZero, onReset, onHome }: { 
+const CoordRow = memo(({axis, workOffset, machine, onSetZero, onReset, onHome, isConnected}: {
     axis: string; 
     workOffset: number; 
     machine: number;
     onSetZero: (axis: string) => void;
     onReset: (axis: string) => void;
     onHome: (axis: string) => void;
+    isConnected: boolean;
 }) => (
     <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-1 py-1 border-b border-gray-700 items-center">
         <div className="font-bold text-gray-300 flex items-center justify-center gap-1">
             <button
                 onClick={() => onHome(axis)}
-                className="w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1"
+                className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={`Home ${axis} axis`}
+                disabled={!isConnected}
             >
                 <HomeIcon className="w-4 h-4 font-bold" />
             </button>
@@ -31,8 +33,9 @@ const CoordRow = memo(({ axis, workOffset, machine, onSetZero, onReset, onHome }
         <div className="font-bold text-gray-300 flex gap-1">
             <button
                 onClick={() => onSetZero(axis)}
-                className="w-full px-1 py-1 mr-1 text-[10px] bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded transition-colors flex items-center justify-center gap-1"
+                className={`w-full px-1 py-1 mr-1 text-[10px] bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={`Set ${axis} to zero`}
+                disabled={!isConnected}
             >
                 <span>Zero</span>
                 <ArrowUturnLeftIcon className="w-4 h-4 font-bold" />
@@ -40,8 +43,9 @@ const CoordRow = memo(({ axis, workOffset, machine, onSetZero, onReset, onHome }
             </button>
             <button
                 onClick={() => onReset(axis)}
-                className="w-full px-1 py-1 mr-1 text-[10px] bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded transition-colors flex items-center justify-center gap-1"
+                className={`w-full px-1 py-1 mr-1 text-[10px] bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={`Reset ${axis} offset`}
+                disabled={!isConnected}
             >
                 <span>Reset</span>
                 <ArrowPathIcon className="w-4 h-4 font-bold" />
@@ -62,7 +66,7 @@ export const StatusDisplay = () => {
     const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
     const gCodeOffsets = useStore(useShallow(x => x.gCodeOffsets));
     const activeModes = useStore(useShallow(x => x.activeModes));
-    const { sendCommand } = useGRBL();
+    const {sendCommand, isConnected} = useGRBL();
 
     const handleSetZero = async (axis: string) => {
         try {
@@ -117,8 +121,9 @@ export const StatusDisplay = () => {
                 <div className="flex items-center justify-center gap-1">
                     <button
                         onClick={() => handleHome('XYZ')}
-                        className="w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1"
+                        className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
                         title={`Home all axis`}
+                        disabled={!isConnected}
                     >
                         <HomeIcon className="w-4 h-4" />
                     </button>
@@ -140,6 +145,7 @@ export const StatusDisplay = () => {
                     onSetZero={handleSetZero}
                     onReset={handleReset}
                     onHome={handleHome}
+                    isConnected={isConnected}
                 />
                 <CoordRow 
                     axis="Y" 
@@ -148,6 +154,7 @@ export const StatusDisplay = () => {
                     onSetZero={handleSetZero}
                     onReset={handleReset}
                     onHome={handleHome}
+                    isConnected={isConnected}
                 />
                 <CoordRow 
                     axis="Z" 
@@ -156,6 +163,7 @@ export const StatusDisplay = () => {
                     onSetZero={handleSetZero}
                     onReset={handleReset}
                     onHome={handleHome}
+                    isConnected={isConnected}
                 />
             </div>
 
