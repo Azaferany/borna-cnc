@@ -22,6 +22,7 @@ export const Scene3D = () => {
     const [showBoundingBox, setShowBoundingBox] = useState(true);
     const [boundingBox, setBoundingBox] = useState<Box3 | null>(null);
     const [cameraControlsOpen, setCameraControlsOpen] = useState(false);
+    const [legendOpen, setLegendOpen] = useState(false);
 
     // Color states
     const [rapidMoveColor, setRapidMoveColor] = useState("#ff0000");
@@ -56,63 +57,83 @@ export const Scene3D = () => {
 
     return (
         <div className="w-full h-full min-h-[370px] relative">
-            <div className="absolute top-4 left-4 z-10 bg-black/40 p-4 rounded text-white shadow-xl">
-                <h4 className="font-bold mb-2">Legend</h4>
-                <div className="flex items-center gap-2 mb-2">
-                    <input
-                        type="color"
-                        id="rapid-move-color"
-                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
-                        value={rapidMoveColor}
-                        onChange={(e) => setRapidMoveColor(e.target.value)}
-                        title="Choose rapid move color"
-                    />
-                    <label htmlFor="rapid-move-color" className="cursor-pointer">Rapid moves (G0)</label>
-                </div>
-                <div className="flex items-center gap-2 mb-2">
-                    <input
-                        type="color"
-                        id="feed-move-color"
-                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
-                        value={feedMoveColor}
-                        onChange={(e) => setFeedMoveColor(e.target.value)}
-                        title="Choose feed move color"
-                    />
-                    <label htmlFor="feed-move-color" className="cursor-pointer">Feed moves (G1)</label>
-                </div>
-                <div className="flex items-center gap-2 mb-2">
-                    <input
-                        type="color"
-                        id="arc-move-color"
-                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
-                        value={arcMoveColor}
-                        onChange={(e) => setArcMoveColor(e.target.value)}
-                        title="Choose arc move color"
-                    />
-                    <label htmlFor="arc-move-color" className="cursor-pointer">Arc moves (G2/G3)</label>
-                </div>
-                <div className="flex items-center gap-2 mb-2">
-                    <input
-                        type="color"
-                        id="running-color"
-                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
-                        value={runningColor}
-                        onChange={(e) => setRunningColor(e.target.value)}
-                        title="Choose running color"
-                    />
-                    <label htmlFor="running-color" className="cursor-pointer">Running</label>
-                </div>
-                <div className="flex items-center gap-2 mb-2">
-                    <input
-                        type="color"
-                        id="done-color"
-                        className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
-                        value={doneColor}
-                        onChange={(e) => setDoneColor(e.target.value)}
-                        title="Choose done color"
-                    />
-                    <label htmlFor="done-color" className="cursor-pointer">Done</label>
-                </div>
+            <div className="absolute top-4 left-4 z-10 bg-black/40 rounded text-white shadow-xl">
+                <button
+                    onClick={() => setLegendOpen(!legendOpen)}
+                    className="w-full px-4 py-2 text-left font-bold hover:bg-black/20 rounded flex items-center justify-between"
+                >
+                    <span className={`transform mr-3 transition-transform ${!legendOpen ? 'rotate-180' : ''}`}>
+                        <svg
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7"/>
+                        </svg>
+                    </span>
+                    Legend
+                </button>
+
+                {legendOpen && (
+                    <div className="p-4 pt-0">
+                        <div className="flex items-center gap-2 mb-2">
+                            <input
+                                type="color"
+                                id="rapid-move-color"
+                                className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
+                                value={rapidMoveColor}
+                                onChange={(e) => setRapidMoveColor(e.target.value)}
+                                title="Choose rapid move color"
+                            />
+                            <label htmlFor="rapid-move-color" className="cursor-pointer">Rapid moves (G0)</label>
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <input
+                                type="color"
+                                id="feed-move-color"
+                                className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
+                                value={feedMoveColor}
+                                onChange={(e) => setFeedMoveColor(e.target.value)}
+                                title="Choose feed move color"
+                            />
+                            <label htmlFor="feed-move-color" className="cursor-pointer">Feed moves (G1)</label>
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <input
+                                type="color"
+                                id="arc-move-color"
+                                className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
+                                value={arcMoveColor}
+                                onChange={(e) => setArcMoveColor(e.target.value)}
+                                title="Choose arc move color"
+                            />
+                            <label htmlFor="arc-move-color" className="cursor-pointer">Arc moves (G2/G3)</label>
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <input
+                                type="color"
+                                id="running-color"
+                                className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
+                                value={runningColor}
+                                onChange={(e) => setRunningColor(e.target.value)}
+                                title="Choose running color"
+                            />
+                            <label htmlFor="running-color" className="cursor-pointer">Running</label>
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <input
+                                type="color"
+                                id="done-color"
+                                className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
+                                value={doneColor}
+                                onChange={(e) => setDoneColor(e.target.value)}
+                                title="Choose done color"
+                            />
+                            <label htmlFor="done-color" className="cursor-pointer">Done</label>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Camera Controls - Collapsible */}
@@ -139,26 +160,36 @@ export const Scene3D = () => {
                     <div className="p-4 pt-0">
                         <div className="flex flex-col gap-2 mb-3">
                             <button
+                                onClick={() => setCameraPreset("center")}
+                                className={`px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm`}
+                            >
+                                Go to Start
+                            </button>
+                            <button
                                 onClick={() => setCameraPreset('top')}
-                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+                                disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
+                                className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 Top View
                             </button>
                             <button
                                 onClick={() => setCameraPreset('front')}
-                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+                                disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
+                                className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 Front View
                             </button>
                             <button
                                 onClick={() => setCameraPreset('side')}
-                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+                                disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
+                                className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 Side View
                             </button>
                             <button
                                 onClick={() => setCameraPreset('iso')}
-                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm"
+                                disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
+                                className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 Isometric View
                             </button>
@@ -170,9 +201,12 @@ export const Scene3D = () => {
                                 id="show-bounding-box"
                                 checked={showBoundingBox}
                                 onChange={(e) => setShowBoundingBox(e.target.checked)}
-                                className="w-4 h-4"
+                                disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
+                                className={`w-4 h-4 ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}
                             />
-                            <label htmlFor="show-bounding-box" className="cursor-pointer text-sm">Show Bounding Box</label>
+                            <label htmlFor="show-bounding-box"
+                                   className={`cursor-pointer text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}>Show
+                                Bounding Box</label>
                         </div>
                     </div>
                 )}
@@ -184,7 +218,11 @@ export const Scene3D = () => {
                 far: 100000,
                 near: 0.1,
             }}>
-                <CameraController preset={cameraPreset} boundingBox={boundingBox} />
+                <CameraController
+                    preset={cameraPreset}
+                    boundingBox={boundingBox}
+                    onPresetComplete={() => setCameraPreset(null)}
+                />
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[10, 10, 10]} intensity={1} castShadow />
                 <pointLight position={[10, 10, 10]} />

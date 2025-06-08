@@ -37,10 +37,15 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
 
 
     useEffect(() => {
-        if(dwell.RemainingSeconds <= 0 || !isSending || !selectedGCodeLine || bufferGCodesList.length === 0 || lastSentLine <= 0)
+        if (dwell.RemainingSeconds <= 0 || !isSending || !selectedGCodeLine || bufferGCodesList.length === 0 || lastSentLine <= 0 || lastSentLine == selectedGCodeLine)
             return;
-        const runningDwellIndex = bufferGCodesList.slice(selectedGCodeLine-1,lastSentLine - 1).findIndex(x=>x.includes("G4 P"))
-        selectGCodeLine(runningDwellIndex +1)
+        const runningDwell = bufferGCodesList.slice(selectedGCodeLine - 1, lastSentLine - 1).find(x => x.includes("G4 P"))
+        if (!runningDwell)
+            return;
+
+        const runningDwellIndex = bufferGCodesList.indexOf(runningDwell)
+        selectGCodeLine(runningDwellIndex + 1)
+
     }, [isSending, dwell, selectedGCodeLine, bufferGCodesList, lastSentLine, selectGCodeLine]);
 
 
@@ -65,7 +70,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         try {
             console.log('Sending command:', command);
             await sendCommand(command);
-            setWaitingForOk(true); // Set true as we are now waiting for an 'ok'
+            setWaitingForOk(false); // Set true as we are now waiting for an 'ok'
         } catch (error) {
             console.error('Error sending command:', error);
             stopSending(); // Stop sending on error (calls the memoized stopSending from context)
@@ -149,15 +154,16 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             // Set the buffer with the provided G-code lines
             setBufferGCodesList(gCodes); // Update local state
             setIsSending(true,bufferType); // Update Zustand store
+            selectGCodeLine(1); // Update Zustand store
             updateLastSentLine(0); // Reset to 0 to start from line 1 (Zustand store)
             setWaitingForOk(false); // Ensure not waiting for 'ok' when starting (local state)
         },
-        [isConnected, setIsSending, updateLastSentLine] // Dependencies for useCallback
+        [isConnected, selectGCodeLine, setIsSending, updateLastSentLine] // Dependencies for useCallback
     );
 
     useEffect(() => {
         const moveGCodes = bufferGCodesList
-            .map(x=> x.split(';')[0].toUpperCase())
+            .map(x => x.toUpperCase())
             .filter(x=>x.includes("G0") || x.includes("G1")|| x.includes("G2"));
         if(IsAllLineSent && (selectedGCodeLine === extractLineNumber(moveGCodes[moveGCodes.length -1]) || status === "Idle"))
             stopSending()

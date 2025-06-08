@@ -5,6 +5,8 @@ import {useGRBL} from "../../app/useGRBL";
 export const DwellInfo = () => {
     const dwell = useStore(useShallow(x => x.dwell));
     const { sendCommand } = useGRBL();
+    const updateDwell = useStore(x => x.updateDwell);
+
     const progress = dwell.TotalSeconds > 0 ? (dwell.RemainingSeconds / dwell.TotalSeconds) * 100 : 0;
 
     if (dwell.RemainingSeconds <= 0) return null;
@@ -12,6 +14,7 @@ export const DwellInfo = () => {
     const handleSkip = async () => {
         try {
             await sendCommand('#');
+            updateDwell({RemainingSeconds: 0, TotalSeconds: 0})
         } catch (error) {
             console.error('Error skipping dwell:', error);
         }

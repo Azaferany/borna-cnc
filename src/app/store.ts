@@ -25,7 +25,7 @@ interface CNCState {
     isConnected: boolean;
     setIsConnected: (isConnected: boolean) => void;
 
-    eventSource?: GRBLSerial;
+    eventSource?: GRBLWebSocket;
 
     isSending: boolean;
     bufferType?: BufferType,
@@ -62,6 +62,7 @@ interface CNCState {
     updateAvailableBufferSlots:(availableBufferSlots: number) =>void,
     updateGCodeOffsets:(fn: (perv:GCodeOffsets) => GCodeOffsets) =>void,
     updateActiveModes:(activeModes:ActiveModes) =>void,
+    updateDwellWithPerv: (fn: (prev: DwellInfo) => DwellInfo) => void,
     updateDwell:(dwell:DwellInfo) =>void,
 
     lastSentLine: number;
@@ -70,7 +71,7 @@ interface CNCState {
 export const useStore = create<CNCState>((set) => ({
     isConnected: false,
     setIsConnected(isConnected: boolean) {set({isConnected})},
-    eventSource:new GRBLSerial(),
+    eventSource: new GRBLWebSocket(),
 
     isSending: false,
     bufferType: undefined,
@@ -123,4 +124,5 @@ export const useStore = create<CNCState>((set) => ({
         set(({gCodeOffsets})  => ({gCodeOffsets: fn(gCodeOffsets)})),
     updateActiveModes: (activeModes) => set({ activeModes }),
     updateDwell: (dwell) => set({ dwell }),
+    updateDwellWithPerv: (fn) => set(({dwell}) => ({dwell: fn(dwell)})),
 }))

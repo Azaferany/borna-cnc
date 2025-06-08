@@ -96,6 +96,6 @@ export default class GRBLWebSocket extends TypedEventTarget<GRBLWebSocketEventMa
         if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
             throw new Error("WebSocket is not connected");
         }
-        this.socket.send(command + '\n');
+        this.socket.send(command + '\r');
     }
 }

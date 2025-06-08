@@ -226,6 +226,8 @@ export const GCodeEditor = () => {
           </button>
           <AceEditor
               onCursorChange={(value) => {
+                if (isSending)
+                  return;
                 const row = value.getCursor().row;
                 selectGCodeLine(row + 1);
               }}
