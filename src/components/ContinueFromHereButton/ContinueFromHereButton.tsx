@@ -149,7 +149,9 @@ export const ContinueFromHereButton = () => {
                 if (!gCodeLines[0].includes('F')) {
                     gCodeLines[0] = `${gCodeLines[0]} F${currentGCodeCommand.feedRate}`;
                 }
-
+                for (let i = 0; i < currentGCodeCommand.activeMCodes.length; i++) {
+                    gCodeLines.unshift(currentGCodeCommand.activeMCodes[i])
+                }
                 await handleCommand('\x18'); // Soft reset
                 stopSending();
                 startSending(gCodeLines ?? [],"GCodeFile");

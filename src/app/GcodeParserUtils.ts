@@ -26,6 +26,9 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
     let isInches = false;
     let isMachineCoordinates = false;
 
+    // Track active M codes - newest first
+    let activeMCodes: string[] = [];
+
     // Process all lines
     for (let currentLine = 0; currentLine < lines.length; currentLine++) {
 
@@ -47,7 +50,8 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                 startPoint: { ...currentPosition },
                 activePlane: currentPlane,
                 activeWorkSpace: currentWorkSpace,
-                hasMove: false
+                hasMove: false,
+                activeMCodes: [...activeMCodes] // Copy current active M codes
             };
 
             let hasMove = false;
@@ -169,15 +173,26 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             command.commandCode = word;
                             command.commandCodeNumber = value;
                             command.commandCodeType = "M";
+
+                            // Update active M codes list
+                            // Remove the M code if it already exists
+                            activeMCodes = activeMCodes.filter(mCode => !mCode.includes(word));
+                            // Add the new M code at the beginning (newest first)
+                            activeMCodes.push(command.rawCommand);
+                            // Update the command's active M codes after adding the new one
+                            command.activeMCodes = [...activeMCodes];
+
                             // Handle M codes (M0-M9)
-                            if (value >= 0 && value <= 9) {
+                            if (value >= 0 && value <= 31) {
                                 if(value == 2 || value == 30)
                                 {
                                     currentPlane = Plane.XY;
                                     currentWorkSpace = "G54"
                                     isInches = false;
                                     isIncrementalMode = false;
-
+                                    // Reset active M codes on program end
+                                    activeMCodes = [];
+                                    command.activeMCodes = [];
                                 }
                             }
                             break;
@@ -307,6 +322,7 @@ export const addLineNumbers = (lines: string[]): string[] => {
             return numbered;
         });
 }
+
 export const cleanGCodeText = (text: string): string[] => {
     // Valid G-code letters
     const validLetters = ['G', 'M', 'T', 'N', 'X', 'Y', 'Z', 'F', 'S', 'H', 'D', 'I', 'J', 'K', 'L', 'P', 'R', 'Q', 'A', 'B', 'C'];
@@ -314,7 +330,7 @@ export const cleanGCodeText = (text: string): string[] => {
     // Split into lines and trim each line
     const lines = text.split('\n').map(line => {
         line = line.replace(/^N\d+\s*/, '');
-        
+
         // Skip lines that start with numbers or %
         if (/^\s*[\d%]/.test(line)) {
             return '';
@@ -402,6 +418,7 @@ export const cleanGCodeText = (text: string): string[] => {
 
     return cleanedLines;
 }
+
 export function extractLineNumber(gcodeLine : string) {
     // Use a regex to match an 'N' at the beginning of the line,
     // followed by one or more digits, capturing just the digits.

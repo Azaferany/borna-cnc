@@ -65,7 +65,7 @@ export interface GCodeCommand {
     endPoint?: Omit<Point3D6Axis,"a"|"b"|"c"> & {a:number,b:number,c:number};
 
     arcCenter?: Point3D;
-
+    activeMCodes: string[]
     feedRate: number;
     isRapidMove?: boolean;
     isArcMove?: boolean;
