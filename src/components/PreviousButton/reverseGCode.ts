@@ -11,6 +11,7 @@ export function reverseGCode(
     const toolPaths = [...toolPathsOrg.filter(x => x.hasMove)]
 
     // Get the active workspace offset
+    const activeOffset = offsets["G54"];
 
     const IsXChanges = !!toolPaths.find(g=>g?.endPoint?.x !== g.startPoint.x);
     const IsYChanges = !!toolPaths.find(g=>g?.endPoint?.y !== g.startPoint.y);
@@ -24,7 +25,6 @@ export function reverseGCode(
         if(!curentGCodeCommand) {
             continue;
         }
-        const activeOffset = offsets[curentGCodeCommand.activeWorkSpace];
         let reversedGCodeCode = curentGCodeCommand.commandCode;
 
         if (curentGCodeCommand.commandCode == "G28" || curentGCodeCommand.commandCode == "G30") {
@@ -86,7 +86,7 @@ export function reverseGCode(
                     const intersectionPointIndex = determineHelixPointOrder(radius, centerPoint, curentGCodeCommand.activePlane ?? Plane.XY, curentGCodeCommand.isClockwise ?? true, pitch, intersectionPoints[0]!, intersectionPoints[1]!)
                     const intersectionPoint = intersectionPoints[intersectionPointIndex - 1];
 
-                    reversedCode.push(`G1 X${((intersectionPoint?.x ?? 0) - (activeOffset?.x ?? 0)).toFixed(3)} Y${((intersectionPoint?.y ?? 0) - (activeOffset?.y ?? 0)).toFixed(3)} Z${((intersectionPoint?.z ?? 0) - (activeOffset?.z ?? 0)).toFixed(3)} F${curentGCodeCommand.feedRate}`)
+                    reversedCode.push(`G53 G1 X${(intersectionPoint?.x ?? 0).toFixed(3)} Y${(intersectionPoint?.y ?? 0).toFixed(3)} Z${((intersectionPoint?.z ?? 0)).toFixed(3)} F${curentGCodeCommand.feedRate}`)
 
                     curentGCodeCommand =
                         {
@@ -105,20 +105,20 @@ export function reverseGCode(
                 const newJ = curentGCodeCommand.arcCenter!.y - curentGCodeCommand.endPoint!.y!
                 reversedCode.push("G17")
 
-                reversedGCodeCode += ` I${newI} J${newJ}`
+                reversedGCodeCode += ` I${newI.toFixed(3)} J${newJ.toFixed(3)}`
             } else if (curentGCodeCommand.activePlane == Plane.YZ) {
 
                 const newJ = curentGCodeCommand.arcCenter!.y - curentGCodeCommand.endPoint!.y!
                 const newK = curentGCodeCommand.arcCenter!.z - curentGCodeCommand.endPoint!.z!
                 reversedCode.push("G19")
 
-                reversedGCodeCode += ` K${newK} J${newJ}`
+                reversedGCodeCode += ` K${newK.toFixed(3)} J${newJ.toFixed(3)}`
             } else if (curentGCodeCommand.activePlane == Plane.XZ) {
                 const newI = curentGCodeCommand.arcCenter!.x - curentGCodeCommand.endPoint!.x!
                 const newK = curentGCodeCommand.arcCenter!.z - curentGCodeCommand.endPoint!.z!
                 reversedCode.push("G18")
 
-                reversedGCodeCode += ` I${newI} K${newK}`
+                reversedGCodeCode += ` I${newI.toFixed(3)} K${newK.toFixed(3)}`
             }
 
 
@@ -142,7 +142,7 @@ export function reverseGCode(
             reversedGCodeCode += ` C${curentGCodeCommand.startPoint.c - (activeOffset?.c ?? 0)}`
 
         reversedGCodeCode += ` F${curentGCodeCommand.feedRate}`
-
+        // Inch mode and relative/absolute mode and WorkSpace are not needed because startPoint, endPoint, and arcCenter are already in absolute millimeter values.
         reversedCode.push(reversedGCodeCode)
 
 

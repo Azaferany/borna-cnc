@@ -50,6 +50,8 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
     const stopSending =useCallback(() => {
         console.debug('Stopping G-code send process');
         setIsSending(false); // Update Zustand store
+        setIsAllLineSent(false);
+
         updateLastSentLine(0); // Update Zustand store
         setWaitingForOk(false); // Reset local state
     },[setIsSending, updateLastSentLine]); // Dependencies for useCallback
@@ -61,7 +63,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
      */
     const handleCommand =useCallback(async (command: string) => {
         try {
-            console.debug('Sending command:', command);
+            console.log('Sending command:', command);
             await sendCommand(command);
             setWaitingForOk(true); // Set true as we are now waiting for an 'ok'
         } catch (error) {
@@ -204,11 +206,12 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
     useGRBLListener(line => {
         if(!isSending)
             return;
+        console.log(line);
         if (line === 'ok') {
             handleOkResponse(); // Call the memoized handler
         } else if (line.includes('error')) {
             console.error('GRBL reported an error:', line);
-            //stopSending(); // Stop sending on GRBL error (calls the memoized stopSending)
+            stopSending(); // Stop sending on GRBL error (calls the memoized stopSending)
         }
     });
 
@@ -228,6 +231,9 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         // Scan backwards from selected line to find most recent mode commands
         for (let i = selectedGCodeLine - 1; i >= 0; i--) {
             const line = bufferGCodesList[i];
+
+            // Skip if line is undefined or empty
+            if (!line) continue;
             
             // Skip if we've found all modes
             if (foundWorkCoord && foundPlane && foundUnits && foundPositioning) break;

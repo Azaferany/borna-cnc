@@ -144,6 +144,9 @@ export default class GRBLSerial extends TypedEventTarget<GRBLSerialEventMap> {
                 if (done) break;
                 const trimmed = value.trim();
                 if (trimmed) {
+                    if (trimmed.startsWith("[echo:"))
+                        continue;
+
                     if (trimmed === "ok" && pendingStatusLine) {
                         // If we have a pending status line and received "ok", emit the combined line
                         this.dispatchTypedEvent("data", new CustomEvent("data", {

@@ -44,7 +44,7 @@ export const Scene3D = () => {
             ...completeData.arkMovePoints.flatMap(group =>
                 group.flatMap(point => point.points.map(p => new Vector3(p.x, p.y, p.z)))
             )
-        ] : [];
+        ] : [new Vector3(0, 0, 0)];
 
         if (allPoints.length > 0) {
             const box = new Box3().setFromPoints(allPoints);

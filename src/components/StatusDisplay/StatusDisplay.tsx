@@ -7,7 +7,7 @@ import { UnitDisplay } from '../UnitDisplay/UnitDisplay';
 import {useShallow} from "zustand/react/shallow";
 
 
-const CoordRow = memo(({axis, workOffset, machine, onSetZero, onReset, onHome, isConnected}: {
+const CoordRow = memo(({axis, workOffset, machine, onSetZero, onReset, onHome, isConnected, g92Offset}: {
     axis: string; 
     workOffset: number; 
     machine: number;
@@ -15,6 +15,7 @@ const CoordRow = memo(({axis, workOffset, machine, onSetZero, onReset, onHome, i
     onReset: (axis: string) => void;
     onHome: (axis: string) => void;
     isConnected: boolean;
+    g92Offset: number;
 }) => (
     <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-1 py-1 border-b border-gray-700 items-center">
         <div className="font-bold text-gray-300 flex items-center justify-center gap-1">
@@ -43,9 +44,9 @@ const CoordRow = memo(({axis, workOffset, machine, onSetZero, onReset, onHome, i
             </button>
             <button
                 onClick={() => onReset(axis)}
-                className={`w-full px-1 py-1 mr-1 text-[10px] bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full px-1 py-1 mr-1 text-[10px] bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || g92Offset === 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={`Reset ${axis} offset`}
-                disabled={!isConnected}
+                disabled={!isConnected || g92Offset === 0}
             >
                 <span>Reset</span>
                 <ArrowPathIcon className="w-4 h-4 font-bold" />
@@ -146,6 +147,7 @@ export const StatusDisplay = () => {
                     onReset={handleReset}
                     onHome={handleHome}
                     isConnected={isConnected}
+                    g92Offset={gCodeOffsets.G92.x}
                 />
                 <CoordRow 
                     axis="Y" 
@@ -155,6 +157,7 @@ export const StatusDisplay = () => {
                     onReset={handleReset}
                     onHome={handleHome}
                     isConnected={isConnected}
+                    g92Offset={gCodeOffsets.G92.y}
                 />
                 <CoordRow 
                     axis="Z" 
@@ -164,6 +167,7 @@ export const StatusDisplay = () => {
                     onReset={handleReset}
                     onHome={handleHome}
                     isConnected={isConnected}
+                    g92Offset={gCodeOffsets.G92.z}
                 />
             </div>
 

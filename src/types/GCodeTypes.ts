@@ -67,10 +67,12 @@ export interface GCodeCommand {
     arcCenter?: Point3D;
     activeMCodes: string[]
     feedRate: number;
+    spindleSpeed: number;
     isRapidMove?: boolean;
     isArcMove?: boolean;
     isClockwise?: boolean;
     isIncremental?: boolean;
+    isInches?: boolean;
     activePlane?: Plane;
     dwellTime?: number;
     hasMove: boolean;

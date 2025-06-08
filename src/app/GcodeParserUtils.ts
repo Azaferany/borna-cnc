@@ -20,6 +20,7 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
         };
 
     let currentFeedRate = 0;
+    let currentSpindleSpeed = 0;
     let currentWorkSpace:keyof GCodeOffsets= workSpaces?.activeGCodeOffset;
     let isIncrementalMode = false;
     let currentPlane : Plane = Plane.XY;
@@ -51,6 +52,8 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                 activePlane: currentPlane,
                 activeWorkSpace: currentWorkSpace,
                 hasMove: false,
+                isInches: isInches,
+                spindleSpeed: currentSpindleSpeed,
                 activeMCodes: [...activeMCodes] // Copy current active M codes
             };
 
@@ -96,9 +99,12 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             }
                             else if (value === 20) {
                                 isInches = true;
+                                command.isInches = true
                             }
                             else if (value === 21) {
                                 isInches = false;
+                                command.isInches = false
+
                             }
                             else if (value === 28 ) {
                                 command.isRapidMove = true;
@@ -177,7 +183,7 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             // Update active M codes list
                             // Remove the M code if it already exists
                             activeMCodes = activeMCodes.filter(mCode => !mCode.includes(word));
-                            // Add the new M code at the beginning (newest first)
+                            // Add the new M code at the end (newest last)
                             activeMCodes.push(command.rawCommand);
                             // Update the command's active M codes after adding the new one
                             command.activeMCodes = [...activeMCodes];
@@ -252,6 +258,10 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                         case 'F':
                             command.feedRate = convertToMM(value, isInches);
                             if(value > 0) currentFeedRate = convertToMM(value, isInches);
+                            break;
+                        case 'S':
+                            command.spindleSpeed = value;
+                            if (value > 0) currentSpindleSpeed = value;
                             break;
                         case 'P':
                             // Dwell time for G4
@@ -371,11 +381,11 @@ export const cleanGCodeText = (text: string): string[] => {
 
             // Check if it's a G/M/T command
             if (/^[GMT]/.test(word)) {
-                commandWords.push(word);
+                commandWords.push(simplifyGCode(word));
             }
         }
-        if(commandWords.find(x=>x === "G0" || x === "G00" || x==="G1" || x==="G01" || x==="G02" || x==="G2" || x==="G03" || x==="G3")) {
-            lastLineComand = commandWords.slice().reverse().find(x=>x === "G0" || x === "G00" || x==="G1" || x==="G01" || x==="G02" || x==="G2" || x==="G03" || x==="G3")!
+        if (commandWords.find(x => x === "G0" || x === "G1" || x === "G2" || x === "G3")) {
+            lastLineComand = commandWords.slice().reverse().find(x => x === "G0" || x === "G1" || x === "G2" || x === "G3")!
         }
         // If we have commands, create separate lines for each
         if (commandWords.length > 1) {
@@ -392,7 +402,7 @@ export const cleanGCodeText = (text: string): string[] => {
                 if(gcodeWords.length === 1) {
                     cleanedLines.push(gcodeWords.join(" "));
                 } else {
-                    if (!['G00', 'G01', 'G02', 'G03',"G0","G1","G2","G3", 'G53',"G43","G38.2","G38.3","G38.4","G38.5"].includes(command)) {
+                    if (!['G0', 'G1', 'G2', 'G3', 'G53', "G43", "G38.2", "G38.3", "G38.4", "G38.5"].includes(command)) {
                         // Check if it's a coordinate word
                         cleanedLines.push(command);
                         if(gcodeWords.slice(1).length > 0)
@@ -416,7 +426,7 @@ export const cleanGCodeText = (text: string): string[] => {
         }
     }
 
-    return cleanedLines;
+    return cleanedLines.map(x => simplifyGCode(x));
 }
 
 export function extractLineNumber(gcodeLine : string) {
@@ -431,4 +441,13 @@ export function extractLineNumber(gcodeLine : string) {
 
     // match[1] contains the digits after 'N'. Convert to a Number and return.
     return Number(match[1]);
+}
+
+function simplifyGCode(gCodeLine: string) {
+    // Replace G-codes and M-codes with simplified versions
+    return gCodeLine.replace(/([GM])(\d+)/gi, (_, letter, number) => {
+        // Convert to lowercase and remove leading zeros
+        const simplifiedNumber = parseFloat(number);
+        return letter + simplifiedNumber;
+    });
 }

@@ -39,6 +39,7 @@ export const ContinueFromHereButton = () => {
                 const gCodeLines = [...(allGCodes ?? [])].slice((selectedGCodeLine ?? 0)-1)
                 const currentGCodeCommand =
                     findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine ?? 0, toolPathGCodes ?? [])!
+                const activeOffset = gCodeOffsets[currentGCodeCommand.activeWorkSpace];
 
                 if (currentGCodeCommand?.isArcMove) {
 
@@ -50,7 +51,7 @@ export const ContinueFromHereButton = () => {
                             endB:machineCoordinate.b,
                             endC: machineCoordinate.c
                         }
-                    const activeOffset = gCodeOffsets[curentGCodeCommand.activeWorkSpace];
+
 
                     const startPoint = new Vector3(curentGCodeCommand.startPoint.x, curentGCodeCommand.startPoint.y, curentGCodeCommand.startPoint.z);
                     const endPoint = new Vector3(curentGCodeCommand.endPoint!.x, curentGCodeCommand.endPoint!.y, curentGCodeCommand.endPoint!.z);
@@ -93,67 +94,77 @@ export const ContinueFromHereButton = () => {
                         const newJ = currentGCodeCommand.arcCenter!.y - curentGCodeCommand.endPoint.y
                         const newK = currentGCodeCommand.arcCenter!.z - curentGCodeCommand.endPoint.z
 
+
                         // Update the raw command with new I, J, K values
                         const updatedCommand = currentGCodeCommand.rawCommand
+                            .replace(/X[-\d.]+/, `X${currentGCodeCommand.endPoint!.x - (activeOffset?.x ?? 0)}`)
+                            .replace(/Y[-\d.]+/, `Y${currentGCodeCommand.endPoint!.y - (activeOffset?.y ?? 0)}`)
+                            .replace(/Z[-\d.]+/, `Z${currentGCodeCommand.endPoint!.z - (activeOffset?.z ?? 0)}`)
                             .replace(/I[-\d.]+/, `I${newI.toFixed(3)}`)
                             .replace(/J[-\d.]+/, `J${newJ.toFixed(3)}`)
                             .replace(/K[-\d.]+/, `K${newK.toFixed(3)}`);
 
-                        gCodeLines[0] = updatedCommand;
-                        if(curentGCodeCommand.activePlane == Plane.XY) {
+                        gCodeLines[0] = `${updatedCommand}`;
 
-                            gCodeLines.unshift("G17")
-                        }
-                        else if(curentGCodeCommand.activePlane == Plane.YZ) {
 
-                            gCodeLines.unshift("G19")
-
-                        }
-                        else if(curentGCodeCommand.activePlane == Plane.XZ) {
-                            gCodeLines.unshift("G18")
-                        }
-                        gCodeLines.unshift(`G1 X${((intersectionPoint?.x ?? 0) - (activeOffset?.x ?? 0)).toFixed(3)} Y${((intersectionPoint?.y ?? 0) - (activeOffset?.y ?? 0)).toFixed(3)} Z${((intersectionPoint?.z ?? 0) - (activeOffset?.z ?? 0)).toFixed(3)} F${curentGCodeCommand.feedRate}`)
+                        gCodeLines.unshift(`G1 X${((intersectionPoint?.x ?? 0) - (activeOffset?.x ?? 0)).toFixed(3)} Y${((intersectionPoint?.y ?? 0) - (activeOffset?.y ?? 0)).toFixed(3)} Z${((intersectionPoint?.z ?? 0 - (activeOffset?.z ?? 0))).toFixed(3)} F${curentGCodeCommand.feedRate}`)
 
                     }
-
                     else {
                         const newI = currentGCodeCommand.arcCenter!.x - curentGCodeCommand.endPoint.x
                         const newJ = currentGCodeCommand.arcCenter!.y - curentGCodeCommand.endPoint.y
                         const newK = currentGCodeCommand.arcCenter!.z - curentGCodeCommand.endPoint.z
 
+
                         // Update the raw command with new I, J, K values
                         const updatedCommand = currentGCodeCommand.rawCommand
+                            .replace(/X[-\d.]+/, `X${currentGCodeCommand.endPoint!.x - (activeOffset?.x ?? 0)}`)
+                            .replace(/Y[-\d.]+/, `Y${currentGCodeCommand.endPoint!.y - (activeOffset?.y ?? 0)}`)
+                            .replace(/Z[-\d.]+/, `Z${currentGCodeCommand.endPoint!.z - (activeOffset?.z ?? 0)}`)
                             .replace(/I[-\d.]+/, `I${newI.toFixed(3)}`)
                             .replace(/J[-\d.]+/, `J${newJ.toFixed(3)}`)
                             .replace(/K[-\d.]+/, `K${newK.toFixed(3)}`);
 
-                        gCodeLines[0] = updatedCommand;
-                        if(curentGCodeCommand.activePlane == Plane.XY) {
-
-                            gCodeLines.unshift("G17")
-                        }
-                        else if(curentGCodeCommand.activePlane == Plane.YZ) {
-
-                            gCodeLines.unshift("G19")
-
-                        }
-                        else if(curentGCodeCommand.activePlane == Plane.XZ) {
-                            gCodeLines.unshift("G18")
-                        }
+                        gCodeLines[0] = `${updatedCommand}`;
                     }
-
-
                 }
-
                 //set feedRate
                 if (!gCodeLines[0].includes('F')) {
                     gCodeLines[0] = `${gCodeLines[0]} F${currentGCodeCommand.feedRate}`;
                 }
+
+                gCodeLines.unshift(currentGCodeCommand.isIncremental ? "G91" : "G90")
+                gCodeLines.unshift(currentGCodeCommand.isInches ? "G20" : "G21")
+
+                if (currentGCodeCommand.activePlane == Plane.XY) {
+
+                    gCodeLines.unshift("G17")
+                } else if (currentGCodeCommand.activePlane == Plane.YZ) {
+
+                    gCodeLines.unshift("G19")
+
+                } else if (currentGCodeCommand.activePlane == Plane.XZ) {
+                    gCodeLines.unshift("G18")
+                }
+                gCodeLines.unshift(currentGCodeCommand.activeWorkSpace)
+
                 for (let i = 0; i < currentGCodeCommand.activeMCodes.length; i++) {
-                    gCodeLines.unshift(currentGCodeCommand.activeMCodes[i])
+                    const mCode = currentGCodeCommand.activeMCodes[i];
+                    if ((i + 1) === currentGCodeCommand.activeMCodes.length && (mCode.includes("M3") || mCode.includes("M4"))) {
+                        if (/s\d+/i.test(mCode)) {
+                            // If s part exists, replace it
+                            gCodeLines.unshift(mCode.replace(/s\d+/i, `s${currentGCodeCommand.spindleSpeed}`));
+                        } else {
+                            // If s part doesn't exist, add it at the end
+                            gCodeLines.unshift(`${mCode} s${currentGCodeCommand.spindleSpeed}`);
+                        }
+                    } else {
+                        gCodeLines.unshift(currentGCodeCommand.activeMCodes[i])
+                    }
                 }
                 await handleCommand('\x18'); // Soft reset
                 stopSending();
+                console.log(gCodeLines)
                 startSending(gCodeLines ?? [],"GCodeFile");
 
 
