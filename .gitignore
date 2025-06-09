@@ -30,3 +30,4 @@ release-builds/builder-debug.yml
 /release-builds/BonaAbzarCNC Setup 0.1.0.exe.blockmap
 /release-builds/builder-effective-config.yaml
 /release-builds/latest.yml
+/release-builds/*
