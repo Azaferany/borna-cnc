@@ -19,7 +19,7 @@ export const Scene3D = () => {
     const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
     const [completeData, setCompleteData] = useState<GCodePointData | null>(null);
     const [cameraPreset, setCameraPreset] = useState<keyof typeof CAMERA_PRESETS | null>(null);
-    const [showBoundingBox, setShowBoundingBox] = useState(true);
+    const [showBoundingBox, setShowBoundingBox] = useState(false);
     const [boundingBox, setBoundingBox] = useState<Box3 | null>(null);
     const [cameraControlsOpen, setCameraControlsOpen] = useState(false);
     const [legendOpen, setLegendOpen] = useState(false);

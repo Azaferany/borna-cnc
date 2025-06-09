@@ -2,6 +2,9 @@ import {useGRBL} from "../../app/useGRBL.ts";
 import {useStore} from "../../app/store.ts";
 import {useEffect, useState} from "react";
 import { FeedrateUnitDisplay } from "../UnitDisplay/FeedrateUnitDisplay";
+
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 const SliderControl = ({
                            value: storeValue,
                            label,
@@ -55,7 +58,10 @@ const SliderControl = ({
                 </div>
                 <div className="flex items-center space-x-2">
                     {!allowedValues &&(<button
-                        onClick={() => onCommit && onCommit(Math.max(min, storeValue - 10))}
+                        onClick={() => {
+                            onCommit && onCommit(Math.max(min, storeValue - 10))
+                            setLocalValue(prevState => prevState - 10);
+                        }}
                         className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={!isConnected}
                     >
@@ -87,7 +93,10 @@ const SliderControl = ({
                         onTouchEnd={() => onCommit(localValue)}
                     />
                     {!allowedValues && (<button
-                        onClick={() => {onCommit(Math.min(max, storeValue + 10))}}
+                        onClick={() => {
+                            onCommit && onCommit(Math.max(min, storeValue + 10))
+                            setLocalValue(prevState => prevState + 10);
+                        }}
                         className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={!isConnected}
                     >
@@ -115,6 +124,7 @@ export const OverrideControls = () => {
 
         if (newValue === 100) {
             await sendCommand('\x90'); // Set 100%
+            await delay(20);
         } else if (newValue > feedrateOverridePercent) {
             const diff = newValue - feedrateOverridePercent;
             const steps10 = Math.floor(diff / 10);
@@ -122,9 +132,11 @@ export const OverrideControls = () => {
 
             for (let i = 0; i < steps10; i++) {
                 await sendCommand('\x91'); // Increase 10%
+                await delay(20);
             }
             for (let i = 0; i < steps1; i++) {
                 await sendCommand('\x93'); // Increase 1%
+                await delay(20);
             }
         } else {
             const diff = feedrateOverridePercent - newValue;
@@ -133,9 +145,11 @@ export const OverrideControls = () => {
 
             for (let i = 0; i < steps10; i++) {
                 await sendCommand('\x92'); // Decrease 10%
+                await delay(20);
             }
             for (let i = 0; i < steps1; i++) {
                 await sendCommand('\x94'); // Decrease 1%
+                await delay(20);
             }
         }
     };
@@ -145,10 +159,13 @@ export const OverrideControls = () => {
 
         if (newValue === 100) {
             await sendCommand('\x95'); // Set to 100%
+            await delay(20);
         } else if (newValue === 50) {
             await sendCommand('\x96'); // Set to 50%
+            await delay(20);
         } else if (newValue === 25) {
             await sendCommand('\x97'); // Set to 25%
+            await delay(20);
         }
     };
 
@@ -162,6 +179,7 @@ export const OverrideControls = () => {
 
         if (newValue === 100) {
             await sendCommand('\x99'); // Set 100%
+            await delay(20);
         } else if (newValue > spindleSpeedOverridePercent) {
             const diff = newValue - spindleSpeedOverridePercent;
             const steps10 = Math.floor(diff / 10);
@@ -169,9 +187,11 @@ export const OverrideControls = () => {
 
             for (let i = 0; i < steps10; i++) {
                 await sendCommand('\x9A'); // Increase 10%
+                await delay(20);
             }
             for (let i = 0; i < steps1; i++) {
                 await sendCommand('\x9C'); // Increase 1%
+                await delay(20);
             }
         } else {
             const diff = spindleSpeedOverridePercent - newValue;
@@ -180,9 +200,11 @@ export const OverrideControls = () => {
 
             for (let i = 0; i < steps10; i++) {
                 await sendCommand('\x9B'); // Decrease 10%
+                await delay(20);
             }
             for (let i = 0; i < steps1; i++) {
                 await sendCommand('\x9D'); // Decrease 1%
+                await delay(20);
             }
         }
     };

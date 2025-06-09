@@ -5,7 +5,6 @@ import {GCodeBufferContext} from "./GCodeBufferContext.ts";
 import {extractLineNumber} from "./GcodeParserUtils.ts";
 import {useStore} from "./store.ts";
 import type {BufferType} from "../types/GCodeTypes.ts";
-import {useShallow} from "zustand/react/shallow";
 import { Plane } from "../types/GCodeTypes.ts";
 
 interface GCodeBufferProviderProps {
@@ -24,8 +23,6 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
     const status = useStore((s) => s.status);
     const isSending = useStore((s) => s.isSending);
     const bufferType = useStore((s) => s.bufferType);
-    const dwell = useStore(useShallow((s) => s.dwell));
-
     const setIsSending = useStore((s) => s.setIsSending);
 
 
@@ -36,17 +33,15 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
     const [IsAllLineSent, setIsAllLineSent] = useState(false)
 
 
-    useEffect(() => {
-        if (dwell.RemainingSeconds <= 0 || !isSending || !selectedGCodeLine || bufferGCodesList.length === 0 || lastSentLine <= 0 || lastSentLine == selectedGCodeLine)
-            return;
-        const runningDwell = bufferGCodesList.slice(selectedGCodeLine - 1, lastSentLine - 1).find(x => x.includes("G4 P"))
-        if (!runningDwell)
-            return;
-
-        const runningDwellIndex = bufferGCodesList.indexOf(runningDwell)
-        selectGCodeLine(runningDwellIndex + 1)
-
-    }, [isSending, dwell, selectedGCodeLine, bufferGCodesList, lastSentLine, selectGCodeLine]);
+    // useEffect(() => {
+    //     if (dwell.RemainingSeconds <= 0 || !isSending || !selectedGCodeLine || bufferGCodesList.length === 0 || lastSentLine <= 0 || lastSentLine == selectedGCodeLine)
+    //         return;
+    //     const runningDwellIndex = bufferGCodesList.slice(selectedGCodeLine - 1, lastSentLine - 1).findIndex(x => x.includes("G4 P"))
+    //     if (runningDwellIndex == -1)
+    //         return;
+    //     selectGCodeLine(selectedGCodeLine + runningDwellIndex )
+    //
+    // }, [isSending, dwell, selectedGCodeLine, bufferGCodesList, lastSentLine, selectGCodeLine]);
 
 
     /**
@@ -165,7 +160,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         const moveGCodes = bufferGCodesList
             .map(x => x.toUpperCase())
             .filter(x=>x.includes("G0") || x.includes("G1")|| x.includes("G2"));
-        if(IsAllLineSent && (selectedGCodeLine === extractLineNumber(moveGCodes[moveGCodes.length -1]) || status === "Idle"))
+        if (IsAllLineSent && selectedGCodeLine && (extractLineNumber(moveGCodes[moveGCodes.length - 1])! - selectedGCodeLine) < 2)
             stopSending()
     }, [bufferGCodesList, IsAllLineSent, selectedGCodeLine, stopSending, status]);
     /**

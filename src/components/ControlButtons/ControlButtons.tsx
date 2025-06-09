@@ -11,7 +11,7 @@ export const ControlButtons = () => {
     return (
         <div className="bg-gray-800 p-4 rounded-lg h-full">
             <h2 className="text-xl font-bold mb-4">Machine Control</h2>
-            <div className="grid grid-cols-3 gap-4 items-center mt-14">
+            <div className="grid grid-cols-3 gap-4 items-center mt-6">
                 <PreviousButton />
                 <PauseButton />
                 <StartButton/>
