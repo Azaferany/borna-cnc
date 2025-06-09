@@ -7,7 +7,18 @@ import { UnitDisplay } from '../UnitDisplay/UnitDisplay';
 import {useShallow} from "zustand/react/shallow";
 
 
-const CoordRow = memo(({axis, workOffset, machine, onSetZero, onReset, onHome, isConnected, g92Offset}: {
+const CoordRow = memo(({
+                           axis,
+                           workOffset,
+                           machine,
+                           onSetZero,
+                           onReset,
+                           onHome,
+                           isConnected,
+                           g92Offset,
+                           isSending,
+                           status
+                       }: {
     axis: string; 
     workOffset: number; 
     machine: number;
@@ -16,14 +27,16 @@ const CoordRow = memo(({axis, workOffset, machine, onSetZero, onReset, onHome, i
     onHome: (axis: string) => void;
     isConnected: boolean;
     g92Offset: number;
+    isSending: boolean;
+    status: string;
 }) => (
     <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-1 py-1 border-b border-gray-700 items-center">
         <div className="font-bold text-gray-300 flex items-center justify-center gap-1">
             <button
                 onClick={() => onHome(axis)}
-                className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={`Home ${axis} axis`}
-                disabled={!isConnected}
+                disabled={!isConnected || isSending || status !== 'Idle'}
             >
                 <HomeIcon className="w-4 h-4 font-bold" />
             </button>
@@ -34,9 +47,9 @@ const CoordRow = memo(({axis, workOffset, machine, onSetZero, onReset, onHome, i
         <div className="font-bold text-gray-300 flex gap-1">
             <button
                 onClick={() => onSetZero(axis)}
-                className={`w-full px-1 py-1 mr-1 text-[10px] bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full px-1 py-1 mr-1 text-[10px] bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={`Set ${axis} to zero`}
-                disabled={!isConnected}
+                disabled={!isConnected || isSending || status !== 'Idle'}
             >
                 <span>Zero</span>
                 <ArrowUturnLeftIcon className="w-4 h-4 font-bold" />
@@ -44,9 +57,9 @@ const CoordRow = memo(({axis, workOffset, machine, onSetZero, onReset, onHome, i
             </button>
             <button
                 onClick={() => onReset(axis)}
-                className={`w-full px-1 py-1 mr-1 text-[10px] bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || g92Offset === 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full px-1 py-1 mr-1 text-[10px] bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle' || g92Offset === 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title={`Reset ${axis} offset`}
-                disabled={!isConnected || g92Offset === 0}
+                disabled={!isConnected || isSending || status !== 'Idle' || g92Offset === 0}
             >
                 <span>Reset</span>
                 <ArrowPathIcon className="w-4 h-4 font-bold" />
@@ -122,9 +135,9 @@ export const StatusDisplay = () => {
                 <div className="flex items-center justify-center gap-1">
                     <button
                         onClick={() => handleHome('XYZ')}
-                        className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
                         title={`Home all axis`}
-                        disabled={!isConnected}
+                        className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={!isConnected || isSending || status !== 'Idle'}
                     >
                         <HomeIcon className="w-4 h-4" />
                     </button>
@@ -148,6 +161,8 @@ export const StatusDisplay = () => {
                     onHome={handleHome}
                     isConnected={isConnected}
                     g92Offset={gCodeOffsets.G92.x}
+                    isSending={isSending}
+                    status={status}
                 />
                 <CoordRow 
                     axis="Y" 
@@ -158,6 +173,8 @@ export const StatusDisplay = () => {
                     onHome={handleHome}
                     isConnected={isConnected}
                     g92Offset={gCodeOffsets.G92.y}
+                    isSending={isSending}
+                    status={status}
                 />
                 <CoordRow 
                     axis="Z" 
@@ -168,6 +185,8 @@ export const StatusDisplay = () => {
                     onHome={handleHome}
                     isConnected={isConnected}
                     g92Offset={gCodeOffsets.G92.z}
+                    isSending={isSending}
+                    status={status}
                 />
             </div>
 
