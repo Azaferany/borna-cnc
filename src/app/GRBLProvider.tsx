@@ -267,17 +267,6 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
             pollActiveModesInterval = setInterval(async () => {
                 await sendCommand('$G');
             }, 1000); // Poll every 5s
-
-            setTimeout(() => {
-                try {
-                    sendCommand('?');
-                    sendCommand('\x87');
-                    sendCommand('$#');
-                    sendCommand('$G');
-                } catch {
-                    console.log('Error sending command');
-                }
-            }, 100)
         }
         return () => {
             clearInterval(pollStatusInterval)
