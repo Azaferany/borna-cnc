@@ -4,13 +4,19 @@ import {useShallow} from "zustand/react/shallow";
 export const useGRBL = () => {
     const eventSource = useStore(useShallow(x=>x.eventSource));
     const isConnected = useStore(x=>x.isConnected);
-    if (!eventSource) {
-        throw new Error('useGRBL must be used within a GRBLProvider');
-    }
+    const addMessageToHistory = useStore(x => x.addMessageToHistory);
+
+
+    // Wrap the original send method to track sent messages
+    const sendCommand = (command: string) => {
+        addMessageToHistory('sent', command);
+        eventSource?.send(command);
+    };
+
     return {
-        isConnected:isConnected,
-        connect : ()=>eventSource?.connect(),
-        disconnect : ()=> eventSource?.disconnect(),
-        sendCommand :  (command : string)=>eventSource?.send(command),
+        isConnected: isConnected,
+        connect: () => eventSource?.connect(),
+        disconnect: () => eventSource?.disconnect(),
+        sendCommand,
     };
 };

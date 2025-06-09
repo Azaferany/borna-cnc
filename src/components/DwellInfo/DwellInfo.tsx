@@ -1,20 +1,37 @@
 import {useStore} from "../../app/store.ts";
 import {useShallow} from "zustand/react/shallow";
 import {useGRBL} from "../../app/useGRBL";
+import {useEffect} from "react";
 
 export const DwellInfo = () => {
     const dwell = useStore(useShallow(x => x.dwell));
+    const status = useStore(x => x.status);
     const { sendCommand } = useGRBL();
     const updateDwell = useStore(x => x.updateDwell);
 
     const progress = dwell.TotalSeconds > 0 ? (dwell.RemainingSeconds / dwell.TotalSeconds) * 100 : 0;
+
+    useEffect(() => {
+        if (dwell.RemainingSeconds <= 0) return;
+
+        const interval = setInterval(() => {
+            updateDwell({
+                ...dwell,
+                RemainingSeconds: Math.max(0, dwell.RemainingSeconds - 1)
+            });
+        }, 1000);
+
+        if (status != "Run") clearInterval(interval);
+
+        return () => clearInterval(interval);
+    }, [dwell, updateDwell, status]);
 
     if (dwell.RemainingSeconds <= 0) return null;
 
     const handleSkip = async () => {
         try {
             await sendCommand('#');
-            updateDwell({RemainingSeconds: 0, TotalSeconds: 0})
+            setTimeout(() => updateDwell({RemainingSeconds: 0, TotalSeconds: 0}), 200)
         } catch (error) {
             console.error('Error skipping dwell:', error);
         }

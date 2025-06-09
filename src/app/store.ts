@@ -10,6 +10,7 @@ import {
 import GRBLWebSocket from "./GRBLWebSocket.ts";
 import GRBLSerial from "./GRBLSerial.ts";
 
+export type ConnectionType = 'websocket' | 'serial';
 
 export interface ActiveModes {
     WorkCoordinateSystem: "G54" | "G55" | "G56" | "G57" | "G58"  | "G59";
@@ -25,7 +26,10 @@ interface CNCState {
     isConnected: boolean;
     setIsConnected: (isConnected: boolean) => void;
 
-    eventSource?: GRBLWebSocket;
+    connectionType: ConnectionType;
+    setConnectionType: (type: ConnectionType) => void;
+    eventSource?: GRBLWebSocket | GRBLSerial;
+    setEventSource: (eventSource: GRBLWebSocket | GRBLSerial) => void;
 
     isSending: boolean;
     bufferType?: BufferType,
@@ -67,11 +71,22 @@ interface CNCState {
 
     lastSentLine: number;
     updateLastSentLine: (line: number) => void;
+
+    messageHistory: { type: 'sent' | 'received', message: string, timestamp: number }[];
+    addMessageToHistory: (type: 'sent' | 'received', message: string) => void;
+    clearMessageHistory: () => void;
 }
 export const useStore = create<CNCState>((set) => ({
     isConnected: false,
     setIsConnected(isConnected: boolean) {set({isConnected})},
+    connectionType: 'websocket',
+    setConnectionType(type: ConnectionType) {
+        set({connectionType: type})
+    },
     eventSource: new GRBLWebSocket(),
+    setEventSource(eventSource: GRBLWebSocket | GRBLSerial) {
+        set({eventSource})
+    },
 
     isSending: false,
     bufferType: undefined,
@@ -107,6 +122,12 @@ export const useStore = create<CNCState>((set) => ({
     },
 
     lastSentLine: 0,
+
+    messageHistory: [],
+    addMessageToHistory: (type, message) => set((state) => ({
+        messageHistory: [...state.messageHistory, {type, message, timestamp: Date.now()}]
+    })),
+    clearMessageHistory: () => set({messageHistory: []}),
 
     loadToolPathGCodes: (allGCodes,toolPathGCodes,) => set({ toolPathGCodes, allGCodes }),
     selectGCodeLine: (line) => set({ selectedGCodeLine: line }),

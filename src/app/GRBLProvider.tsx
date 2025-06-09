@@ -6,16 +6,23 @@ import type { ActiveModes } from './store.ts';
 import {useShallow} from "zustand/react/shallow";
 import {parseGCode} from "./GcodeParserUtils.ts";
 import {useShallowCompareEffect} from "react-use";
+import GRBLWebSocket from './GRBLWebSocket';
+import GRBLSerial from './GRBLSerial';
+import {useGRBL} from "./useGRBL.ts";
 
 export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const isConnected = useStore(x => x.isConnected);
+    const {isConnected, sendCommand} = useGRBL();
+
+
     const isSending = useStore(x => x.isSending);
+    const connectionType = useStore(x => x.connectionType);
+
     const eventSource = useStore(useShallow(x => x.eventSource));
+    const setEventSource = useStore(x => x.setEventSource);
 
     const updateStatus = useStore(x => x.updateStatus);
     const updateAvailableBufferSlots = useStore(x => x.updateAvailableBufferSlots);
     const updateDwell = useStore(x => x.updateDwell);
-    const updateDwellWithPerv = useStore(x => x.updateDwellWithPerv);
     const updateMachineCoordinate = useStore(x => x.updateMachineCoordinate);
     const selectGCodeLine = useStore(x => x.selectGCodeLine);
     const updateWorkPlaceCoordinateOffset = useStore(x => x.updateWorkPlaceCoordinateOffset);
@@ -25,6 +32,8 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updateRapidSpeedOverridePercent = useStore(x => x.updateRapidSpeedOverridePercent);
     const updateSpindleSpeedOverridePercent = useStore(x => x.updateSpindleSpeedOverridePercent);
     const updateGCodeOffsets = useStore(x => x.updateGCodeOffsets);
+    const addMessageToHistory = useStore(x => x.addMessageToHistory);
+    const clearMessageHistory = useStore(x => x.clearMessageHistory);
 
     const updateActiveModes = useStore(x => x.updateActiveModes);
 
@@ -35,8 +44,36 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const loadToolPathGCodes = useStore(x => x.loadToolPathGCodes);
     const dwell = useStore(useShallow(x => x.dwell));
 
-    const dwellTimeoutRef = useRef<NodeJS.Timeout>(void 0);
-    const dwellIntervalRef = useRef<NodeJS.Timeout>(void 0);
+    const dwellTimeoutRef = useRef<NodeJS.Timeout>(undefined);
+    const connect = async () => {
+        setIsConnected(true);
+        addMessageToHistory('received', "Connected ....");
+        clearMessageHistory()
+    }
+
+    const disconnect = useCallback((async () => {
+        setIsConnected(false);
+        updateStatus("NotConnected");
+        addMessageToHistory('received', "Disconnected ....");
+
+    }), [addMessageToHistory, setIsConnected, updateStatus]);
+
+    // Initialize eventSource based on connection type
+    useEffect(() => {
+        if (eventSource instanceof GRBLSerial && connectionType == "serial")
+            return;
+
+        if (eventSource instanceof GRBLWebSocket && connectionType == "websocket")
+            return;
+
+        if (eventSource) {
+            eventSource.disconnect();
+            disconnect()
+        }
+
+        const newEventSource = connectionType === 'websocket' ? new GRBLWebSocket() : new GRBLSerial();
+        setEventSource(newEventSource);
+    }, [connectionType, disconnect, eventSource, setEventSource]);
 
     function parseGrblStatus(report : string) : {state: GRBLState,MPos?:string[],WCO?:string[],FS?:string[],Ov?:string[],Ln?:string,Bf?:string[],Dwell?:string[]} {
         // 1. Trim off angle‑brackets and any leading/trailing whitespace
@@ -87,8 +124,6 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (gRBLStatus) {
             const {state, MPos, WCO, FS, Ov, Ln, Bf,Dwell} = gRBLStatus;
 
-            if (dwell.RemainingSeconds <= 0)
-                updateStatus(state);
 
             if(Dwell) {
                 const newDwellInfo = Dwell.map(Number);
@@ -100,17 +135,12 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     updateDwell({RemainingSeconds: remainingSeconds, TotalSeconds: totalSeconds});
                     updateStatus("Run");
 
-                    dwellIntervalRef.current = setInterval(() => {
-                        updateDwellWithPerv(prev => ({
-                            ...prev,
-                            RemainingSeconds: Math.max(0, prev.RemainingSeconds - 0.1),
-                        }));
-                    }, 100);
+                    if (dwellTimeoutRef.current) {
+                        clearTimeout(dwellTimeoutRef.current)
+                        dwellTimeoutRef.current = undefined;
+                    }
                     // Set up timout to clear interval when dwell completes
                     dwellTimeoutRef.current = setTimeout(() => {
-                        if (dwellIntervalRef.current) {
-                            clearInterval(dwellIntervalRef.current);
-                        }
                         updateDwell({RemainingSeconds: 0, TotalSeconds: totalSeconds});
                         updateStatus(state);
                         clearTimeout(dwellTimeoutRef.current)
@@ -119,15 +149,11 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     updateDwell({RemainingSeconds: 0, TotalSeconds: totalSeconds});
                     updateStatus(state);
                     clearTimeout(dwellTimeoutRef.current)
-                    clearInterval(dwellIntervalRef.current);
-
                 }
-            } else {
-                updateDwell({RemainingSeconds: 0, TotalSeconds: 0});
-                updateStatus(state);
-                clearTimeout(dwellTimeoutRef.current)
-                clearInterval(dwellIntervalRef.current);
             }
+
+            if (dwell.RemainingSeconds <= 0 || state != "Idle")
+                updateStatus(state);
             if(Bf) {
                 const newAvailableBufferSlots = Bf.map(Number)[0];
                 updateAvailableBufferSlots(newAvailableBufferSlots);
@@ -162,22 +188,11 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 updateSpindleSpeedOverridePercent(newSpindleSpeedOverridePercent);
             }
         }
-    }, [dwell.RemainingSeconds, updateStatus, updateDwell, updateDwellWithPerv, updateAvailableBufferSlots, updateMachineCoordinate, selectGCodeLine, updateWorkPlaceCoordinateOffset, updateFeedrate, updateSpindleSpeed, updateFeedrateOverridePercent, updateRapidSpeedOverridePercent, updateSpindleSpeedOverridePercent]);
-
-    const sendCommand = async (command: string) => {
-        await eventSource?.send(command);
-    };
+    }, [dwell.RemainingSeconds, updateStatus, updateDwell, updateAvailableBufferSlots, updateMachineCoordinate, selectGCodeLine, updateWorkPlaceCoordinateOffset, updateFeedrate, updateSpindleSpeed, updateFeedrateOverridePercent, updateRapidSpeedOverridePercent, updateSpindleSpeedOverridePercent]);
 
 
 
-    const connect = async () => {
-        setIsConnected(true);
-    }
 
-    const disconnect = async () => {
-        setIsConnected(false);
-        updateStatus("NotConnected");
-    };
 
     const handleGCodeOffset = useCallback((event: CustomEvent<string>) => {
         const line = event.detail;
@@ -252,12 +267,17 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
             pollActiveModesInterval = setInterval(async () => {
                 await sendCommand('$G');
             }, 1000); // Poll every 5s
-            try {
-                sendCommand('$#');
-                sendCommand('$G');
-            } catch {
-                console.log('Error sending command');
-            }
+
+            setTimeout(() => {
+                try {
+                    sendCommand('?');
+                    sendCommand('\x87');
+                    sendCommand('$#');
+                    sendCommand('$G');
+                } catch {
+                    console.log('Error sending command');
+                }
+            }, 100)
         }
         return () => {
             clearInterval(pollStatusInterval)
@@ -269,10 +289,16 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isConnected, eventSource,isSending]);
+
+    const historyListener = useCallback((event: CustomEvent<string>) => {
+        addMessageToHistory('received', event.detail);
+    }, [addMessageToHistory]);
+
     useEffect(() => {
         // Initialize GRBL Serial
         const grblSerial = eventSource!;
         // Set up event listener for incoming data
+        grblSerial.addEventListener('data', historyListener);
         grblSerial.addEventListener('data', statusListenerAndParse);
         grblSerial.addEventListener('data', handleGCodeOffset);
         grblSerial.addEventListener('data', handleActiveModes);
@@ -282,6 +308,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return () => {
             // Cleanup on unmount
             if (eventSource) {
+                eventSource.removeEventListener('data', historyListener);
                 eventSource.removeEventListener('data', statusListenerAndParse);
                 eventSource.removeEventListener('data', handleGCodeOffset);
                 eventSource.removeEventListener('data', handleActiveModes);
@@ -297,9 +324,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return () => {
             if (dwellTimeoutRef.current) {
                 clearTimeout(dwellTimeoutRef.current);
-            }
-            if (dwellIntervalRef.current) {
-                clearInterval(dwellIntervalRef.current);
+                dwellTimeoutRef.current = undefined;
             }
         };
     }, []);

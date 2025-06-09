@@ -8,6 +8,9 @@ import {OverrideControls} from "../components/OverrideControls/OverrideControls.
 import { ConnectButton } from "../components/ConnectButton/ConnectButton.tsx";
 import {OpenFileButton} from "../components/OpenFileButton/OpenFileButton.tsx";
 import WorkOffsetPanel from "../components/WorkOffsetPanel/WorkOffsetPanel.tsx";
+import {MessageHistoryButton} from "../components/MessageHistoryButton/MessageHistoryButton.tsx";
+import {ConnectionTypeToggle} from "../components/ConnectionTypeToggle/ConnectionTypeToggle.tsx";
+
 function HomePage() {
     return (
         <div className="min-h-screen h-fill bg-gray-900 text-white">
@@ -22,7 +25,13 @@ function HomePage() {
                                     <ConnectButton />
                                 </div>
                                 <div className="pl-7">
+                                    <ConnectionTypeToggle/>
+                                </div>
+                                <div className="pl-7">
                                     <OpenFileButton />
+                                </div>
+                                <div className="pl-7">
+                                    <MessageHistoryButton/>
                                 </div>
                             </header>
                             <div className="col-span-12">

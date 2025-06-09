@@ -147,19 +147,24 @@ export const ContinueFromHereButton = () => {
                     gCodeLines.unshift("G18")
                 }
                 gCodeLines.unshift(currentGCodeCommand.activeWorkSpace)
-
+                console.log(currentGCodeCommand)
                 for (let i = 0; i < currentGCodeCommand.activeMCodes.length; i++) {
-                    const mCode = currentGCodeCommand.activeMCodes[i];
-                    if ((i + 1) === currentGCodeCommand.activeMCodes.length && (mCode.includes("M3") || mCode.includes("M4"))) {
+                    const mCode = currentGCodeCommand.activeMCodes.slice().reverse()[i];
+                    if (i === 0 && (mCode.includes("M3") || mCode.includes("M4"))) {
                         if (/s\d+/i.test(mCode)) {
                             // If s part exists, replace it
                             gCodeLines.unshift(mCode.replace(/s\d+/i, `s${currentGCodeCommand.spindleSpeed}`));
+                            
                         } else {
                             // If s part doesn't exist, add it at the end
                             gCodeLines.unshift(`${mCode} s${currentGCodeCommand.spindleSpeed}`);
+
+
                         }
                     } else {
                         gCodeLines.unshift(currentGCodeCommand.activeMCodes[i])
+
+
                     }
                 }
                 await handleCommand('\x18'); // Soft reset

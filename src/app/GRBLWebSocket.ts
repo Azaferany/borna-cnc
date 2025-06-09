@@ -10,9 +10,6 @@ export interface GRBLWebSocketEventMap {
 export default class GRBLWebSocket extends TypedEventTarget<GRBLWebSocketEventMap> {
     private socket: WebSocket | null = null;
     private url: string;
-    private reconnectAttempts: number = 0;
-    private maxReconnectAttempts: number = 5;
-    private reconnectTimeout: number = 1000; // Start with 1 second
     private lastMassage?: string; // Start with 1 second
 
     constructor({ url = 'ws://192.168.5.1' } = {}) {
@@ -27,8 +24,6 @@ export default class GRBLWebSocket extends TypedEventTarget<GRBLWebSocketEventMa
 
             this.socket.onopen = () => {
                 console.log("WebSocket connected");
-                this.reconnectAttempts = 0;
-                this.reconnectTimeout = 1000;
                 this.dispatchTypedEvent("connect", new CustomEvent("connect"));
             };
 
@@ -65,17 +60,6 @@ export default class GRBLWebSocket extends TypedEventTarget<GRBLWebSocketEventMa
             this.socket.onclose = (event) => {
                 console.log("WebSocket disconnected:", event.code, event.reason);
                 this.dispatchTypedEvent("disconnect", new CustomEvent("disconnect", { detail: event.reason }));
-
-                // Attempt to reconnect if not closed cleanly
-                if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
-                    this.reconnectAttempts++;
-                    setTimeout(() => {
-                        console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
-                        this.connect();
-                    }, this.reconnectTimeout);
-                    // Exponential backoff
-                    this.reconnectTimeout *= 2;
-                }
             };
         } catch (error) {
             console.error("Error connecting to WebSocket:", error);
@@ -86,7 +70,6 @@ export default class GRBLWebSocket extends TypedEventTarget<GRBLWebSocketEventMa
 
     async disconnect() {
         if (this.socket) {
-            this.socket.close(1000, "User disconnected");
             this.socket.close(1000, "User disconnected");
             this.socket = null;
         }
