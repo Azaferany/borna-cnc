@@ -69,7 +69,7 @@ function GrblConfigPage() {
         };
 
         loadParameters();
-    }, [isConnected, sendCommand]);
+    }, [isConnected]);
 
     useGRBLListener((line) => {
         if (line.startsWith('$')) {
