@@ -102,6 +102,22 @@ export const MessageHistoryModal: React.FC<MessageHistoryModalProps> = ({isOpen,
 
     const filteredMessages = useMemo(() => {
         return frozenMessages.filter(msg => {
+            // Filter by message type
+            if (messageType !== 'all' && msg.type !== messageType) {
+                return false;
+            }
+
+            // Filter by date range
+            if (dateRange.start || dateRange.end) {
+                const msgDate = new Date(msg.timestamp);
+                if (dateRange.start && new Date(dateRange.start) > msgDate) {
+                    return false;
+                }
+                if (dateRange.end && new Date(dateRange.end) < msgDate) {
+                    return false;
+                }
+            }
+
             // If no search query, show all messages
             if (!searchQuery.trim()) return true;
 
