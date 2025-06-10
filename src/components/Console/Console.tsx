@@ -3,6 +3,102 @@ import {useGRBL} from "../../app/useGRBL.ts";
 import {useGRBLListener} from "../../app/useGRBLListener.ts";
 import {useStore} from "../../app/store.ts";
 
+// GRBL error codes and their meanings
+const GRBL_ERROR_CODES: Record<number, string> = {
+    1: "Expected command letter",
+    2: "Bad number format",
+    3: "Invalid statement",
+    4: "Negative value",
+    5: "Setting disabled",
+    6: "Setting step pulse min",
+    7: "Setting read fail",
+    8: "Idle error",
+    9: "System GC lock",
+    10: "Soft limit error",
+    11: "Overflow",
+    20: "Unsupported command",
+    21: "Modal group violation",
+    22: "Undefined feed rate",
+    23: "Command value < 0",
+    24: "Command value > 0",
+    25: "Homing disabled",
+    26: "Line overflow",
+    27: "Step rate > 30kHz",
+    28: "Command not supported",
+    29: "Spindle control disabled",
+    30: "Soft limit error",
+    31: "Soft limit error",
+    32: "Soft limit error",
+    33: "Soft limit error",
+    34: "Soft limit error",
+    35: "Soft limit error",
+    36: "Soft limit error",
+    37: "Soft limit error",
+    38: "Soft limit error",
+    39: "Soft limit error",
+    40: "Soft limit error",
+    41: "Soft limit error",
+    42: "Soft limit error",
+    43: "Soft limit error",
+    44: "Soft limit error",
+    45: "Soft limit error",
+    46: "Soft limit error",
+    47: "Soft limit error",
+    48: "Soft limit error",
+    49: "Soft limit error",
+    50: "Soft limit error",
+    51: "Soft limit error",
+    52: "Soft limit error",
+    53: "Soft limit error",
+    54: "Soft limit error",
+    55: "Soft limit error",
+    56: "Soft limit error",
+    57: "Soft limit error",
+    58: "Soft limit error",
+    59: "Soft limit error",
+    60: "Soft limit error",
+    61: "Soft limit error",
+    62: "Soft limit error",
+    63: "Soft limit error",
+    64: "Soft limit error",
+    65: "Soft limit error",
+    66: "Soft limit error",
+    67: "Soft limit error",
+    68: "Soft limit error",
+    69: "Soft limit error",
+    70: "Soft limit error",
+    71: "Soft limit error",
+    72: "Soft limit error",
+    73: "Soft limit error",
+    74: "Soft limit error",
+    75: "Soft limit error",
+    76: "Soft limit error",
+    77: "Soft limit error",
+    78: "Soft limit error",
+    79: "Soft limit error",
+    80: "Soft limit error",
+    81: "Soft limit error",
+    82: "Soft limit error",
+    83: "Soft limit error",
+    84: "Soft limit error",
+    85: "Soft limit error",
+    86: "Soft limit error",
+    87: "Soft limit error",
+    88: "Soft limit error",
+    89: "Soft limit error",
+    90: "Soft limit error",
+    91: "Soft limit error",
+    92: "Soft limit error",
+    93: "Soft limit error",
+    94: "Soft limit error",
+    95: "Soft limit error",
+    96: "Soft limit error",
+    97: "Soft limit error",
+    98: "Soft limit error",
+    99: "Soft limit error",
+    100: "Soft limit error"
+};
+
 export const Console = () => {
     const [command, setCommand] = useState('');
     const historyEndRef = useRef<HTMLDivElement>(null);
@@ -147,16 +243,29 @@ export const Console = () => {
             </div>
             <div className="h-40 max-h-[400px] bg-gray-900 rounded p-2 mb-4 overflow-y-auto custom-scrollbar" ref={historyEndRef}>
                 <div className="space-y-1 font-mono text-sm">
-                    {history.map((line, index) => (
-                        <div
-                            key={index}
-                            className={`${
-                                line.startsWith('>') ? 'text-green-400' : 'text-gray-300'
-                            }`}
-                        >
-                            {line}
-                        </div>
-                    ))}
+                    {history.map((line, index) => {
+                        // Check if line contains an error code
+                        const errorMatch = line.match(/error:(\d+)/);
+                        if (errorMatch) {
+                            const errorCode = parseInt(errorMatch[1]);
+                            const errorMeaning = GRBL_ERROR_CODES[errorCode] || "Unknown error";
+                            return (
+                                <div key={index} className="text-red-400">
+                                    {line} ({errorMeaning})
+                                </div>
+                            );
+                        }
+                        return (
+                            <div
+                                key={index}
+                                className={`${
+                                    line.startsWith('>') ? 'text-green-400' : 'text-gray-300'
+                                }`}
+                            >
+                                {line}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
             <form onSubmit={handleSubmit} className="flex space-x-2">

@@ -10,8 +10,13 @@ import {OpenFileButton} from "../components/OpenFileButton/OpenFileButton.tsx";
 import WorkOffsetPanel from "../components/WorkOffsetPanel/WorkOffsetPanel.tsx";
 import {MessageHistoryButton} from "../components/MessageHistoryButton/MessageHistoryButton.tsx";
 import {ConnectionTypeToggle} from "../components/ConnectionTypeToggle/ConnectionTypeToggle.tsx";
+import {Link} from "react-router";
+import {ROUTES} from '../app/routes';
+import {useStore} from "../app/store";
 
 function HomePage() {
+    const isConnected = useStore(x => x.isConnected);
+    
     return (
         <div className="min-h-screen h-fill bg-gray-900 text-white">
             <div className="container mx-auto">
@@ -33,6 +38,14 @@ function HomePage() {
                                 <div className="pl-7">
                                     <MessageHistoryButton/>
                                 </div>
+                                {isConnected && (
+                                    <div className="pl-7">
+                                        <Link to={ROUTES.MACHINE_CONFIG}
+                                              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                                            Machine Config
+                                        </Link>
+                                    </div>
+                                )}
                             </header>
                             <div className="col-span-12">
                                 <Scene3D />
