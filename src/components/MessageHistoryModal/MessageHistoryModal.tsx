@@ -51,6 +51,7 @@ export const MessageHistoryModal: React.FC<MessageHistoryModalProps> = ({isOpen,
         start: '',
         end: ''
     });
+    const [showHelp, setShowHelp] = useState(false);
 
     // Update current time every second
     useEffect(() => {
@@ -166,10 +167,18 @@ export const MessageHistoryModal: React.FC<MessageHistoryModalProps> = ({isOpen,
                     </div>
                     <div className="space-x-2">
                         <button
+                            onClick={() => setShowHelp(!showHelp)}
+                            className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 rounded text-white"
+                            title="Show search help"
+                        >
+                            Help
+                        </button>
+                        <button
                             onClick={() => setAutoScroll(!autoScroll)}
                             className={`px-3 py-1 text-sm rounded text-white ${
                                 autoScroll ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 hover:bg-gray-700'
                             }`}
+                            title="Automatically scroll to new messages"
                         >
                             {autoScroll ? 'Auto-scroll On' : 'Auto-scroll Off'}
                         </button>
@@ -183,6 +192,7 @@ export const MessageHistoryModal: React.FC<MessageHistoryModalProps> = ({isOpen,
                             className={`px-3 py-1 text-sm rounded text-white ${
                                 isFrozen ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-gray-600 hover:bg-gray-700'
                             }`}
+                            title="Freeze current messages to prevent updates"
                         >
                             {isFrozen ? 'Unfreeze' : 'Freeze'}
                         </button>
@@ -192,6 +202,7 @@ export const MessageHistoryModal: React.FC<MessageHistoryModalProps> = ({isOpen,
                                 setFrozenMessages([])
                             }}
                             className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 rounded active:bg-red-800 text-white"
+                            title="Clear all messages"
                         >
                             Clear
                         </button>
@@ -204,19 +215,50 @@ export const MessageHistoryModal: React.FC<MessageHistoryModalProps> = ({isOpen,
                     </div>
                 </div>
 
+                {/* Search Help Panel */}
+                {showHelp && (
+                    <div className="mb-4 p-4 bg-gray-700 rounded-lg">
+                        <h3 className="text-white font-bold mb-2">Search Syntax Help</h3>
+                        <div className="grid grid-cols-2 gap-4 text-sm text-gray-300">
+                            <div>
+                                <p className="font-bold mb-1">Operators:</p>
+                                <ul className="list-disc list-inside space-y-1">
+                                    <li><code>:</code> contains text</li>
+                                    <li><code>!:</code> does not contain text</li>
+                                    <li><code>=</code> exact match</li>
+                                    <li><code>!=</code> not exact match</li>
+                                    <li><code>&</code> AND operator</li>
+                                    <li><code>|</code> OR operator</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p className="font-bold mb-1">Examples:</p>
+                                <ul className="list-disc list-inside space-y-1">
+                                    <li><code>:error</code> - contains "error"</li>
+                                    <li><code>:error & :404</code> - contains both</li>
+                                    <li><code>=exact | :contains</code> - exact match or contains</li>
+                                    <li><code>!:debug</code> - excludes debug messages</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Search and Filter Controls */}
                 <div className="mb-4 space-y-3">
                     <div className="flex gap-2">
                         <div className="flex-1">
-                            <input
-                                type="text"
-                                placeholder="Search syntax: :contains !:not_contains =equals !=not_equals &AND |OR"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            <div className="text-xs text-gray-400 mt-1">
-                                Examples: ":error & :404" or "=exact | :contains"
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Search messages..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                                <div className="absolute right-2 top-2 text-gray-400 text-xs">
+                                    {searchQuery ? `${filteredMessages.length} matches` : ''}
+                                </div>
                             </div>
                         </div>
                         <select
@@ -229,19 +271,35 @@ export const MessageHistoryModal: React.FC<MessageHistoryModalProps> = ({isOpen,
                             <option value="received">Received Only</option>
                         </select>
                     </div>
-                    <div className="flex gap-2">
-                        <input
-                            type="datetime-local"
-                            value={dateRange.start}
-                            onChange={(e) => setDateRange(prev => ({...prev, start: e.target.value}))}
-                            className="flex-1 px-3 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <input
-                            type="datetime-local"
-                            value={dateRange.end}
-                            onChange={(e) => setDateRange(prev => ({...prev, end: e.target.value}))}
-                            className="flex-1 px-3 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+                    <div className="flex gap-2 items-center">
+                        <div className="flex-1 flex gap-2">
+                            <div className="flex-1">
+                                <label className="block text-sm text-gray-400 mb-1">From</label>
+                                <input
+                                    type="datetime-local"
+                                    value={dateRange.start}
+                                    onChange={(e) => setDateRange(prev => ({...prev, start: e.target.value}))}
+                                    className="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <label className="block text-sm text-gray-400 mb-1">To</label>
+                                <input
+                                    type="datetime-local"
+                                    value={dateRange.end}
+                                    onChange={(e) => setDateRange(prev => ({...prev, end: e.target.value}))}
+                                    className="w-full px-3 py-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+                        {(dateRange.start || dateRange.end) && (
+                            <button
+                                onClick={() => setDateRange({start: '', end: ''})}
+                                className="px-3 py-2 text-sm bg-gray-600 hover:bg-gray-700 rounded text-white"
+                            >
+                                Clear Dates
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -250,18 +308,18 @@ export const MessageHistoryModal: React.FC<MessageHistoryModalProps> = ({isOpen,
                         {filteredMessages.map((msg, index) => (
                             <div
                                 key={index}
-                                className={`p-2 rounded ${
-                                    msg.type === 'sent' ? 'bg-blue-900/50' : 'bg-green-900/50'
+                                className={`p-2 rounded transition-colors duration-200 ${
+                                    msg.type === 'sent' ? 'bg-blue-900/50 hover:bg-blue-900/70' : 'bg-green-900/50 hover:bg-green-900/70'
                                 }`}
                             >
                                 <div className="flex justify-between text-sm text-gray-400 mb-1">
-                                    <span>{msg.type === 'sent' ? 'Sent' : 'Received'}</span>
+                                    <span className="font-medium">{msg.type === 'sent' ? 'Sent' : 'Received'}</span>
                                     <div className="flex items-center gap-2">
                                         <span className="font-mono">{formatTimestamp(msg.timestamp)}</span>
                                         <span className="text-xs">({formatTimeDistance(msg.timestamp)})</span>
                                     </div>
                                 </div>
-                                <div className="font-mono text-white break-all">{msg.message}</div>
+                                <div className="font-mono text-white break-all whitespace-pre-wrap">{msg.message}</div>
                             </div>
                         ))}
                         {filteredMessages.length === 0 && (
