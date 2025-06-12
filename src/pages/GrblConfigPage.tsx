@@ -3,7 +3,7 @@ import {Link} from 'react-router';
 import {ROUTES} from '../app/routes';
 import {useGRBL} from '../app/useGRBL';
 import {useGRBLListener} from '../app/useGRBLListener';
-import {MagnifyingGlassIcon, ExclamationTriangleIcon} from '@heroicons/react/24/outline';
+import {MagnifyingGlassIcon, ExclamationTriangleIcon, HomeIcon} from '@heroicons/react/24/outline';
 
 interface GrblParameter {
     id: number;
@@ -301,171 +301,218 @@ function GrblConfigPage() {
         );
     });
 
+    const scrollToGroup = (group: string) => {
+        const element = document.getElementById(`group-${group}`);
+        if (element) {
+            element.scrollIntoView({behavior: 'smooth', block: "center", inline: "start"});
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-            {/* Fixed Header */}
-            <header
-                className="fixed top-0 left-0 right-0 bg-gray-900/80 backdrop-blur-lg border-b border-gray-700/50 z-10">
-                <div className="container mx-auto px-6 py-4">
-                    <div className="flex items-center">
-                        <Link to={ROUTES.HOME}
-                              className="mr-4 bg-gray-700/50 hover:bg-gray-600/50 text-white px-4 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10">
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                      d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                            </svg>
-                            Back
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex">
+            {/* Sidebar */}
+            <div className="w-64 bg-gray-800/50 backdrop-blur-lg border-r border-gray-700/50 fixed h-full">
+                <div className="p-6">
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent mb-8">
+                        Borna CNC
+                    </h2>
+                    <div className="space-y-4">
+                        <Link
+                            to={ROUTES.HOME}
+                            className="flex items-center px-4 py-3 rounded-lg transition-all duration-200 text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                        >
+                            <HomeIcon className="w-5 h-5 mr-3"/>
+                            Home
                         </Link>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                            Machine Configuration
-                        </h1>
+
+                        <div className="pt-4 border-t border-gray-700/50">
+                            <h3 className="px-4 text-sm font-medium text-gray-400 uppercase tracking-wider mb-2">
+                                Parameter Groups
+                            </h3>
+                            <nav className="space-y-1">
+                                {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
+                                {sortedGroups.filter(([_, params]) => params.length > 0)
+                                    .map(([group]) => (
+                                        <button
+                                            key={group}
+                                            onClick={() => scrollToGroup(group)}
+                                            className="w-full flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white rounded-lg transition-all duration-200"
+                                        >
+                                            {group}
+                                        </button>
+                                    ))}
+                            </nav>
+                        </div>
                     </div>
                 </div>
-            </header>
+            </div>
 
-            {/* Main Content */}
-            <div className="container mx-auto px-6 pt-24 pb-6">
-                {!isConnected ? (
-                    <div
-                        className="text-center text-red-400 p-6 bg-red-900/20 rounded-xl backdrop-blur-sm border border-red-500/20 shadow-lg shadow-red-500/10">
-                        <ExclamationTriangleIcon className="w-12 h-12 mx-auto mb-3 text-red-400"/>
-                        <p className="text-lg">Please connect to the machine first</p>
-                    </div>
-                ) : isLoading ? (
-                    <div className="text-center p-8">
-                        <div
-                            className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-                        <p className="text-lg text-gray-300">Loading machine parameters...</p>
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        {/* Search Bar */}
-                        <div className="relative group">
-                            <input
-                                type="text"
-                                placeholder="Search parameters..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-gray-800/50 text-white px-4 py-3 pl-12 rounded-xl border border-gray-700/50 focus:border-blue-500/50 focus:outline-none transition-all duration-200 backdrop-blur-sm shadow-lg shadow-gray-900/20 group-hover:shadow-blue-500/10"
-                            />
-                            <MagnifyingGlassIcon
-                                className="w-6 h-6 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2 group-hover:text-blue-400 transition-colors duration-200"/>
+            {/* Main Content Area */}
+            <div className="flex-1 ml-64">
+                {/* Fixed Header */}
+                <header
+                    className="fixed top-0 left-64 right-0 bg-gray-900/80 backdrop-blur-lg border-b border-gray-700/50 z-10">
+                    <div className="container mx-auto px-6 py-4">
+                        <div className="flex items-center">
+                            <Link to={ROUTES.HOME}
+                                  className="mr-4 bg-gray-700/50 hover:bg-gray-600/50 text-white px-4 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10">
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                          d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                                </svg>
+                                Back
+                            </Link>
+                            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+                                Machine Configuration
+                            </h1>
                         </div>
+                    </div>
+                </header>
 
-                        {/* Error Message */}
-                        {error && (
-                            <div
-                                className="bg-red-900/20 text-red-400 p-4 rounded-xl backdrop-blur-sm border border-red-500/20 shadow-lg shadow-red-500/10 flex items-center">
-                                <ExclamationTriangleIcon className="w-6 h-6 mr-3 flex-shrink-0"/>
-                                <p>{error}</p>
-                            </div>
-                        )}
-
-                        {/* Parameters Table */}
+                {/* Main Content */}
+                <div className="container mx-auto px-6 pt-24 pb-6">
+                    {!isConnected ? (
                         <div
-                            className="bg-gray-800/50 rounded-xl shadow-lg shadow-gray-900/20 backdrop-blur-sm border border-gray-700/50 overflow-hidden">
-                            <table className="min-w-full divide-y divide-gray-700/50">
-                                <thead className="bg-gray-700/30">
-                                <tr>
-                                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
-                                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parameter</th>
-                                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Value</th>
-                                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Description</th>
-                                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-700/50">
-                                {sortedGroups.map(([group, params]) => {
-                                    const filteredParams = params.filter(param =>
-                                        filteredParameterList.some(p => p.id === param.id)
-                                    );
-                                    if (filteredParams.length === 0) return null;
+                            className="text-center text-red-400 p-6 bg-red-900/20 rounded-xl backdrop-blur-sm border border-red-500/20 shadow-lg shadow-red-500/10">
+                            <ExclamationTriangleIcon className="w-12 h-12 mx-auto mb-3 text-red-400"/>
+                            <p className="text-lg">Please connect to the machine first</p>
+                        </div>
+                    ) : isLoading ? (
+                        <div className="text-center p-8">
+                            <div
+                                className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+                            <p className="text-lg text-gray-300">Loading machine parameters...</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            {/* Search Bar */}
+                            <div className="relative group">
+                                <input
+                                    type="text"
+                                    placeholder="Search parameters..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-gray-800/50 text-white px-4 py-3 pl-12 rounded-xl border border-gray-700/50 focus:border-blue-500/50 focus:outline-none transition-all duration-200 backdrop-blur-sm shadow-lg shadow-gray-900/20 group-hover:shadow-blue-500/10"
+                                />
+                                <MagnifyingGlassIcon
+                                    className="w-6 h-6 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2 group-hover:text-blue-400 transition-colors duration-200"/>
+                            </div>
 
-                                    return (
-                                        <React.Fragment key={group}>
-                                            <tr className="bg-gray-700/30">
-                                                <td colSpan={5} className="px-6 py-4 cursor-pointer"
-                                                    onClick={() => toggleGroup(group)}>
-                                                    <button
-                                                        className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-200 hover:text-white focus:outline-none transition-colors duration-200 cursor-pointer"
-                                                    >
-                                                        <span className="text-blue-400">{group}</span>
-                                                        <svg
-                                                            className={`w-5 h-5 transform transition-transform duration-200 ${
-                                                                expandedGroups[group] ? 'rotate-180' : ''
-                                                            }`}
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M19 9l-7 7-7-7"
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            {expandedGroups[group] && filteredParams.map((param) => (
-                                                <tr key={param.id}
-                                                    className={`hover:bg-gray-700/30 transition-colors duration-200 ${!param.hasDescription ? 'opacity-50' : ''}`}>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{param.id}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                                        <div className="flex items-center">
-                                                            <span className="font-medium">{param.name}</span>
-                                                            {!param.hasDescription && (
-                                                                <span
-                                                                    className="ml-2 text-xs text-gray-400">(Undocumented)</span>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="relative">
-                                                            <input
-                                                                type="text"
-                                                                value={param.value}
-                                                                onChange={(e) => handleInputChange(param.id, e.target.value)}
-                                                                className={`bg-gray-700/50 text-white px-3 py-2 rounded-lg border ${
-                                                                    savingParams[param.id] ? 'border-yellow-500/50' : 'border-gray-600/50'
-                                                                } focus:border-blue-500/50 focus:outline-none transition-all duration-200 w-full`}
-                                                                disabled={savingParams[param.id]}
-                                                                title={param.description}
-                                                            />
-                                                            {savingParams[param.id] && (
-                                                                <div
-                                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                                                    <div
-                                                                        className="animate-spin rounded-full h-4 w-4 border-2 border-yellow-500 border-t-transparent"></div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm text-gray-300">{param.description}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                            {/* Error Message */}
+                            {error && (
+                                <div
+                                    className="bg-red-900/20 text-red-400 p-4 rounded-xl backdrop-blur-sm border border-red-500/20 shadow-lg shadow-red-500/10 flex items-center">
+                                    <ExclamationTriangleIcon className="w-6 h-6 mr-3 flex-shrink-0"/>
+                                    <p>{error}</p>
+                                </div>
+                            )}
+
+                            {/* Parameters Table */}
+                            <div
+                                className="bg-gray-800/50 rounded-xl shadow-lg shadow-gray-900/20 backdrop-blur-sm border border-gray-700/50 overflow-hidden">
+                                <table className="min-w-full divide-y divide-gray-700/50">
+                                    <thead className="bg-gray-700/30">
+                                    <tr>
+                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
+                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parameter</th>
+                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Value</th>
+                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Description</th>
+                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-700/50">
+                                    {sortedGroups.map(([group, params]) => {
+                                        const filteredParams = params.filter(param =>
+                                            filteredParameterList.some(p => p.id === param.id)
+                                        );
+                                        if (filteredParams.length === 0) return null;
+
+                                        return (
+                                            <React.Fragment key={group}>
+                                                <tr id={`group-${group}`} className="bg-gray-700/30">
+                                                    <td colSpan={5} className="px-6 py-4 cursor-pointer"
+                                                        onClick={() => toggleGroup(group)}>
                                                         <button
-                                                            onClick={() => handleParameterChange(param.id, param.value)}
-                                                            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                                                                editedValues[param.id] && !savingParams[param.id]
-                                                                    ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20'
-                                                                    : 'bg-gray-600/50 cursor-not-allowed'
-                                                            } text-white`}
-                                                            disabled={!editedValues[param.id] || savingParams[param.id]}
+                                                            className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-200 hover:text-white focus:outline-none transition-colors duration-200 cursor-pointer"
                                                         >
-                                                            {savingParams[param.id] ? 'Saving...' : 'Save'}
+                                                            <span className="text-blue-400">{group}</span>
+                                                            <svg
+                                                                className={`w-5 h-5 transform transition-transform duration-200 ${
+                                                                    expandedGroups[group] ? 'rotate-180' : ''
+                                                                }`}
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                viewBox="0 0 24 24"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={2}
+                                                                    d="M19 9l-7 7-7-7"
+                                                                />
+                                                            </svg>
                                                         </button>
                                                     </td>
                                                 </tr>
-                                            ))}
-                                        </React.Fragment>
-                                    );
-                                })}
-                                </tbody>
-                            </table>
+                                                {expandedGroups[group] && filteredParams.map((param) => (
+                                                    <tr key={param.id}
+                                                        className={`hover:bg-gray-700/30 transition-colors duration-200 ${!param.hasDescription ? 'opacity-50' : ''}`}>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{param.id}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                            <div className="flex items-center">
+                                                                <span className="font-medium">{param.name}</span>
+                                                                {!param.hasDescription && (
+                                                                    <span
+                                                                        className="ml-2 text-xs text-gray-400">(Undocumented)</span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                            <div className="relative">
+                                                                <input
+                                                                    type="text"
+                                                                    value={param.value}
+                                                                    onChange={(e) => handleInputChange(param.id, e.target.value)}
+                                                                    className={`bg-gray-700/50 text-white px-3 py-2 rounded-lg border ${
+                                                                        savingParams[param.id] ? 'border-yellow-500/50' : 'border-gray-600/50'
+                                                                    } focus:border-blue-500/50 focus:outline-none transition-all duration-200 w-full`}
+                                                                    disabled={savingParams[param.id]}
+                                                                    title={param.description}
+                                                                />
+                                                                {savingParams[param.id] && (
+                                                                    <div
+                                                                        className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                                                        <div
+                                                                            className="animate-spin rounded-full h-4 w-4 border-2 border-yellow-500 border-t-transparent"></div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm text-gray-300">{param.description}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                            <button
+                                                                onClick={() => handleParameterChange(param.id, param.value)}
+                                                                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                                                                    editedValues[param.id] && !savingParams[param.id]
+                                                                        ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20'
+                                                                        : 'bg-gray-600/50 cursor-not-allowed'
+                                                                } text-white`}
+                                                                disabled={!editedValues[param.id] || savingParams[param.id]}
+                                                            >
+                                                                {savingParams[param.id] ? 'Saving...' : 'Save'}
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );
