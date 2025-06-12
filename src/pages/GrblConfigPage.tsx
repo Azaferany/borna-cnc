@@ -3,7 +3,8 @@ import {Link} from 'react-router';
 import {ROUTES} from '../app/routes';
 import {useGRBL} from '../app/useGRBL';
 import {useGRBLListener} from '../app/useGRBLListener';
-import {MagnifyingGlassIcon, ExclamationTriangleIcon, HomeIcon} from '@heroicons/react/24/outline';
+import {MagnifyingGlassIcon, ExclamationTriangleIcon, HomeIcon, Cog6ToothIcon} from '@heroicons/react/24/outline';
+import CalibrationModal from '../components/CalibrationModal/CalibrationModal';
 
 interface GrblParameter {
     id: number;
@@ -146,6 +147,7 @@ function GrblConfigPage() {
     const [savingParams, setSavingParams] = useState<Record<number, boolean>>({});
     const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [calibrationAxis, setCalibrationAxis] = useState<string | null>(null);
     const {sendCommand, isConnected} = useGRBL();
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
         // Initialize all groups as expanded
@@ -180,7 +182,7 @@ function GrblConfigPage() {
         };
 
         loadParameters();
-    }, [isConnected]);
+    }, [isConnected, sendCommand]);
 
     useGRBLListener((line) => {
         if (line.startsWith('$')) {
@@ -198,6 +200,8 @@ function GrblConfigPage() {
                     return newValues;
                 });
                 setSavingParams({});
+                setIsLoading(false);
+
             }
         }
     }, []);
@@ -305,6 +309,25 @@ function GrblConfigPage() {
         const element = document.getElementById(`group-${group}`);
         if (element) {
             element.scrollIntoView({behavior: 'smooth', block: "center", inline: "start"});
+        }
+    };
+
+    const getAxisFromParamId = (paramId: number): string | null => {
+        switch (paramId) {
+            case 100:
+                return 'X';
+            case 101:
+                return 'Y';
+            case 102:
+                return 'Z';
+            case 103:
+                return 'A';
+            case 104:
+                return 'B';
+            case 105:
+                return 'C';
+            default:
+                return null;
         }
     };
 
@@ -490,17 +513,29 @@ function GrblConfigPage() {
                                                         </td>
                                                         <td className="px-6 py-4 text-sm text-gray-300">{param.description}</td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                                                            <button
-                                                                onClick={() => handleParameterChange(param.id, param.value)}
-                                                                className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                                                                    editedValues[param.id] && !savingParams[param.id]
-                                                                        ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20'
-                                                                        : 'bg-gray-600/50 cursor-not-allowed'
-                                                                } text-white`}
-                                                                disabled={!editedValues[param.id] || savingParams[param.id]}
-                                                            >
-                                                                {savingParams[param.id] ? 'Saving...' : 'Save'}
-                                                            </button>
+                                                            <div className="flex items-center space-x-2">
+                                                                <button
+                                                                    onClick={() => handleParameterChange(param.id, param.value)}
+                                                                    className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                                                                        editedValues[param.id] && !savingParams[param.id]
+                                                                            ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20'
+                                                                            : 'bg-gray-600/50 cursor-not-allowed'
+                                                                    } text-white`}
+                                                                    disabled={!editedValues[param.id] || savingParams[param.id]}
+                                                                >
+                                                                    {savingParams[param.id] ? 'Saving...' : 'Save'}
+                                                                </button>
+                                                                {param.id >= 100 && param.id <= 105 && (
+                                                                    <button
+                                                                        onClick={() => setCalibrationAxis(getAxisFromParamId(param.id))}
+                                                                        className="px-4 py-2 rounded-lg bg-blue-600/50 hover:bg-blue-500/50 text-white transition-all duration-200 flex items-center space-x-2"
+                                                                        title="Calibrate steps/mm"
+                                                                    >
+                                                                        <Cog6ToothIcon className="w-5 h-5"/>
+                                                                        <span>Calibrate</span>
+                                                                    </button>
+                                                                )}
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -514,6 +549,18 @@ function GrblConfigPage() {
                     )}
                 </div>
             </div>
+
+            {calibrationAxis && (
+                <CalibrationModal
+                    isOpen={!!calibrationAxis}
+                    onClose={() => {
+                        setCalibrationAxis(null)
+                        setIsLoading(true)
+                        sendCommand("$$")
+                    }}
+                    axis={calibrationAxis as 'X' | 'Y' | 'Z' | 'A' | 'B' | 'C'}
+                />
+            )}
         </div>
     );
 }

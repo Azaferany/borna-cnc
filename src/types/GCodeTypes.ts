@@ -43,6 +43,7 @@ export type GRBLState =
     | "NotConnected"
     | "Idle"
     | "Run"
+    | "Jog"
     | "Hold"
     | "Alarm"
     | "Home"

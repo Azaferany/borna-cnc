@@ -30,7 +30,7 @@ export const DwellInfo = () => {
 
     const handleSkip = async () => {
         try {
-            await sendCommand('#');
+            await sendCommand('\xA4');
             setTimeout(() => updateDwell({RemainingSeconds: 0, TotalSeconds: 0}), 200)
         } catch (error) {
             console.error('Error skipping dwell:', error);

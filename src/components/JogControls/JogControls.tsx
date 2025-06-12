@@ -228,23 +228,32 @@ export const JogControls = () => {
 
                         <div className="flex gap-4 justify-center">
                             <div className="grid grid-cols-3 gap-2">
-                                {renderDiagonalJogButton('X', 1, 'Y', 1, '↖️')}
+                                {renderDiagonalJogButton('X', -1, 'Y', 1, '↖️')}
                                 {renderJogButton('Y', 1, 'Y+')}
-                                {renderDiagonalJogButton('X', -1, 'Y', 1, '↗️')}
+                                {renderDiagonalJogButton('X', 1, 'Y', 1, '↗️')}
                                 
                                 {renderJogButton('X', -1, 'X-')}
-                                <button 
-                                    className="p-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-400 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                                    onClick={() => setContinuousMode(!continuousMode)}
+                                <button
+                                    className={`p-3 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+                                        status === "Jog"
+                                            ? "bg-red-500 hover:bg-red-400 active:bg-red-300"
+                                            : "bg-gray-700 hover:bg-gray-600 active:bg-gray-400"
+                                    }`}
+                                    onClick={() => {
+                                        if (status === "Jog")
+                                            stopJog()
+                                        else
+                                            setContinuousMode(!continuousMode)
+                                    }}
                                     disabled={!isConnected || isMachineRunning}
                                 >
-                                    {continuousMode ? "___" : ". . . "}
+                                    {status === "Jog" ? "✋" : (continuousMode ? "___" : ". . . ")}
                                 </button>
                                 {renderJogButton('X', 1, 'X+')}
-                                
-                                {renderDiagonalJogButton('X', 1, 'Y', -1, '↙️')}
+
+                                {renderDiagonalJogButton('X', -1, 'Y', -1, '↙️')}
                                 {renderJogButton('Y', -1, 'Y-')}
-                                {renderDiagonalJogButton('X', -1, 'Y', -1, '↘️')}
+                                {renderDiagonalJogButton('X', 1, 'Y', -1, '↘️')}
                             </div>
                             
                             <div className="grid grid-cols-1 gap-2 justify-between">
