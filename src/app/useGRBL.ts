@@ -1,5 +1,6 @@
 import {useStore} from "./store.ts";
 import {useShallow} from "zustand/react/shallow";
+import {useCallback} from "react";
 
 export const useGRBL = () => {
     const eventSource = useStore(useShallow(x=>x.eventSource));
@@ -8,10 +9,10 @@ export const useGRBL = () => {
 
 
     // Wrap the original send method to track sent messages
-    const sendCommand = (command: string) => {
+    const sendCommand = useCallback((command: string) => {
         addMessageToHistory('sent', command);
         eventSource?.send(command);
-    };
+    }, [addMessageToHistory, eventSource]);
 
     return {
         isConnected: isConnected,
