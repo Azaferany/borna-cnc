@@ -42,7 +42,7 @@ export const MessageHistoryModal: React.FC<MessageHistoryModalProps> = ({isOpen,
     const clearMessageHistory = useStore(x => x.clearMessageHistory);
     const [searchQuery, setSearchQuery] = useState('');
     const [messageType, setMessageType] = useState<'all' | 'sent' | 'received'>('all');
-    const [isFrozen, setIsFrozen] = useState(false);
+    const [isFrozen, setIsFrozen] = useState(true);
     const [frozenMessages, setFrozenMessages] = useState<typeof messageHistory>([]);
     const [autoScroll, setAutoScroll] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -141,10 +141,12 @@ export const MessageHistoryModal: React.FC<MessageHistoryModalProps> = ({isOpen,
 
     // Update frozen messages when freeze is toggled
     useEffect(() => {
+        if (!isOpen)
+            return;
         if (!isFrozen) {
             setFrozenMessages([...messageHistory]);
         }
-    }, [isFrozen, messageHistory]);
+    }, [isFrozen, isOpen, messageHistory]);
 
     // Auto scroll to bottom when new messages arrive
     useEffect(() => {

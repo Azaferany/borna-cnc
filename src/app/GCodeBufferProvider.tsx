@@ -162,7 +162,10 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             .filter(x=>x.includes("G0") || x.includes("G1")|| x.includes("G2"));
         if (IsAllLineSent && selectedGCodeLine &&
             (
-                (extractLineNumber(moveGCodes[moveGCodes.length - 1])! - selectedGCodeLine) == 0
+                (moveGCodes[moveGCodes.length - 1] && extractLineNumber(moveGCodes[moveGCodes.length - 1])! - selectedGCodeLine) == 0
+                ||
+                (moveGCodes.length < 2)
+
                 // when resting because of going back btn slight time status === "Idle"
                 // || (status === "Idle" && (extractLineNumber(moveGCodes[moveGCodes.length - 1])! - selectedGCodeLine) < 0)
             ))

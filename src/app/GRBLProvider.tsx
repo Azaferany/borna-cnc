@@ -197,8 +197,11 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const handleGCodeOffset = useCallback((event: CustomEvent<string>) => {
         const line = event.detail;
         if (line.startsWith('[') && line.endsWith(']') && !line.startsWith('[GC:')) {
-            const offsetMatch = line.match(/\[(G\d+):([\d.-]+),([\d.-]+),([\d.-]+)\]/);
+
+            const offsetMatch = line.match(/\[(G\d+):([\d.-]+),([\d.-]+),([\d.-]+)/);
+
             if (offsetMatch) {
+
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const [_, offsetType  , x, y, z] = offsetMatch;
                 updateGCodeOffsets(perv => {
@@ -221,7 +224,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const handleActiveModes =useCallback((event: CustomEvent<string>) => {
         const line = event.detail;
         if (line.startsWith('[GC:') && line.endsWith(']')) {
-            const modesMatch = line.match(/\[GC:(.*?)\]/);
+            const modesMatch = line.match(/\[GC:(.*?)/);
             if (modesMatch) {
                 const modes = modesMatch[1].split(' ');
                 const activeModes: ActiveModes = {
