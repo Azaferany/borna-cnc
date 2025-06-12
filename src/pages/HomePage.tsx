@@ -16,6 +16,9 @@ import {useStore} from "../app/store";
 
 function HomePage() {
     const isConnected = useStore(x => x.isConnected);
+    const status = useStore(x => x.status);
+    const isSending = useStore(x => x.isSending);
+    const showConfigButton = isConnected && status === "Idle" && !isSending;
     
     return (
         <div className="min-h-screen h-fill bg-gray-900 text-white">
@@ -38,7 +41,7 @@ function HomePage() {
                                 <div className="pl-7">
                                     <MessageHistoryButton/>
                                 </div>
-                                {isConnected && (
+                                {showConfigButton && (
                                     <div className="pl-7">
                                         <Link to={ROUTES.MACHINE_CONFIG}
                                               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
