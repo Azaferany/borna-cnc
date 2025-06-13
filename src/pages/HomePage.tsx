@@ -29,20 +29,42 @@ function HomePage() {
                                     </svg>
                                     CNC Control Panel
                                 </h1>
-                                <div className="pl-5" title="Connect to your CNC machine">
-                                    <ConnectButton />
-                                </div>
-                                <div className="pl-2" title="Switch between USB and Network connection">
-                                    <ConnectionTypeToggle/>
-                                </div>
-                                <div className="pl-10" title="Load G-code file">
-                                    <OpenFileButton />
-                                </div>
-                                <div className="pl-4" title="View machine message history">
-                                    <MessageHistoryButton/>
-                                </div>
-                                <div className="pl-15" title="Configure machine settings">
-                                    <MachineConfigButton/>
+                                <div className="flex items-center space-x-6 ml-8">
+                                    <div className="group relative" title="Connect to your CNC machine">
+                                        <ConnectButton/>
+                                        <span
+                                            className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                            Connect to Machine
+                                        </span>
+                                    </div>
+                                    <div className="group relative" title="Switch between USB and Network connection">
+                                        <ConnectionTypeToggle/>
+                                        <span
+                                            className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                            Connection Type
+                                        </span>
+                                    </div>
+                                    <div className="group relative" title="Load G-code file">
+                                        <OpenFileButton/>
+                                        <span
+                                            className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                            Load G-code File
+                                        </span>
+                                    </div>
+                                    <div className="group relative" title="View machine message history">
+                                        <MessageHistoryButton/>
+                                        <span
+                                            className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                            Message History
+                                        </span>
+                                    </div>
+                                    <div className="group relative" title="Configure machine settings">
+                                        <MachineConfigButton/>
+                                        <span
+                                            className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                            Machine Settings
+                                        </span>
+                                    </div>
                                 </div>
                             </header>
                             <div className="col-span-12">

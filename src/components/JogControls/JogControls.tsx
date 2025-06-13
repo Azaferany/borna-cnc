@@ -94,22 +94,34 @@ export const JogControls = () => {
         }
     };
 
-    const renderJogButton = (axis: string, direction: number, label: string) => (
-        <button 
-            className={`p-3 px-6 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
-                activeButton === `${axis}${direction}` 
-                    ? 'bg-blue-600 hover:bg-blue-500' 
-                    : 'bg-gray-700 hover:bg-gray-600 active:bg-gray-400'
-            }`}
-            onClick={() => handleClick(axis, direction)}
-            onMouseDown={() => handleJogStart(axis, direction)}
-            onMouseUp={handleJogEnd}
-            onMouseLeave={handleJogEnd}
-            disabled={!isConnected || isMachineRunning}
-        >
-            {label}
-        </button>
-    );
+    const renderJogButton = (axis: string, direction: number, label: string) => {
+        const isDisabled = !isConnected || isMachineRunning || isMachineRunning || (!continuousMode && stepSize <= 0);
+        const buttonClass = `p-3 px-6 bg-gray-700 hover:bg-gray-600 active:bg-gray-800 
+            text-white rounded flex items-center justify-center transition-colors
+            ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`;
+
+        return (
+            <button
+                key={`${axis}${direction}`}
+                className={buttonClass}
+                onClick={() => handleClick(axis, direction)}
+                onMouseDown={() => handleJogStart(axis, direction)}
+                onMouseUp={handleJogEnd}
+                onMouseLeave={handleJogEnd}
+                disabled={isDisabled}
+                title={`Jog ${axis} axis ${direction > 0 ? 'positive' : 'negative'} direction`}
+            >
+                <div className="flex flex-col items-center">
+                    <span className="text-lg font-bold">{label}</span>
+                    {!continuousMode && (
+                        <span className="text-xs text-gray-400">
+                            {stepSize}<UnitDisplay/>
+                        </span>
+                    )}
+                </div>
+            </button>
+        );
+    };
 
     const renderDiagonalJogButton = (axis1: string, direction1: number, axis2: string, direction2: number, label: string) => (
         <button 
@@ -224,8 +236,9 @@ export const JogControls = () => {
                                 className="rounded bg-gray-700"
                                 id="continuous-mode"
                                 disabled={isMachineRunning}
+                                title="Toggle between step-by-step and continuous jogging modes"
                             />
-                            <label htmlFor="continuous-mode" className="text-sm font-medium">
+                            <label htmlFor="continuous-mode" className="text-sm font-medium cursor-pointer">
                                 Continuous Mode
                             </label>
                         </div>

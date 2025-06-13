@@ -11,24 +11,90 @@ import {OpenFileButton} from "../OpenFileButton/OpenFileButton.tsx";
 import {addLineNumbers, cleanGCodeText, parseGCode} from "../../app/GcodeParserUtils.ts";
 import {useShallow} from "zustand/react/shallow";
 
-// Define G-code completions
+// Define G-code completions with more detailed descriptions
 const gcodeCompletions = [
-  { name: 'G0', value: 'G0', caption: 'G0 - Rapid Move', meta: 'Movement' },
-  { name: 'G1', value: 'G1', caption: 'G1 - Linear Move', meta: 'Movement' },
-  { name: 'G2', value: 'G2', caption: 'G2 - Clockwise Arc', meta: 'Movement' },
-  { name: 'G3', value: 'G3', caption: 'G3 - Counter-clockwise Arc', meta: 'Movement' },
-  { name: 'G4', value: 'G4', caption: 'G4 - Dwell', meta: 'Control' },
-  { name: 'G17', value: 'G17', caption: 'G17 - XY Plane Selection', meta: 'Plane' },
-  { name: 'G18', value: 'G18', caption: 'G18 - XZ Plane Selection', meta: 'Plane' },
-  { name: 'G19', value: 'G19', caption: 'G19 - YZ Plane Selection', meta: 'Plane' },
-  { name: 'G20', value: 'G20', caption: 'G20 - Inches', meta: 'Units' },
-  { name: 'G21', value: 'G21', caption: 'G21 - Millimeters', meta: 'Units' },
-  { name: 'G28', value: 'G28', caption: 'G28 - Home', meta: 'Control' },
-  { name: 'G90', value: 'G90', caption: 'G90 - Absolute Positioning', meta: 'Positioning' },
-  { name: 'G91', value: 'G91', caption: 'G91 - Relative Positioning', meta: 'Positioning' },
-  { name: 'M3', value: 'M3', caption: 'M3 - Spindle Clockwise', meta: 'Spindle' },
-  { name: 'M4', value: 'M4', caption: 'M4 - Spindle Counter-clockwise', meta: 'Spindle' },
-  { name: 'M5', value: 'M5', caption: 'M5 - Spindle Stop', meta: 'Spindle' },
+  {
+    name: 'G0',
+    value: 'G0',
+    caption: 'G0 - Rapid Move',
+    meta: 'Movement',
+    docText: 'Rapid linear movement to specified coordinates'
+  },
+  {
+    name: 'G1',
+    value: 'G1',
+    caption: 'G1 - Linear Move',
+    meta: 'Movement',
+    docText: 'Linear movement at specified feed rate'
+  },
+  {
+    name: 'G2',
+    value: 'G2',
+    caption: 'G2 - Clockwise Arc',
+    meta: 'Movement',
+    docText: 'Clockwise arc movement with specified radius or center point'
+  },
+  {
+    name: 'G3',
+    value: 'G3',
+    caption: 'G3 - Counter-clockwise Arc',
+    meta: 'Movement',
+    docText: 'Counter-clockwise arc movement with specified radius or center point'
+  },
+  {name: 'G4', value: 'G4', caption: 'G4 - Dwell', meta: 'Control', docText: 'Pause for specified time (P) in seconds'},
+  {
+    name: 'G17',
+    value: 'G17',
+    caption: 'G17 - XY Plane Selection',
+    meta: 'Plane',
+    docText: 'Select XY plane for arc movements'
+  },
+  {
+    name: 'G18',
+    value: 'G18',
+    caption: 'G18 - XZ Plane Selection',
+    meta: 'Plane',
+    docText: 'Select XZ plane for arc movements'
+  },
+  {
+    name: 'G19',
+    value: 'G19',
+    caption: 'G19 - YZ Plane Selection',
+    meta: 'Plane',
+    docText: 'Select YZ plane for arc movements'
+  },
+  {name: 'G20', value: 'G20', caption: 'G20 - Inches', meta: 'Units', docText: 'Set units to inches'},
+  {name: 'G21', value: 'G21', caption: 'G21 - Millimeters', meta: 'Units', docText: 'Set units to millimeters'},
+  {name: 'G28', value: 'G28', caption: 'G28 - Home', meta: 'Control', docText: 'Return to machine home position'},
+  {
+    name: 'G90',
+    value: 'G90',
+    caption: 'G90 - Absolute Positioning',
+    meta: 'Positioning',
+    docText: 'Use absolute coordinates'
+  },
+  {
+    name: 'G91',
+    value: 'G91',
+    caption: 'G91 - Relative Positioning',
+    meta: 'Positioning',
+    docText: 'Use relative coordinates'
+  },
+  {
+    name: 'M3',
+    value: 'M3',
+    caption: 'M3 - Spindle Clockwise',
+    meta: 'Spindle',
+    docText: 'Start spindle clockwise at specified speed (S)'
+  },
+  {
+    name: 'M4',
+    value: 'M4',
+    caption: 'M4 - Spindle Counter-clockwise',
+    meta: 'Spindle',
+    docText: 'Start spindle counter-clockwise at specified speed (S)'
+  },
+  {name: 'M5', value: 'M5', caption: 'M5 - Spindle Stop', meta: 'Spindle', docText: 'Stop spindle rotation'},
   { name: 'M8', value: 'M8', caption: 'M8 - Coolant On', meta: 'Coolant' },
   { name: 'M9', value: 'M9', caption: 'M9 - Coolant Off', meta: 'Coolant' },
 ];
@@ -262,9 +328,13 @@ export const GCodeEditor = () => {
                 enableBasicAutocompletion: true,
                 enableLiveAutocompletion: true,
                 enableSnippets: true,
-                fontSize: 13,
+                showLineNumbers: true,
                 tabSize: 2,
-                lineHeight: 1.5,
+                fontSize: 14,
+                fontFamily: 'monospace',
+                tooltip: true,
+                tooltipDelay: 0,
+                tooltipPosition: 'mouse',
               }}
               className="rounded"
           />

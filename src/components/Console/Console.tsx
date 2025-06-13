@@ -233,7 +233,13 @@ export const Console = () => {
     return (
         <div className="bg-gray-800 p-4 rounded-lg min-h-[218px] flex flex-col">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Console</h2>
+                <h2 className="text-xl font-bold flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
+                    Console
+                </h2>
                 <button
                     onClick={clearHistory}
                     className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 rounded active:bg-red-800"
