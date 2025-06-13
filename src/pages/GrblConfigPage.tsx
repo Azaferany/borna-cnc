@@ -3,7 +3,14 @@ import {Link} from 'react-router';
 import {ROUTES} from '../app/routes';
 import {useGRBL} from '../app/useGRBL';
 import {useGRBLListener} from '../app/useGRBLListener';
-import {MagnifyingGlassIcon, ExclamationTriangleIcon, HomeIcon, Cog6ToothIcon} from '@heroicons/react/24/outline';
+import {
+    MagnifyingGlassIcon,
+    ExclamationTriangleIcon,
+    HomeIcon,
+    Cog6ToothIcon,
+    Bars3Icon,
+    XMarkIcon
+} from '@heroicons/react/24/outline';
 import CalibrationModal from '../components/CalibrationModal/CalibrationModal';
 
 interface GrblParameter {
@@ -148,6 +155,7 @@ function GrblConfigPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [calibrationAxis, setCalibrationAxis] = useState<string | null>(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const {sendCommand, isConnected} = useGRBL();
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
         // Initialize all groups as expanded
@@ -333,8 +341,23 @@ function GrblConfigPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex">
+            {/* Mobile Sidebar Toggle */}
+            <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-gray-800/50 backdrop-blur-lg border border-gray-700/50"
+            >
+                {isSidebarOpen ? (
+                    <XMarkIcon className="w-6 h-6 text-white"/>
+                ) : (
+                    <Bars3Icon className="w-6 h-6 text-white"/>
+                )}
+            </button>
+
             {/* Sidebar */}
-            <div className="w-64 bg-gray-800/50 backdrop-blur-lg border-r border-gray-700/50 fixed h-full">
+            <div
+                className={`w-64 bg-gray-800/50 backdrop-blur-lg border-r border-gray-700/50 fixed h-full transform transition-transform duration-300 ease-in-out ${
+                    isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                } lg:translate-x-0 z-40`}>
                 <div className="p-6">
                     <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent mb-8">
                         Borna CNC
@@ -343,6 +366,7 @@ function GrblConfigPage() {
                         <Link
                             to={ROUTES.HOME}
                             className="flex items-center px-4 py-3 rounded-lg transition-all duration-200 text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                            onClick={() => setIsSidebarOpen(false)}
                         >
                             <HomeIcon className="w-5 h-5 mr-3"/>
                             Home
@@ -353,12 +377,14 @@ function GrblConfigPage() {
                                 Parameter Groups
                             </h3>
                             <nav className="space-y-1">
-                                {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
                                 {sortedGroups.filter(([_, params]) => params.length > 0)
                                     .map(([group]) => (
                                         <button
                                             key={group}
-                                            onClick={() => scrollToGroup(group)}
+                                            onClick={() => {
+                                                scrollToGroup(group);
+                                                setIsSidebarOpen(false);
+                                            }}
                                             className="w-full flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white rounded-lg transition-all duration-200"
                                         >
                                             {group}
@@ -371,21 +397,21 @@ function GrblConfigPage() {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 ml-64">
+            <div className="flex-1 lg:ml-64">
                 {/* Fixed Header */}
                 <header
-                    className="fixed top-0 left-64 right-0 bg-gray-900/80 backdrop-blur-lg border-b border-gray-700/50 z-10">
-                    <div className="container mx-auto px-6 py-4">
+                    className="fixed top-0 left-0 right-0 lg:left-64 bg-gray-900/80 backdrop-blur-lg border-b border-gray-700/50 z-10">
+                    <div className="container mx-auto px-4 lg:px-6 py-4">
                         <div className="flex items-center">
                             <Link to={ROUTES.HOME}
-                                  className="mr-4 bg-gray-700/50 hover:bg-gray-600/50 text-white px-4 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10">
+                                  className="mr-4 bg-gray-700/50 hover:bg-gray-600/50 text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10">
                                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                           d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                                 </svg>
-                                Back
+                                <span className="hidden sm:inline">Back</span>
                             </Link>
-                            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+                            <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
                                 Machine Configuration
                             </h1>
                         </div>
@@ -393,21 +419,21 @@ function GrblConfigPage() {
                 </header>
 
                 {/* Main Content */}
-                <div className="container mx-auto px-6 pt-24 pb-6">
+                <div className="container mx-auto px-4 lg:px-6 pt-24 pb-6">
                     {!isConnected ? (
                         <div
-                            className="text-center text-red-400 p-6 bg-red-900/20 rounded-xl backdrop-blur-sm border border-red-500/20 shadow-lg shadow-red-500/10">
-                            <ExclamationTriangleIcon className="w-12 h-12 mx-auto mb-3 text-red-400"/>
-                            <p className="text-lg">Please connect to the machine first</p>
+                            className="text-center text-red-400 p-4 sm:p-6 bg-red-900/20 rounded-xl backdrop-blur-sm border border-red-500/20 shadow-lg shadow-red-500/10">
+                            <ExclamationTriangleIcon className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 text-red-400"/>
+                            <p className="text-base sm:text-lg">Please connect to the machine first</p>
                         </div>
                     ) : isLoading ? (
-                        <div className="text-center p-8">
+                        <div className="text-center p-6 sm:p-8">
                             <div
-                                className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-                            <p className="text-lg text-gray-300">Loading machine parameters...</p>
+                                className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+                            <p className="text-base sm:text-lg text-gray-300">Loading machine parameters...</p>
                         </div>
                     ) : (
-                        <div className="space-y-6">
+                        <div className="space-y-4 sm:space-y-6">
                             {/* Search Bar */}
                             <div className="relative group">
                                 <input
@@ -432,15 +458,15 @@ function GrblConfigPage() {
 
                             {/* Parameters Table */}
                             <div
-                                className="bg-gray-800/50 rounded-xl shadow-lg shadow-gray-900/20 backdrop-blur-sm border border-gray-700/50 overflow-hidden">
+                                className="bg-gray-800/50 rounded-xl shadow-lg shadow-gray-900/20 backdrop-blur-sm border border-gray-700/50 overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-700/50">
                                     <thead className="bg-gray-700/30">
                                     <tr>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parameter</th>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Value</th>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Description</th>
-                                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
+                                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parameter</th>
+                                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Value</th>
+                                        <th className="hidden sm:table-cell px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Description</th>
+                                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
                                     </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-700/50">
@@ -453,7 +479,7 @@ function GrblConfigPage() {
                                         return (
                                             <React.Fragment key={group}>
                                                 <tr id={`group-${group}`} className="bg-gray-700/30">
-                                                    <td colSpan={5} className="px-6 py-4 cursor-pointer"
+                                                    <td colSpan={5} className="px-3 sm:px-6 py-3 sm:py-4 cursor-pointer"
                                                         onClick={() => toggleGroup(group)}>
                                                         <button
                                                             className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-200 hover:text-white focus:outline-none transition-colors duration-200 cursor-pointer"
@@ -480,8 +506,8 @@ function GrblConfigPage() {
                                                 {expandedGroups[group] && filteredParams.map((param) => (
                                                     <tr key={param.id}
                                                         className={`hover:bg-gray-700/30 transition-colors duration-200 ${!param.hasDescription ? 'opacity-50' : ''}`}>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{param.id}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-300">{param.id}</td>
+                                                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-300">
                                                             <div className="flex items-center">
                                                                 <span className="font-medium">{param.name}</span>
                                                                 {!param.hasDescription && (
@@ -489,14 +515,16 @@ function GrblConfigPage() {
                                                                         className="ml-2 text-xs text-gray-400">(Undocumented)</span>
                                                                 )}
                                                             </div>
+                                                            <div
+                                                                className="sm:hidden text-xs text-gray-400 mt-1">{param.description}</div>
                                                         </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap">
+                                                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                                             <div className="relative">
                                                                 <input
                                                                     type="text"
                                                                     value={param.value}
                                                                     onChange={(e) => handleInputChange(param.id, e.target.value)}
-                                                                    className={`bg-gray-700/50 text-white px-3 py-2 rounded-lg border ${
+                                                                    className={`bg-gray-700/50 text-white px-2 sm:px-3 py-2 rounded-lg border ${
                                                                         savingParams[param.id] ? 'border-yellow-500/50' : 'border-gray-600/50'
                                                                     } focus:border-blue-500/50 focus:outline-none transition-all duration-200 w-full`}
                                                                     disabled={savingParams[param.id]}
@@ -511,12 +539,12 @@ function GrblConfigPage() {
                                                                 )}
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-4 text-sm text-gray-300">{param.description}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                        <td className="hidden sm:table-cell px-6 py-4 text-sm text-gray-300">{param.description}</td>
+                                                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-300">
                                                             <div className="flex items-center space-x-2">
                                                                 <button
                                                                     onClick={() => handleParameterChange(param.id, param.value)}
-                                                                    className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                                                                    className={`px-3 sm:px-4 py-2 rounded-lg transition-all duration-200 ${
                                                                         editedValues[param.id] && !savingParams[param.id]
                                                                             ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20'
                                                                             : 'bg-gray-600/50 cursor-not-allowed'
@@ -528,11 +556,13 @@ function GrblConfigPage() {
                                                                 {param.id >= 100 && param.id <= 105 && (
                                                                     <button
                                                                         onClick={() => setCalibrationAxis(getAxisFromParamId(param.id))}
-                                                                        className="px-4 py-2 rounded-lg bg-blue-600/50 hover:bg-blue-500/50 text-white transition-all duration-200 flex items-center space-x-2"
+                                                                        className="px-3 sm:px-4 py-2 rounded-lg bg-blue-600/50 hover:bg-blue-500/50 text-white transition-all duration-200 flex items-center space-x-2"
                                                                         title="Calibrate steps/mm"
                                                                     >
-                                                                        <Cog6ToothIcon className="w-5 h-5"/>
-                                                                        <span>Calibrate</span>
+                                                                        <Cog6ToothIcon
+                                                                            className="w-4 h-4 sm:w-5 sm:h-5"/>
+                                                                        <span
+                                                                            className="hidden sm:inline">Calibrate</span>
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -549,6 +579,14 @@ function GrblConfigPage() {
                     )}
                 </div>
             </div>
+
+            {/* Overlay for mobile sidebar */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
 
             {calibrationAxis && (
                 <CalibrationModal
