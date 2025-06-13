@@ -4,11 +4,15 @@ import {useGCodeBufferContext} from "../../app/GCodeBufferContext.ts";
 import {useState} from 'react';
 import {useShallow} from "zustand/react/shallow";
 import {ContinueFromHereButton} from "../ContinueFromHereButton/ContinueFromHereButton";
+import {StartOptionsModal} from "../StartOptionsModal/StartOptionsModal";
+import {Plane} from "../../types/GCodeTypes.ts";
 
 export const StartButton = () => {
     const { isSending, bufferType, startSending, stopSending } = useGCodeBufferContext();
     const allGCodes = useStore(useShallow(s => s.allGCodes));
+    const toolPathGCodes = useStore(useShallow(s => s.toolPathGCodes));
     const status = useStore(s => s.status);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const [error, setError] = useState<string | null>(null);
 
@@ -16,12 +20,74 @@ export const StartButton = () => {
     const isSendingRunning = isSending && bufferType === "GCodeFile";
     const buttonText =  isSendingRunning ? (status == "Hold" ? "Sending Paused" : 'Sending...') : 'Start';
 
-    const handleStart = async () => {
+    const handleStart = async (startFromLine: number) => {
         if (isDisabled) return;
+        if (!allGCodes) return;
+        if (!toolPathGCodes) return;
+        let gCodesToSend = [...allGCodes]
+
+        if (startFromLine != 1) {
+            const selectedGcodeCommand = toolPathGCodes.find(x => x.lineNumber == startFromLine)!;
+            const maxZPlusSafeguardValue =
+                Math.max(
+                    ...[
+                        ...toolPathGCodes?.map(x => x.startPoint.z) ?? [10],
+                        ...toolPathGCodes?.map(x => x.endPoint?.z ?? 10) ?? [10]
+                    ]) + 100;
+
+
+            gCodesToSend = gCodesToSend.slice(startFromLine - 1)
+            gCodesToSend.unshift(`N${startFromLine} G53 G1 Z${selectedGcodeCommand.startPoint.z} f400`);
+            gCodesToSend.unshift(`N${startFromLine} G53 G0 X${selectedGcodeCommand.startPoint.x} Y${selectedGcodeCommand.startPoint?.y}`);
+            gCodesToSend.unshift(`N${startFromLine} G53 G0 Z${maxZPlusSafeguardValue}`);
+
+
+            gCodesToSend.unshift(selectedGcodeCommand.isIncremental ? "G91" : "G90")
+            gCodesToSend.unshift(selectedGcodeCommand.isInches ? "G20" : "G21")
+
+            if (selectedGcodeCommand.activePlane == Plane.XY) {
+
+                gCodesToSend.unshift("G17")
+            } else if (selectedGcodeCommand.activePlane == Plane.YZ) {
+
+                gCodesToSend.unshift("G19")
+
+            } else if (selectedGcodeCommand.activePlane == Plane.XZ) {
+                gCodesToSend.unshift("G18")
+            }
+            gCodesToSend.unshift(selectedGcodeCommand.activeWorkSpace)
+            console.log(selectedGcodeCommand)
+            for (let i = 0; i < selectedGcodeCommand.activeMCodes.length; i++) {
+                const mCode = selectedGcodeCommand.activeMCodes.slice().reverse()[i];
+                if (i === 0 && (mCode.includes("M3") || mCode.includes("M4"))) {
+                    if (/s\d+/i.test(mCode)) {
+                        // If s part exists, replace it
+                        gCodesToSend.unshift(mCode.replace(/s\d+/i, `s${selectedGcodeCommand.spindleSpeed}`));
+
+                    } else {
+                        // If s part doesn't exist, add it at the end
+                        gCodesToSend.unshift(`${mCode} s${selectedGcodeCommand.spindleSpeed}`);
+
+
+                    }
+                } else {
+                    gCodesToSend.unshift(selectedGcodeCommand.activeMCodes[i])
+
+
+                }
+            }
+            console.log(gCodesToSend);
+
+        }
+
+
 
         try {
             setError(null);
-            await startSending(allGCodes ?? [], "GCodeFile");
+
+
+            await startSending(gCodesToSend, "GCodeFile");
+            setIsModalOpen(false);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to start sending G-code');
             console.error('Error starting G-code send:', err);
@@ -43,7 +109,7 @@ export const StartButton = () => {
                     ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                     ${isSendingRunning ? 'animate-pulse' : ''}
                 `}
-                onClick={handleStart}
+                onClick={() => !isDisabled && !isSendingRunning && setIsModalOpen(true)}
                 disabled={isDisabled || isSendingRunning}
                 aria-label={buttonText}
                 aria-busy={isSendingRunning}
@@ -78,6 +144,12 @@ export const StartButton = () => {
                         : `Machine must be in Idle state (current: ${status})`}
                 </div>
             )}
+
+            <StartOptionsModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onStart={handleStart}
+            />
         </div>
     );
 };
