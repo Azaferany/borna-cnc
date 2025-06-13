@@ -19,7 +19,7 @@ export const ConnectionTypeToggle: React.FC = () => {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 disabled={isConnected}
-                className={`px-4 py-2 rounded-md flex items-center space-x-2 ${
+                className={`px-4 py-1.5 rounded-md flex items-center space-x-2 ${
                     isConnected
                         ? 'bg-gray-600 cursor-not-allowed opacity-50'
                         : 'bg-gray-700 hover:bg-gray-600'

@@ -20,21 +20,30 @@ function HomePage() {
                     {/* Left column - 3D view */}
                     <div className="col-span-9">
                         <div className="grid grid-cols-12 gap-2">
-                            <header className="col-span-12 pb-3.5 pl-7  pt-2.5 border-b border-gray-700 flex justify-items-start items-center">
-                                <h1 className="text-3xl font-bold">CNC Control Panel</h1>
-                                <div className="pl-15">
+                            <header
+                                className="col-span-12 pb-3.5 pl-7 pt-2.5 border-b border-gray-700 flex justify-items-start items-center">
+                                <h1 className="text-3xl font-bold flex items-center">
+                                    <svg className="w-8 h-8 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                    </svg>
+                                    CNC Control Panel
+                                </h1>
+                                <div className="pl-5" title="Connect to your CNC machine">
                                     <ConnectButton />
                                 </div>
-                                <div className="pl-7">
+                                <div className="pl-2" title="Switch between USB and Network connection">
                                     <ConnectionTypeToggle/>
                                 </div>
-                                <div className="pl-7">
+                                <div className="pl-10" title="Load G-code file">
                                     <OpenFileButton />
                                 </div>
-                                <div className="pl-7">
+                                <div className="pl-4" title="View machine message history">
                                     <MessageHistoryButton/>
                                 </div>
-                                <MachineConfigButton/>
+                                <div className="pl-15" title="Configure machine settings">
+                                    <MachineConfigButton/>
+                                </div>
                             </header>
                             <div className="col-span-12">
                                 <Scene3D />
@@ -44,11 +53,9 @@ function HomePage() {
                             </div>
                             <div className="col-span-4 h-[370px]">
                                 <ControlButtons />
-
                             </div>
                             <div className="col-span-4 h-[370px]">
                                 <OverrideControls/>
-
                             </div>
                             <div className="col-span-12">
                                 <WorkOffsetPanel />
@@ -60,7 +67,6 @@ function HomePage() {
                     <div className="col-span-3 space-y-4 pt-2.5">
                         <StatusDisplay />
                         <JogControls />
-
                         <Console />
                     </div>
                 </div>

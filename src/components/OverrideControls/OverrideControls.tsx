@@ -211,7 +211,13 @@ export const OverrideControls = () => {
 
     return (
         <div className="bg-gray-800 p-4 rounded-lg h-full">
-            <h2 className="text-xl font-bold mb-8">Override Controls</h2>
+            <h2 className="text-xl font-bold mb-8 flex items-center">
+                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                </svg>
+                Override Controls
+            </h2>
             <div className="space-y-7">
                 <SliderControl
                     label="Rapid Speed Override"
@@ -221,7 +227,10 @@ export const OverrideControls = () => {
                     max={100}
                     step={25}
                     allowedValues={[25, 50, 100]}
-                />
+                >
+                    <span className="text-xs text-gray-400"
+                          title="Adjust how fast the machine moves during rapid movements">Quick movements</span>
+                </SliderControl>
                 <SliderControl
                     label="Feed Rate Override"
                     value={feedrateOverridePercent}
@@ -229,7 +238,7 @@ export const OverrideControls = () => {
                     min={10}
                     max={200}
                 >
-                    <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700">
+                    <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700" title="Current feed rate">
                         {feedrate.toFixed(0)} <FeedrateUnitDisplay/>
                     </span>
                 </SliderControl>
@@ -240,7 +249,7 @@ export const OverrideControls = () => {
                     min={10}
                     max={200}
                 >
-                    <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700">
+                    <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700" title="Current spindle speed">
                         {spindleSpeed.toFixed(0)} RPM
                     </span>
                 </SliderControl>
