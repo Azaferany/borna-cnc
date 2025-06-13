@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import {useState, useEffect, useCallback} from "react";
 import { useGRBL } from "../../app/useGRBL.ts";
 import { UnitDisplay } from "../UnitDisplay/UnitDisplay";
 import { FeedrateUnitDisplay } from "../UnitDisplay/FeedrateUnitDisplay";
 import { useStore } from "../../app/store.ts";
+import {useShallow} from "zustand/react/shallow";
 
 export const JogControls = () => {
     const [feedrate, setFeedrate] = useState(100);
@@ -10,9 +11,11 @@ export const JogControls = () => {
     const [continuousMode, setContinuousMode] = useState(false);
     const [activeButton, setActiveButton] = useState<string | null>(null);
     const [isExpanded, setIsExpanded] = useState(true);
+    const [keyboardMode, setKeyboardMode] = useState(false);
     const { sendCommand, isConnected } = useGRBL();
     const status = useStore(state => state.status);
     const isSending = useStore(state => state.isSending);
+    const machineCoordinate = useStore(useShallow(state => state.machineCoordinate));
     const isMachineRunning = status === "Run" || status === "Hold" || isSending;
 
     useEffect(() => {
@@ -20,16 +23,16 @@ export const JogControls = () => {
             setIsExpanded(false);
         }
     }, [isMachineRunning]);
-
-    const stopJog = async () => {
+    const stopJog = useCallback(async () => {
         try {
             await sendCommand('\x85');
         } catch (error) {
             console.error('Error stopping jog:', error);
         }
-    };
+    }, [sendCommand]);
 
-    const handleJog = async (axis: string, direction: number) => {
+
+    const handleJog = useCallback(async (axis: string, direction: number) => {
         if (!isConnected || isMachineRunning) {
             console.error("Not connected to GRBL device or machine is running");
             return;
@@ -39,14 +42,14 @@ export const JogControls = () => {
             // Format the jog command
             const distance = direction * (continuousMode ? 1000 : stepSize); // Use large distance for continuous mode
             const command = `$J=G91 ${axis}${distance.toFixed(3)} F${feedrate}`;
-            
+
             await sendCommand(command);
         } catch (error) {
             console.error('Error sending jog command:', error);
         }
-    };
+    }, [continuousMode, feedrate, isConnected, isMachineRunning, sendCommand, stepSize]);
 
-    const handleDiagonalJog = async (axis1: string, direction1: number, axis2: string, direction2: number) => {
+    const handleDiagonalJog = useCallback(async (axis1: string, direction1: number, axis2: string, direction2: number) => {
         if (!isConnected || isMachineRunning) {
             console.error("Not connected to GRBL device or machine is running");
             return;
@@ -59,28 +62,28 @@ export const JogControls = () => {
         } catch (error) {
             console.error('Error sending diagonal jog command:', error);
         }
-    };
+    }, [continuousMode, feedrate, isConnected, isMachineRunning, sendCommand, stepSize]);
 
-    const handleJogStart = (axis: string, direction: number) => {
+    const handleJogStart = useCallback((axis: string, direction: number) => {
         if (continuousMode) {
             setActiveButton(`${axis}${direction}`);
             handleJog(axis, direction);
         }
-    };
+    }, [continuousMode, handleJog]);
 
-    const handleJogEnd = () => {
+    const handleJogEnd = useCallback(() => {
         setActiveButton(null);
         if (continuousMode) {
             stopJog();
         }
-    };
+    }, [continuousMode, stopJog]);
 
-    const handleDiagonalJogStart = (axis1: string, direction1: number, axis2: string, direction2: number) => {
+    const handleDiagonalJogStart = useCallback((axis1: string, direction1: number, axis2: string, direction2: number) => {
         if (continuousMode) {
             setActiveButton(`${axis1}${direction1}${axis2}${direction2}`);
             handleDiagonalJog(axis1, direction1, axis2, direction2);
         }
-    };
+    }, [continuousMode, handleDiagonalJog]);
 
     const handleDiagonalClick = (axis1: string, direction1: number, axis2: string, direction2: number) => {
         if (!continuousMode) {
@@ -94,11 +97,88 @@ export const JogControls = () => {
         }
     };
 
+
+    useEffect(() => {
+        if (!keyboardMode || !isConnected || isMachineRunning || !isExpanded) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            if (e.repeat) return; // Prevent key repeat
+
+            const isShiftPressed = e.shiftKey;
+
+            switch (e.key) {
+                case 'ArrowUp':
+                    if (isShiftPressed) {
+                        handleDiagonalJogStart('X', 1, 'Y', 1);
+                    } else {
+                        handleJogStart('Y', 1);
+                    }
+                    break;
+                case 'ArrowDown':
+                    if (isShiftPressed) {
+                        handleDiagonalJogStart('X', -1, 'Y', -1);
+                    } else {
+                        handleJogStart('Y', -1);
+                    }
+                    break;
+                case 'ArrowLeft':
+                    if (isShiftPressed) {
+                        handleDiagonalJogStart('X', -1, 'Y', 1);
+                    } else {
+                        handleJogStart('X', -1);
+                    }
+                    break;
+                case 'ArrowRight':
+                    if (isShiftPressed) {
+                        handleDiagonalJogStart('X', 1, 'Y', -1);
+                    } else {
+                        handleJogStart('X', 1);
+                    }
+                    break;
+                case 'PageUp':
+                    handleJogStart('Z', 1);
+                    break;
+                case 'PageDown':
+                    handleJogStart('Z', -1);
+                    break;
+            }
+        };
+
+        const handleKeyUp = (e: KeyboardEvent) => {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            handleJogEnd();
+
+        };
+
+        window.addEventListener('keydown', handleKeyDown, true);
+        window.addEventListener('keyup', handleKeyUp);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown, true);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
+    }, [keyboardMode, isConnected, isMachineRunning, continuousMode, stepSize, feedrate, handleJogStart, handleDiagonalJogStart, handleJogEnd, isExpanded]);
+
+    useEffect(() => {
+        if (activeButton || !keyboardMode) return;
+        stopJog()
+    }, [activeButton, keyboardMode, machineCoordinate, stopJog]);
+
+
+
     const renderJogButton = (axis: string, direction: number, label: string) => {
         const isDisabled = !isConnected || isMachineRunning || isMachineRunning || (!continuousMode && stepSize <= 0);
-        const buttonClass = `p-3 px-6 bg-gray-700 hover:bg-gray-600 active:bg-gray-800 
-            text-white rounded flex items-center justify-center transition-colors
-            ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`;
+        const isActive = activeButton === `${axis}${direction}`;
+        const buttonClass = `p-3 px-6 rounded flex items-center justify-center transition-colors
+            ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+            ${isActive
+            ? 'bg-blue-600 hover:bg-blue-500 active:bg-blue-500'
+            : 'bg-gray-700 hover:bg-gray-600 active:bg-gray-400'}`;
 
         return (
             <button
@@ -114,7 +194,7 @@ export const JogControls = () => {
                 <div className="flex flex-col items-center">
                     <span className="text-lg font-bold">{label}</span>
                     {!continuousMode && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-300">
                             {stepSize}<UnitDisplay/>
                         </span>
                     )}
@@ -141,7 +221,7 @@ export const JogControls = () => {
     );
 
     return (
-        <div className="bg-gray-800 rounded-lg">
+        <div className={`bg-gray-800 rounded-lg ${keyboardMode ? 'ring-2 ring-yellow-500 ring-opacity-50' : ''}`}>
             <div
                 onClick={() => !isMachineRunning && setIsExpanded(!isExpanded)}
                 className={`w-full p-3 flex items-center justify-between text-white transition-colors duration-200 ${
@@ -228,20 +308,57 @@ export const JogControls = () => {
                             </div>
                         </div>
 
-                        <div className="flex items-center space-x-2 mb-4">
-                            <input
-                                type="checkbox"
-                                checked={continuousMode}
-                                onChange={(e) => setContinuousMode(e.target.checked)}
-                                className="rounded bg-gray-700"
-                                id="continuous-mode"
-                                disabled={isMachineRunning}
-                                title="Toggle between step-by-step and continuous jogging modes"
-                            />
-                            <label htmlFor="continuous-mode" className="text-sm font-medium cursor-pointer">
-                                Continuous Mode
-                            </label>
+                        <div className="flex items-center space-x-4 mb-4">
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    checked={continuousMode}
+                                    onChange={(e) => {
+                                        setContinuousMode(e.target.checked)
+                                        if (keyboardMode)
+                                            setKeyboardMode(e.target.checked)
+                                    }}
+                                    className="rounded bg-gray-700"
+                                    id="continuous-mode"
+                                    disabled={isMachineRunning}
+                                    title="Toggle between step-by-step and continuous jogging modes"
+                                />
+                                <label htmlFor="continuous-mode" className="text-sm font-medium cursor-pointer">
+                                    Continuous Mode
+                                </label>
+                            </div>
+
+                            <div
+                                className={`flex items-center space-x-2 ${keyboardMode ? 'ring-2 ring-yellow-500 rounded-md p-1' : ''}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={keyboardMode}
+                                    onChange={(e) => {
+                                        setKeyboardMode(e.target.checked)
+                                        setContinuousMode(e.target.checked)
+                                    }}
+                                    className="rounded bg-gray-700"
+                                    id="keyboard-mode"
+                                    disabled={isMachineRunning}
+                                    title="Enable keyboard controls (Arrow keys for X/Y, Page Up/Down for Z, Shift + arrows for diagonal)"
+                                />
+                                <label htmlFor="keyboard-mode" className="text-sm font-medium cursor-pointer">
+                                    Keyboard Mode
+                                </label>
+                            </div>
                         </div>
+
+                        {keyboardMode && (
+                            <div
+                                className={`mb-4 p-3 bg-gray-700 rounded text-sm ${keyboardMode ? 'ring-2 ring-yellow-500 ring-opacity-50' : ''}`}>
+                                <h3 className="font-medium mb-2">Keyboard Controls:</h3>
+                                <ul className="list-disc list-inside space-y-1">
+                                    <li>Arrow Keys: Move X/Y axes</li>
+                                    <li>Page Up/Down: Move Z axis</li>
+                                    <li>Shift + Arrows: Diagonal movement</li>
+                                </ul>
+                            </div>
+                        )}
 
                         <div className="flex gap-4 justify-center">
                             <div className="grid grid-cols-3 gap-2">
@@ -259,8 +376,11 @@ export const JogControls = () => {
                                     onClick={() => {
                                         if (status === "Jog")
                                             stopJog()
-                                        else
+                                        else {
                                             setContinuousMode(!continuousMode)
+                                            if (continuousMode)
+                                                setKeyboardMode(!continuousMode)
+                                        }
                                     }}
                                     disabled={!isConnected || isMachineRunning}
                                 >
