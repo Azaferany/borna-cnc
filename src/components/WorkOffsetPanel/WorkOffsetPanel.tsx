@@ -32,14 +32,14 @@ const WorkOffsetPanel: React.FC = () => {
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full p-3 flex items-center justify-between text-white hover:bg-gray-700 transition-colors duration-200"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
           <h2 className="text-xl font-bold">Work Offsets</h2>
           {!isConnected ? (
               <span className="px-2 py-1 bg-red-600 rounded-md text-sm font-medium">
               Please connect first
             </span>
           ) : activeModes?.WorkCoordinateSystem && (
-            <span className="px-2 py-1 bg-blue-600 rounded-md text-sm font-medium">
+              <span className="px-2 py-1 bg-blue-600 rounded-md text-sm font-medium whitespace-normal break-words">
               Active : {activeModes.WorkCoordinateSystem} X : {gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].x.toFixed(3)} Y:{gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].y.toFixed(3)} Z : {gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].z.toFixed(3)}
             </span>
           )}
@@ -81,7 +81,7 @@ const WorkOffsetPanel: React.FC = () => {
                 Please connect to the machine first to view and edit work offsets
               </div>
           ) : (
-              <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {Object.entries(gCodeOffsets)
                     .filter(([key]) => key !== 'G92')
                     .filter(([key]) => key !== 'G28')
@@ -105,7 +105,7 @@ const WorkOffsetPanel: React.FC = () => {
                                     : 'hover:bg-gray-600'
                             }`}
                         >
-                          <div className="flex items-center justify-between mb-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                             <div className="flex items-center gap-2">
                               <h3 className="text-lg font-semibold text-white">{offset}</h3>
                               {activeModes?.WorkCoordinateSystem === offset && (
@@ -115,7 +115,7 @@ const WorkOffsetPanel: React.FC = () => {
                           </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               {editingOffset === offset ? (
                                   <>
                                     <button
@@ -123,13 +123,13 @@ const WorkOffsetPanel: React.FC = () => {
                                         onClick={() => {
                                           setEditingOffset(null);
                                         }}
-                                        className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 active:bg-red-900 transition-colors duration-200"
+                                        className="flex-1 sm:flex-none px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 active:bg-red-900 transition-colors duration-200"
                                     >
                                       Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 active:bg-green-900 transition-colors duration-200"
+                                        className="flex-1 sm:flex-none px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 active:bg-green-900 transition-colors duration-200"
                                     >
                                       Save
                                     </button>
@@ -142,7 +142,7 @@ const WorkOffsetPanel: React.FC = () => {
                                         onClick={() => {
                                           handleSubmit({x: 0, y: 0, z: 0}, offset);
                                         }}
-                                        className="px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 active:bg-red-700 transition-colors duration-200"
+                                        className="flex-1 sm:flex-none px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 active:bg-red-700 transition-colors duration-200"
                                     >
                                       Reset
                                     </button>
@@ -153,7 +153,7 @@ const WorkOffsetPanel: React.FC = () => {
                                           e.stopPropagation();
                                           e.preventDefault();
                                         }}
-                                        className="px-3 py-1.5 bg-gray-500 text-white text-sm rounded-md hover:bg-gray-800 active:bg-gray-900 transition-colors duration-200"
+                                        className="flex-1 sm:flex-none px-3 py-1.5 bg-gray-500 text-white text-sm rounded-md hover:bg-gray-800 active:bg-gray-900 transition-colors duration-200"
                                     >
                                       Edit
                                     </button>
@@ -163,7 +163,7 @@ const WorkOffsetPanel: React.FC = () => {
                               {activeModes?.WorkCoordinateSystem !== offset && (<button
                                   type="button"
                                   onClick={() => handleActivateOffset(offset)}
-                                  className={`px-3 py-1.5 text-white text-sm rounded-md transition-colors duration-200 bg-blue-600 hover:bg-blue-700 active:bg-blue-900`}
+                                  className={`flex-1 sm:flex-none px-3 py-1.5 text-white text-sm rounded-md transition-colors duration-200 bg-blue-600 hover:bg-blue-700 active:bg-blue-900`}
                               >
                                 Activate
                               </button>)}

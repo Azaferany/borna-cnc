@@ -271,7 +271,7 @@ export const GCodeEditor = () => {
       <div className="bg-gray-800 p-4 rounded-lg h-full flex flex-col">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">G-code Editor</h2>
-          <div className="space-x-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <OpenFileButton />
             <button
                 onClick={handleSave}

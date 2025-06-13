@@ -274,7 +274,7 @@ export const Console = () => {
                     })}
                 </div>
             </div>
-            <form onSubmit={handleSubmit} className="flex space-x-2">
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
                 <label htmlFor="command"></label>
                 <input
                     autoComplete="off"
@@ -287,12 +287,12 @@ export const Console = () => {
                     }}
                     onKeyDown={handleKeyDown}
                     placeholder="Enter command... (Use ↑↓ for history)"
-                    className={`flex-1 bg-gray-700 rounded px-3 py-2 text-white ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`w-full bg-gray-700 rounded px-3 py-2 text-white ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
                     disabled={!isConnected}
                 />
                 <button
                     type="submit"
-                    className={`px-4 py-2 active:bg-blue-900 rounded ${isConnected ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-600/50 cursor-not-allowed'}`}
+                    className={`w-full sm:w-auto px-4 py-2 active:bg-blue-900 rounded ${isConnected ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-600/50 cursor-not-allowed'}`}
                     disabled={!isConnected}
                 >
                     Send
