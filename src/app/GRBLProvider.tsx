@@ -224,7 +224,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const handleActiveModes =useCallback((event: CustomEvent<string>) => {
         const line = event.detail;
         if (line.startsWith('[GC:') && line.endsWith(']')) {
-            const modesMatch = line.match(/\[GC:(.*?)/);
+            const modesMatch = line.match(/\[GC:(.*?)\]/);
             if (modesMatch) {
                 const modes = modesMatch[1].split(' ');
                 const activeModes: ActiveModes = {

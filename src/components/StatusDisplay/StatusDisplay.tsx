@@ -111,8 +111,8 @@ export const StatusDisplay = () => {
 
     const InfoRow = ({ label, value }: { label: string; value: string | number }) => (
         <div className="flex justify-between py-2 border-b border-gray-700">
-            <div className="font-medium text-gray-300">{label}</div>
-            <div className="text-gray-100">{value}</div>
+            <div className="font-medium text-gray-300 text-sm">{label}</div>
+            <div className="text-gray-100 text-sm">{value}</div>
         </div>
     );
 

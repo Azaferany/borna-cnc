@@ -140,7 +140,6 @@ const WorkOffsetPanel: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={() => {
-
                                           handleSubmit({x: 0, y: 0, z: 0}, offset);
                                         }}
                                         className="px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 active:bg-red-700 transition-colors duration-200"

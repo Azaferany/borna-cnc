@@ -283,7 +283,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                                         id="jog-distance"
                                                         value={stepSize}
                                                         onChange={(e) => setStepSize(Number(e.target.value))}
-                                                        className={`w-full bg-gray-700 rounded px-3 py-2 text-white ${continuousMode ? "cursor-not-allowed" : ""}`}
+                                                        className={`w-full bg-gray-700 rounded px-4 py-2 text-white text-sm ${continuousMode ? "cursor-not-allowed" : ""}`}
                                                         disabled={continuousMode || isSending || status !== 'Idle'}
                                                         min={0.001}
                                                         max={1000}
@@ -393,10 +393,10 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                     <h3 className="text-lg font-medium text-white">Calibration Information</h3>
 
                                     <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div className="bg-gray-800/50 p-3 rounded-lg">
-                                            <div className="text-gray-400">First Measurement:</div>
-                                            <div className="text-white font-medium">{firstMeasurement} <UnitDisplay/>
-                                            </div>
+                                        <div className="bg-gray-800/50 p-4 rounded-lg">
+                                            <div className="text-gray-400 text-sm">First Measurement:</div>
+                                            <div className="text-white font-medium text-sm">{firstMeasurement}
+                                                <UnitDisplay/></div>
                                         </div>
                                         <div className="bg-gray-800/50 p-3 rounded-lg">
                                             <div className="text-gray-400">Current Steps/mm:</div>

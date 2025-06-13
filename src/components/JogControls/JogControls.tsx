@@ -195,7 +195,7 @@ export const JogControls = () => {
                                     type="number"
                                     value={feedrate}
                                     onChange={(e) => setFeedrate(Number(e.target.value))}
-                                    className="w-full bg-gray-700 rounded px-3 py-2 text-white"
+                                    className="w-full bg-gray-700 rounded px-4 py-2 text-white text-sm"
                                     min={1}
                                     max={10000}
                                     disabled={isMachineRunning}
@@ -207,7 +207,7 @@ export const JogControls = () => {
                                     id={"Distance"}
                                     value={stepSize}
                                     onChange={(e) => setStepSize(Number(e.target.value))}
-                                    className={`w-full bg-gray-700 rounded px-3 py-2 text-white ${continuousMode || isMachineRunning ? "cursor-not-allowed" : ""}`}
+                                    className={`w-full bg-gray-700 rounded px-4 py-2 text-white text-sm ${continuousMode || isMachineRunning ? "cursor-not-allowed" : ""}`}
                                     disabled={continuousMode || isMachineRunning}
                                     min={0.001}
                                     max={1000}/></>)

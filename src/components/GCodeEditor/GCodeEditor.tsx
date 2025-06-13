@@ -262,8 +262,9 @@ export const GCodeEditor = () => {
                 enableBasicAutocompletion: true,
                 enableLiveAutocompletion: true,
                 enableSnippets: true,
-                fontSize: 14,
+                fontSize: 13,
                 tabSize: 2,
+                lineHeight: 1.5,
               }}
               className="rounded"
           />
