@@ -344,7 +344,7 @@ function GrblConfigPage() {
             {/* Mobile Sidebar Toggle */}
             <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-gray-800/50 backdrop-blur-lg border border-gray-700/50"
+                className="lg:hidden fixed top-4 right-4 z-50 p-2 rounded-lg bg-gray-800/50 backdrop-blur-lg border border-gray-700/50"
             >
                 {isSidebarOpen ? (
                     <XMarkIcon className="w-6 h-6 text-white"/>
@@ -412,7 +412,7 @@ function GrblConfigPage() {
                                 <span className="hidden sm:inline">Back</span>
                             </Link>
                             <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                                Machine Configuration
+                                Machine Config
                             </h1>
                         </div>
                     </div>
@@ -457,123 +457,221 @@ function GrblConfigPage() {
                             )}
 
                             {/* Parameters Table */}
-                            <div
-                                className="bg-gray-800/50 rounded-xl shadow-lg shadow-gray-900/20 backdrop-blur-sm border border-gray-700/50 overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-700/50">
-                                    <thead className="bg-gray-700/30">
-                                    <tr>
-                                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
-                                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Parameter</th>
-                                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Value</th>
-                                        <th className="hidden sm:table-cell px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Description</th>
-                                        <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-700/50">
-                                    {sortedGroups.map(([group, params]) => {
-                                        const filteredParams = params.filter(param =>
-                                            filteredParameterList.some(p => p.id === param.id)
-                                        );
-                                        if (filteredParams.length === 0) return null;
+                            <div className="relative">
+                                <div
+                                    className="bg-gray-800/50 rounded-xl shadow-lg shadow-gray-900/20 backdrop-blur-sm border border-gray-700/50">
+                                    {/* Mobile View */}
+                                    <div className="block sm:hidden">
+                                        {sortedGroups.map(([group, params]) => {
+                                            const filteredParams = params.filter(param =>
+                                                filteredParameterList.some(p => p.id === param.id)
+                                            );
+                                            if (filteredParams.length === 0) return null;
 
-                                        return (
-                                            <React.Fragment key={group}>
-                                                <tr id={`group-${group}`} className="bg-gray-700/30">
-                                                    <td colSpan={5} className="px-3 sm:px-6 py-3 sm:py-4 cursor-pointer"
-                                                        onClick={() => toggleGroup(group)}>
-                                                        <button
-                                                            className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-200 hover:text-white focus:outline-none transition-colors duration-200 cursor-pointer"
+                                            return (
+                                                <div key={group}
+                                                     className="border-b border-gray-700/50 last:border-b-0">
+                                                    <button
+                                                        onClick={() => toggleGroup(group)}
+                                                        className="w-full px-4 py-3 flex items-center justify-between bg-gray-700/30 hover:bg-gray-700/50 transition-colors duration-200"
+                                                    >
+                                                        <span className="text-blue-400 font-medium">{group}</span>
+                                                        <svg
+                                                            className={`w-5 h-5 transform transition-transform duration-200 ${
+                                                                expandedGroups[group] ? 'rotate-180' : ''
+                                                            }`}
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
                                                         >
-                                                            <span className="text-blue-400">{group}</span>
-                                                            <svg
-                                                                className={`w-5 h-5 transform transition-transform duration-200 ${
-                                                                    expandedGroups[group] ? 'rotate-180' : ''
-                                                                }`}
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth={2}
-                                                                    d="M19 9l-7 7-7-7"
-                                                                />
-                                                            </svg>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                {expandedGroups[group] && filteredParams.map((param) => (
-                                                    <tr key={param.id}
-                                                        className={`hover:bg-gray-700/30 transition-colors duration-200 ${!param.hasDescription ? 'opacity-50' : ''}`}>
-                                                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-300">{param.id}</td>
-                                                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-300">
-                                                            <div className="flex items-center">
-                                                                <span className="font-medium">{param.name}</span>
-                                                                {!param.hasDescription && (
-                                                                    <span
-                                                                        className="ml-2 text-xs text-gray-400">(Undocumented)</span>
-                                                                )}
-                                                            </div>
-                                                            <div
-                                                                className="sm:hidden text-xs text-gray-400 mt-1">{param.description}</div>
-                                                        </td>
-                                                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                                            <div className="relative">
-                                                                <input
-                                                                    type="text"
-                                                                    value={param.value}
-                                                                    onChange={(e) => handleInputChange(param.id, e.target.value)}
-                                                                    className={`bg-gray-700/50 text-white px-2 sm:px-3 py-2 rounded-lg border ${
-                                                                        savingParams[param.id] ? 'border-yellow-500/50' : 'border-gray-600/50'
-                                                                    } focus:border-blue-500/50 focus:outline-none transition-all duration-200 w-full`}
-                                                                    disabled={savingParams[param.id]}
-                                                                    title={param.description}
-                                                                />
-                                                                {savingParams[param.id] && (
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M19 9l-7 7-7-7"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                    {expandedGroups[group] && (
+                                                        <div className="p-4 space-y-4">
+                                                            {filteredParams.map((param) => (
+                                                                <div key={param.id}
+                                                                     className="bg-gray-700/20 rounded-lg p-4">
                                                                     <div
-                                                                        className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                                                        <div
-                                                                            className="animate-spin rounded-full h-4 w-4 border-2 border-yellow-500 border-t-transparent"></div>
+                                                                        className="flex justify-between items-start mb-2">
+                                                                        <div>
+                                                                            <div
+                                                                                className="font-medium text-white">{param.name}</div>
+                                                                            <div
+                                                                                className="text-sm text-gray-400">ID: {param.id}</div>
+                                                                        </div>
+                                                                        {param.id >= 100 && param.id <= 105 && (
+                                                                            <button
+                                                                                onClick={() => setCalibrationAxis(getAxisFromParamId(param.id))}
+                                                                                className="p-2 rounded-lg bg-blue-600/50 hover:bg-blue-500/50 text-white transition-all duration-200"
+                                                                                title="Calibrate steps/mm"
+                                                                            >
+                                                                                <Cog6ToothIcon className="w-5 h-5"/>
+                                                                            </button>
+                                                                        )}
                                                                     </div>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                        <td className="hidden sm:table-cell px-6 py-4 text-sm text-gray-300">{param.description}</td>
-                                                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm text-gray-300">
-                                                            <div className="flex items-center space-x-2">
-                                                                <button
-                                                                    onClick={() => handleParameterChange(param.id, param.value)}
-                                                                    className={`px-3 sm:px-4 py-2 rounded-lg transition-all duration-200 ${
-                                                                        editedValues[param.id] && !savingParams[param.id]
-                                                                            ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20'
-                                                                            : 'bg-gray-600/50 cursor-not-allowed'
-                                                                    } text-white`}
-                                                                    disabled={!editedValues[param.id] || savingParams[param.id]}
-                                                                >
-                                                                    {savingParams[param.id] ? 'Saving...' : 'Save'}
-                                                                </button>
-                                                                {param.id >= 100 && param.id <= 105 && (
+                                                                    <div
+                                                                        className="text-sm text-gray-300 mb-3">{param.description}</div>
+                                                                    <div className="relative">
+                                                                        <input
+                                                                            type="text"
+                                                                            value={param.value}
+                                                                            onChange={(e) => handleInputChange(param.id, e.target.value)}
+                                                                            className={`w-full bg-gray-700/50 text-white px-3 py-2 rounded-lg border ${
+                                                                                savingParams[param.id] ? 'border-yellow-500/50' : 'border-gray-600/50'
+                                                                            } focus:border-blue-500/50 focus:outline-none transition-all duration-200`}
+                                                                            disabled={savingParams[param.id]}
+                                                                            title={param.description}
+                                                                        />
+                                                                        {savingParams[param.id] && (
+                                                                            <div
+                                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                                                                <div
+                                                                                    className="animate-spin rounded-full h-4 w-4 border-2 border-yellow-500 border-t-transparent"></div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                     <button
-                                                                        onClick={() => setCalibrationAxis(getAxisFromParamId(param.id))}
-                                                                        className="px-3 sm:px-4 py-2 rounded-lg bg-blue-600/50 hover:bg-blue-500/50 text-white transition-all duration-200 flex items-center space-x-2"
-                                                                        title="Calibrate steps/mm"
+                                                                        onClick={() => handleParameterChange(param.id, param.value)}
+                                                                        className={`mt-3 w-full px-4 py-2 rounded-lg transition-all duration-200 ${
+                                                                            editedValues[param.id] && !savingParams[param.id]
+                                                                                ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20'
+                                                                                : 'bg-gray-600/50 cursor-not-allowed'
+                                                                        } text-white`}
+                                                                        disabled={!editedValues[param.id] || savingParams[param.id]}
                                                                     >
-                                                                        <Cog6ToothIcon
-                                                                            className="w-4 h-4 sm:w-5 sm:h-5"/>
-                                                                        <span
-                                                                            className="hidden sm:inline">Calibrate</span>
+                                                                        {savingParams[param.id] ? 'Saving...' : 'Save'}
                                                                     </button>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </React.Fragment>
-                                        );
-                                    })}
-                                    </tbody>
-                                </table>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Desktop View */}
+                                    <div className="hidden sm:block overflow-x-auto">
+                                        <table className="w-full divide-y divide-gray-700/50">
+                                            <thead className="bg-gray-700/30">
+                                            <tr>
+                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">ID</th>
+                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">Parameter</th>
+                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">Value</th>
+                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">Description</th>
+                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-700/50">
+                                            {sortedGroups.map(([group, params]) => {
+                                                const filteredParams = params.filter(param =>
+                                                    filteredParameterList.some(p => p.id === param.id)
+                                                );
+                                                if (filteredParams.length === 0) return null;
+
+                                                return (
+                                                    <React.Fragment key={group}>
+                                                        <tr id={`group-${group}`} className="bg-gray-700/30">
+                                                            <td colSpan={5} className="px-6 py-4 cursor-pointer"
+                                                                onClick={() => toggleGroup(group)}>
+                                                                <button
+                                                                    className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-200 hover:text-white focus:outline-none transition-colors duration-200 cursor-pointer"
+                                                                >
+                                                                    <span className="text-blue-400">{group}</span>
+                                                                    <svg
+                                                                        className={`w-5 h-5 transform transition-transform duration-200 ${
+                                                                            expandedGroups[group] ? 'rotate-180' : ''
+                                                                        }`}
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        viewBox="0 0 24 24"
+                                                                    >
+                                                                        <path
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            strokeWidth={2}
+                                                                            d="M19 9l-7 7-7-7"
+                                                                        />
+                                                                    </svg>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        {expandedGroups[group] && filteredParams.map((param) => (
+                                                            <tr key={param.id}
+                                                                className={`hover:bg-gray-700/30 transition-colors duration-200 ${!param.hasDescription ? 'opacity-50' : ''}`}>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{param.id}</td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                                    <div className="flex items-center">
+                                                                        <span
+                                                                            className="font-medium">{param.name}</span>
+                                                                        {!param.hasDescription && (
+                                                                            <span
+                                                                                className="ml-2 text-xs text-gray-400">(Undocumented)</span>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                                    <div className="relative">
+                                                                        <input
+                                                                            type="text"
+                                                                            value={param.value}
+                                                                            onChange={(e) => handleInputChange(param.id, e.target.value)}
+                                                                            className={`bg-gray-700/50 text-white px-3 py-2 rounded-lg border ${
+                                                                                savingParams[param.id] ? 'border-yellow-500/50' : 'border-gray-600/50'
+                                                                            } focus:border-blue-500/50 focus:outline-none transition-all duration-200 w-full`}
+                                                                            disabled={savingParams[param.id]}
+                                                                            title={param.description}
+                                                                        />
+                                                                        {savingParams[param.id] && (
+                                                                            <div
+                                                                                className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                                                                <div
+                                                                                    className="animate-spin rounded-full h-4 w-4 border-2 border-yellow-500 border-t-transparent"></div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-6 py-4 text-sm text-gray-300">{param.description}</td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                                                    <div className="flex items-center space-x-2">
+                                                                        <button
+                                                                            onClick={() => handleParameterChange(param.id, param.value)}
+                                                                            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                                                                                editedValues[param.id] && !savingParams[param.id]
+                                                                                    ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20'
+                                                                                    : 'bg-gray-600/50 cursor-not-allowed'
+                                                                            } text-white`}
+                                                                            disabled={!editedValues[param.id] || savingParams[param.id]}
+                                                                        >
+                                                                            {savingParams[param.id] ? 'Saving...' : 'Save'}
+                                                                        </button>
+                                                                        {param.id >= 100 && param.id <= 105 && (
+                                                                            <button
+                                                                                onClick={() => setCalibrationAxis(getAxisFromParamId(param.id))}
+                                                                                className="px-4 py-2 rounded-lg bg-blue-600/50 hover:bg-blue-500/50 text-white transition-all duration-200 flex items-center space-x-2"
+                                                                                title="Calibrate steps/mm"
+                                                                            >
+                                                                                <Cog6ToothIcon className="w-5 h-5"/>
+                                                                                <span>Calibrate</span>
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </React.Fragment>
+                                                );
+                                            })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
