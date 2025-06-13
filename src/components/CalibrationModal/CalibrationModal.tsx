@@ -100,7 +100,14 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
             onMouseLeave={handleJogEnd}
             disabled={!isConnected || isSending || status !== 'Idle'}
         >
-            {label}
+            <div className="flex flex-col items-center">
+                <span className="text-lg font-bold">{label}</span>
+                {!continuousMode && (
+                    <span className="text-xs text-gray-400">
+                        {stepSize}<UnitDisplay/>
+                    </span>
+                )}
+            </div>
         </button>
     );
 
@@ -259,16 +266,16 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                 </div>
 
                                 <div className="space-y-3">
-                                    <div className="flex space-x-2">
+                                    <div className="flex space-x-4">
                                         <div className="flex-1">
-                                            <label className="block text-xs font-medium mb-1" htmlFor="jog-feedrate">Feedrate
+                                            <label className="block text-sm font-medium mb-1" htmlFor="jog-feedrate">Feedrate
                                                 (<FeedrateUnitDisplay/>)</label>
                                             <input
                                                 id="jog-feedrate"
                                                 type="number"
                                                 value={feedrate}
                                                 onChange={(e) => setFeedrate(Number(e.target.value))}
-                                                className="w-full bg-gray-700 rounded px-2 py-1.5 text-white text-sm"
+                                                className="w-full bg-gray-700 rounded px-4 py-2 text-white text-sm"
                                                 min={1}
                                                 max={10000}
                                                 disabled={isSending || status !== 'Idle'}
@@ -277,14 +284,14 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                         <div className="flex-1">
                                             {!continuousMode && (
                                                 <>
-                                                    <label className="block text-xs font-medium mb-1"
+                                                    <label className="block text-sm font-medium mb-1"
                                                            htmlFor="jog-distance">Distance (<UnitDisplay/>)</label>
                                                     <input
                                                         type="number"
                                                         id="jog-distance"
                                                         value={stepSize}
                                                         onChange={(e) => setStepSize(Number(e.target.value))}
-                                                        className={`w-full bg-gray-700 rounded px-2 py-1.5 text-white text-sm ${continuousMode ? "cursor-not-allowed" : ""}`}
+                                                        className={`w-full bg-gray-700 rounded px-4 py-2 text-white text-sm ${continuousMode ? "cursor-not-allowed" : ""}`}
                                                         disabled={continuousMode || isSending || status !== 'Idle'}
                                                         min={0.001}
                                                         max={1000}
@@ -292,13 +299,13 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                                 </>
                                             )}
                                             {continuousMode && (
-                                                <label className="block text-xs font-medium mt-4">Hold button to jog,
+                                                <label className="block text-sm font-medium mt-6">Hold button to jog,
                                                     release to stop</label>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center space-x-2 mb-2">
+                                    <div className="flex items-center space-x-2 mb-4">
                                         <input
                                             type="checkbox"
                                             checked={continuousMode}
@@ -306,17 +313,18 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                             className="rounded bg-gray-700"
                                             id="continuous-mode"
                                             disabled={isSending || status !== 'Idle'}
+                                            title="Toggle between step-by-step and continuous jogging modes"
                                         />
-                                        <label htmlFor="continuous-mode" className="text-xs font-medium">
+                                        <label htmlFor="continuous-mode" className="text-sm font-medium cursor-pointer">
                                             Continuous Mode
                                         </label>
                                     </div>
 
                                     <div className="flex justify-center">
-                                        <div className="grid grid-cols-1 gap-1.5 w-full max-w-[180px]">
+                                        <div className="grid grid-cols-1 gap-2 w-full max-w-[180px]">
                                             {renderJogButton(1, `${axis}+`)}
                                             <button
-                                                className={`p-2 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+                                                className={`p-3 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
                                                     status === "Jog"
                                                         ? "bg-red-500 hover:bg-red-400 active:bg-red-300"
                                                         : "bg-gray-700 hover:bg-gray-600 active:bg-gray-400"
