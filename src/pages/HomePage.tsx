@@ -47,7 +47,7 @@ function HomePage() {
                                 </div>
 
                                 {/* Desktop buttons */}
-                                <div className="hidden md:flex flex-wrap items-center gap-4 md:gap-6 md:ml-8">
+                                <div className="hidden md:flex flex-wrap items-center gap-4 md:gap-4 md:ml-6">
                                     <div className="group relative" title="Connect to your CNC machine">
                                         <ConnectButton/>
                                         <span
