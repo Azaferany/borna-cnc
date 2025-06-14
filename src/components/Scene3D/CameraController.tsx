@@ -1,17 +1,17 @@
 // Camera presets
-import {Vector3, Box3,PerspectiveCamera} from "three";
+import {Vector3, Box3, PerspectiveCamera} from "three";
 import {useThree} from "@react-three/fiber";
 import {useEffect, useRef, useState} from "react";
-import {OrbitControls} from "@react-three/drei";
-import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
+import {TrackballControls} from "@react-three/drei";
+import {TrackballControls as TrackballControlsImpl} from 'three-stdlib';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const CAMERA_PRESETS = {
     center: {offset: new Vector3(50, -50, 200)},
     top: { offset: new Vector3(0, 0, 1) },
     front: { offset: new Vector3(0, 1, 0) },
-    side: { offset: new Vector3(-1, 0, 0) },
-    iso: { offset: new Vector3(1, -1, 1) }
+    side: {offset: new Vector3(1, 0, 0)},
+    iso: {offset: new Vector3(1, 1, 1)}
 };
 
 // Camera Controller Component
@@ -21,7 +21,7 @@ export const CameraController = ({preset, boundingBox, onPresetComplete}: {
     onPresetComplete?: () => void
 }) => {
     const { camera } = useThree();
-    const controlsRef = useRef<OrbitControlsImpl>(null);
+    const controlsRef = useRef<TrackballControlsImpl>(null);
     const [hasInitialized, setHasInitialized] = useState(false);
 
     const calculateCameraDistance = (box: Box3, camera: PerspectiveCamera) => {
@@ -43,13 +43,15 @@ export const CameraController = ({preset, boundingBox, onPresetComplete}: {
         if (preset == "center") {
             const {offset} = CAMERA_PRESETS[preset];
 
+            // For TrackballControls, we want to position the camera and set the target
             camera.position.set(
                 offset.x,
                 offset.y,
                 offset.z
             );
-            // Set the target to the center of the box
-            controlsRef.current?.target.copy(new Vector3(0, 0, 0));
+
+            // Set the target to the center of the scene
+            controlsRef.current?.target.set(0, 0, 0);
             controlsRef.current?.update();
 
             // Reset after animation
@@ -61,29 +63,39 @@ export const CameraController = ({preset, boundingBox, onPresetComplete}: {
         if (preset && controlsRef.current && boundingBox && camera instanceof PerspectiveCamera) {
             const center = new Vector3(0,0,0);
             boundingBox.getCenter(center);
+            if (preset == "front")
+                camera.up.set(0, 0, 1);
+            else if (preset == "side")
+                camera.up.set(0, 1, 0);
+            else if (preset == "top")
+                camera.up.set(0, 1, 0);
+
+            camera.lookAt(new Vector3(0, 0, 0));
 
             // Calculate camera distance
-            const cameraDistance = calculateCameraDistance(boundingBox, camera);
+            const cameraDistance = calculateCameraDistance(boundingBox, camera) * 1.2;
 
             // Get the offset direction from the preset
             const { offset } = CAMERA_PRESETS[preset];
 
             // Normalize the offset and scale by camera distance
             const normalizedOffset = offset.clone().normalize().multiplyScalar(cameraDistance);
-
             // Position the camera
             camera.position.set(
                 center.x + normalizedOffset.x,
                 center.y + normalizedOffset.y,
                 center.z + normalizedOffset.z
             );
-
-            // Set the target to the center of the box
             controlsRef.current.target.copy(center);
             controlsRef.current.update();
+            //controlsRef.current.reset()
+
+            // Set the target to the center of the box
+
 
             // Reset after animation
             setTimeout(() => {
+
                 onPresetComplete?.();
             }, 1000);
         }
@@ -118,13 +130,11 @@ export const CameraController = ({preset, boundingBox, onPresetComplete}: {
         }
     }, [boundingBox, camera, hasInitialized]);
 
-    return <OrbitControls
+    return <TrackballControls
         makeDefault
         ref={controlsRef}
+        cursorZoom
         enabled={true}
-        enablePan={true}
-        enableZoom={true}
-        enableRotate={true}
-        enableDamping={true}
+        dynamicDampingFactor={0.2}
     />;
 };

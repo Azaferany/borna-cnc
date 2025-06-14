@@ -1,10 +1,10 @@
-import { Canvas } from '@react-three/fiber';
+import {Canvas} from '@react-three/fiber';
 import {GizmoHelper, GizmoViewport, Grid} from '@react-three/drei';
 import {CoordinateAxes} from "./CoordinateAxes.tsx";
 import {useStore} from "../../app/store.ts";
 import {useEffect, useState} from "react";
 import type {GCodePointData} from "../../types/GCodeTypes.ts";
-import {Color, Vector3, Box3, Box3Helper} from "three";
+import {Box3, Box3Helper, Color, Vector3} from "three";
 import {SpatialPartition} from "./SpatialPartition.tsx";
 import {processor} from "./GCodeToPointProcessor.ts";
 import {ToolHead} from "./ToolHead.tsx";
@@ -12,6 +12,7 @@ import {findGCodeCommandOrLatestBaseOnLine} from "../../app/findGCodeCommandOrLa
 import {useShallow} from "zustand/react/shallow";
 import {OffsetMarkers} from "./OffsetMarkers.tsx";
 import {type CAMERA_PRESETS, CameraController} from "./CameraController.tsx";
+import {GridLabels} from "./GridLabels.tsx";
 
 export const Scene3D = () => {
     const toolPathGCodes = useStore(useShallow(x => x.toolPathGCodes));
@@ -241,6 +242,7 @@ export const Scene3D = () => {
                     followCamera={false}
                     rotation={[Math.PI / 2, 0, 0]}
                 />
+                <GridLabels/>
                 <GizmoHelper alignment={"bottom-left"}>
                     <GizmoViewport/>
                 </GizmoHelper>
