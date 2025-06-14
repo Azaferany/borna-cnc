@@ -242,6 +242,19 @@ export const Scene3D = () => {
                     followCamera={false}
                     rotation={[Math.PI / 2, 0, 0]}
                 />
+                <Grid
+                    args={[5000, 5000]}
+                    cellSize={10}
+                    cellThickness={0.5}
+                    cellColor="#6b7280"
+                    sectionSize={100}
+                    sectionThickness={1}
+                    sectionColor="#9ca3af"
+                    fadeDistance={10000}
+                    fadeStrength={2}
+                    followCamera={false}
+                    rotation={[-Math.PI / 2, 0, 0]}
+                />
                 <GridLabels/>
                 <GizmoHelper alignment={"bottom-left"}>
                     <GizmoViewport/>
