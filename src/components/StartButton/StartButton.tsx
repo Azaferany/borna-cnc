@@ -37,7 +37,7 @@ export const StartButton = () => {
 
 
             gCodesToSend = gCodesToSend.slice(startFromLine - 1)
-            gCodesToSend.unshift(`N${startFromLine} G53 G1 Z${selectedGcodeCommand.startPoint.z} f400`);
+            gCodesToSend.unshift(`N${startFromLine} G53 G1 Z${selectedGcodeCommand.startPoint.z} f${selectedGcodeCommand.feedRate}`);
             gCodesToSend.unshift(`N${startFromLine} G53 G0 X${selectedGcodeCommand.startPoint.x} Y${selectedGcodeCommand.startPoint?.y}`);
             gCodesToSend.unshift(`N${startFromLine} G53 G0 Z${maxZPlusSafeguardValue}`);
 
