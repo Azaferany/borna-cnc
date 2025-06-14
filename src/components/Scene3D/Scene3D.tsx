@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { Grid} from '@react-three/drei';
+import {GizmoHelper, GizmoViewport, Grid} from '@react-three/drei';
 import {CoordinateAxes} from "./CoordinateAxes.tsx";
 import {useStore} from "../../app/store.ts";
 import {useEffect, useState} from "react";
@@ -241,6 +241,9 @@ export const Scene3D = () => {
                     followCamera={false}
                     rotation={[Math.PI / 2, 0, 0]}
                 />
+                <GizmoHelper alignment={"bottom-left"}>
+                    <GizmoViewport/>
+                </GizmoHelper>
                 <OffsetMarkers />
                 {machineCoordinate &&(
                     <ToolHead position={machineCoordinate}

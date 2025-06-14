@@ -119,6 +119,7 @@ export const CameraController = ({preset, boundingBox, onPresetComplete}: {
     }, [boundingBox, camera, hasInitialized]);
 
     return <OrbitControls
+        makeDefault
         ref={controlsRef}
         enabled={true}
         enablePan={true}
