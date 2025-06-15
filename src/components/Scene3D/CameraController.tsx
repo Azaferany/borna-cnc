@@ -135,6 +135,5 @@ export const CameraController = ({preset, boundingBox, onPresetComplete}: {
         ref={controlsRef}
         cursorZoom
         enabled={true}
-        dynamicDampingFactor={0.2}
     />;
 };
