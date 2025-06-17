@@ -9,14 +9,20 @@ const WorkOffsetPanel: React.FC = () => {
   const gCodeOffsets = useStore(useShallow(state => state.gCodeOffsets));
   const updateGCodeOffsets = useStore(state => state.updateGCodeOffsets);
   const activeModes = useStore(useShallow(state => state.activeModes));
+  const status = useStore(state => state.status);
+  const isSending = useStore(state => state.isSending);
   const [editingOffset, setEditingOffset] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const isMachineBusy = status !== 'Idle' || isSending;
+
   const handleActivateOffset = (offset: string) => {
+    if (isMachineBusy) return;
     sendCommand(offset);
   };
 
   const handleSubmit = (point : Point3D6Axis, offset: string) => {
+    if (isMachineBusy) return;
     const command = `G10 L2 P${+offset.slice(1)-53} X${point.x} Y${point.y} Z${point.z}`;
     sendCommand(command);
     updateGCodeOffsets(perv => ({
@@ -145,7 +151,10 @@ const WorkOffsetPanel: React.FC = () => {
                                         onClick={() => {
                                           handleSubmit({x: 0, y: 0, z: 0}, offset);
                                         }}
-                                        className="flex-1 px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 active:bg-red-700 transition-colors duration-200"
+                                        disabled={isMachineBusy}
+                                        className={`flex-1 px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 active:bg-red-700 transition-colors duration-200 ${
+                                            isMachineBusy ? 'opacity-50 cursor-not-allowed' : ''
+                                        }`}
                                     >
                                       Reset
                                     </button>
@@ -156,7 +165,10 @@ const WorkOffsetPanel: React.FC = () => {
                                           e.stopPropagation();
                                           e.preventDefault();
                                         }}
-                                        className="flex-1 px-3 py-1.5 bg-gray-500 text-white text-sm rounded-md hover:bg-gray-800 active:bg-gray-900 transition-colors duration-200"
+                                        disabled={isMachineBusy}
+                                        className={`flex-1 px-3 py-1.5 bg-gray-500 text-white text-sm rounded-md hover:bg-gray-800 active:bg-gray-900 transition-colors duration-200 ${
+                                            isMachineBusy ? 'opacity-50 cursor-not-allowed' : ''
+                                        }`}
                                     >
                                       Edit
                                     </button>
@@ -166,7 +178,10 @@ const WorkOffsetPanel: React.FC = () => {
                               {activeModes?.WorkCoordinateSystem !== offset && (<button
                                   type="button"
                                   onClick={() => handleActivateOffset(offset)}
-                                  className={`flex-1 px-3 py-1.5 text-white text-sm rounded-md transition-colors duration-200 bg-blue-600 hover:bg-blue-700 active:bg-blue-900`}
+                                  disabled={isMachineBusy}
+                                  className={`flex-1 px-3 py-1.5 text-white text-sm rounded-md transition-colors duration-200 bg-blue-600 hover:bg-blue-700 active:bg-blue-900 ${
+                                      isMachineBusy ? 'opacity-50 cursor-not-allowed' : ''
+                                  }`}
                               >
                                 Activate
                               </button>)}
