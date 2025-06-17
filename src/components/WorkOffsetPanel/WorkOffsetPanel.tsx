@@ -81,11 +81,12 @@ const WorkOffsetPanel: React.FC = () => {
                 Please connect to the machine first to view and edit work offsets
               </div>
           ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
                 {Object.entries(gCodeOffsets)
                     .filter(([key]) => key !== 'G92')
                     .filter(([key]) => key !== 'G28')
                     .filter(([key]) => key !== 'G30')
+                    .slice(0, 6)
                     .map(([offset, values]) => (
                         <form
                             key={offset}
@@ -105,17 +106,19 @@ const WorkOffsetPanel: React.FC = () => {
                                     : 'hover:bg-gray-600'
                             }`}
                         >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-lg font-semibold text-white">{offset}</h3>
-                              {activeModes?.WorkCoordinateSystem === offset && (
-                                  <span
-                                      className="px-2 py-0.5 text-xs font-medium bg-green-500 text-white rounded-full">
+                          <div className="flex flex-col gap-2 mb-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-semibold text-white">{offset}</h3>
+                                {activeModes?.WorkCoordinateSystem === offset && (
+                                    <span
+                                        className="px-2 py-0.5 text-xs font-medium bg-green-500 text-white rounded-full">
                             Active
                           </span>
-                              )}
+                                )}
+                              </div>
                             </div>
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex flex-wrap gap-2">
                               {editingOffset === offset ? (
                                   <>
                                     <button
@@ -123,13 +126,13 @@ const WorkOffsetPanel: React.FC = () => {
                                         onClick={() => {
                                           setEditingOffset(null);
                                         }}
-                                        className="flex-1 sm:flex-none px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 active:bg-red-900 transition-colors duration-200"
+                                        className="flex-1 px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 active:bg-red-900 transition-colors duration-200"
                                     >
                                       Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        className="flex-1 sm:flex-none px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 active:bg-green-900 transition-colors duration-200"
+                                        className="flex-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 active:bg-green-900 transition-colors duration-200"
                                     >
                                       Save
                                     </button>
@@ -142,7 +145,7 @@ const WorkOffsetPanel: React.FC = () => {
                                         onClick={() => {
                                           handleSubmit({x: 0, y: 0, z: 0}, offset);
                                         }}
-                                        className="flex-1 sm:flex-none px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 active:bg-red-700 transition-colors duration-200"
+                                        className="flex-1 px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 active:bg-red-700 transition-colors duration-200"
                                     >
                                       Reset
                                     </button>
@@ -153,7 +156,7 @@ const WorkOffsetPanel: React.FC = () => {
                                           e.stopPropagation();
                                           e.preventDefault();
                                         }}
-                                        className="flex-1 sm:flex-none px-3 py-1.5 bg-gray-500 text-white text-sm rounded-md hover:bg-gray-800 active:bg-gray-900 transition-colors duration-200"
+                                        className="flex-1 px-3 py-1.5 bg-gray-500 text-white text-sm rounded-md hover:bg-gray-800 active:bg-gray-900 transition-colors duration-200"
                                     >
                                       Edit
                                     </button>
@@ -163,7 +166,7 @@ const WorkOffsetPanel: React.FC = () => {
                               {activeModes?.WorkCoordinateSystem !== offset && (<button
                                   type="button"
                                   onClick={() => handleActivateOffset(offset)}
-                                  className={`flex-1 sm:flex-none px-3 py-1.5 text-white text-sm rounded-md transition-colors duration-200 bg-blue-600 hover:bg-blue-700 active:bg-blue-900`}
+                                  className={`flex-1 px-3 py-1.5 text-white text-sm rounded-md transition-colors duration-200 bg-blue-600 hover:bg-blue-700 active:bg-blue-900`}
                               >
                                 Activate
                               </button>)}
@@ -172,11 +175,11 @@ const WorkOffsetPanel: React.FC = () => {
 
                           <div className="space-y-1.5">
                             <div className="flex items-center gap-2">
-                              <label className="w-8 text-gray-300 font-medium" htmlFor={"x"}>X:</label>
-                              <input name={"x"} id={"x"}
+                              <label className="w-8 text-gray-300 font-medium" htmlFor={`x-${offset}`}>X:</label>
+                              <input name={"x"} id={`x-${offset}`}
                                      type="number"
                                      value={editingOffset !== offset ? values.x : undefined}
-                                     className={`flex-1 px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                     className={`w-full px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                          editingOffset !== offset ? 'opacity-50 cursor-not-allowed' : ''
                                      }`}
                                      placeholder="0.000"
@@ -185,11 +188,11 @@ const WorkOffsetPanel: React.FC = () => {
                               />
                             </div>
                             <div className="flex items-center gap-2">
-                              <label className="w-8 text-gray-300 font-medium" htmlFor={"y"}>Y:</label>
-                              <input name={"y"} id={"y"}
+                              <label className="w-8 text-gray-300 font-medium" htmlFor={`y-${offset}`}>Y:</label>
+                              <input name={"y"} id={`y-${offset}`}
                                      type="number"
                                      value={editingOffset !== offset ? values.y : undefined}
-                                     className={`flex-1 px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                     className={`w-full px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                          editingOffset !== offset ? 'opacity-50 cursor-not-allowed' : ''
                                      }`}
                                      placeholder="0.000"
@@ -198,11 +201,11 @@ const WorkOffsetPanel: React.FC = () => {
                               />
                             </div>
                             <div className="flex items-center gap-2">
-                              <label className="w-8 text-gray-300 font-medium" htmlFor={"z"}>Z:</label>
-                              <input name={"z"} id={"z"}
+                              <label className="w-8 text-gray-300 font-medium" htmlFor={`z-${offset}`}>Z:</label>
+                              <input name={"z"} id={`z-${offset}`}
                                      type="number"
                                      value={editingOffset !== offset ? values.z : undefined}
-                                     className={`flex-1 px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                     className={`w-full px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                          editingOffset !== offset ? 'opacity-50 cursor-not-allowed' : ''
                                      }`}
                                      placeholder="0.000"
