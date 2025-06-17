@@ -13,12 +13,11 @@ export const StartButton = () => {
     const toolPathGCodes = useStore(useShallow(s => s.toolPathGCodes));
     const status = useStore(s => s.status);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
     const [error, setError] = useState<string | null>(null);
 
     const isDisabled = (allGCodes?.length ?? 0) <= 0 || status !== "Idle";
     const isSendingRunning = isSending && bufferType === "GCodeFile";
-    const buttonText =  isSendingRunning ? (status == "Hold" ? "Sending Paused" : 'Sending...') : 'Start';
+    const buttonText = isSendingRunning ? (status == "Hold" ? "Sending Paused" : 'Sending...') : 'Start';
 
     const handleStart = async (startFromLine: number) => {
         if (isDisabled) return;
@@ -35,57 +34,39 @@ export const StartButton = () => {
                         ...toolPathGCodes?.map(x => x.endPoint?.z ?? 10) ?? [10]
                     ]) + 100;
 
-
             gCodesToSend = gCodesToSend.slice(startFromLine - 1)
             gCodesToSend.unshift(`N${startFromLine} G53 G1 Z${selectedGcodeCommand.startPoint.z} f${selectedGcodeCommand.feedRate}`);
             gCodesToSend.unshift(`N${startFromLine} G53 G0 X${selectedGcodeCommand.startPoint.x} Y${selectedGcodeCommand.startPoint?.y}`);
             gCodesToSend.unshift(`N${startFromLine} G53 G0 Z${maxZPlusSafeguardValue}`);
 
-
             gCodesToSend.unshift(selectedGcodeCommand.isIncremental ? "G91" : "G90")
             gCodesToSend.unshift(selectedGcodeCommand.isInches ? "G20" : "G21")
 
             if (selectedGcodeCommand.activePlane == Plane.XY) {
-
                 gCodesToSend.unshift("G17")
             } else if (selectedGcodeCommand.activePlane == Plane.YZ) {
-
                 gCodesToSend.unshift("G19")
-
             } else if (selectedGcodeCommand.activePlane == Plane.XZ) {
                 gCodesToSend.unshift("G18")
             }
             gCodesToSend.unshift(selectedGcodeCommand.activeWorkSpace)
-            console.log(selectedGcodeCommand)
+
             for (let i = 0; i < selectedGcodeCommand.activeMCodes.length; i++) {
                 const mCode = selectedGcodeCommand.activeMCodes.slice().reverse()[i];
                 if (i === 0 && (mCode.includes("M3") || mCode.includes("M4"))) {
                     if (/s\d+/i.test(mCode)) {
-                        // If s part exists, replace it
                         gCodesToSend.unshift(mCode.replace(/s\d+/i, `s${selectedGcodeCommand.spindleSpeed}`));
-
                     } else {
-                        // If s part doesn't exist, add it at the end
                         gCodesToSend.unshift(`${mCode} s${selectedGcodeCommand.spindleSpeed}`);
-
-
                     }
                 } else {
                     gCodesToSend.unshift(selectedGcodeCommand.activeMCodes[i])
-
-
                 }
             }
-            console.log(gCodesToSend);
-
         }
-
-
 
         try {
             setError(null);
-
-
             await startSending(gCodesToSend, "GCodeFile");
             setIsModalOpen(false);
         } catch (err) {
@@ -100,9 +81,10 @@ export const StartButton = () => {
     }
 
     return (
-        <div className="relative group flex flex-col gap-2">
+        <div className="relative group h-full">
             <button
                 className={`
+                    w-full h-full
                     bg-green-600 hover:bg-green-700 active:bg-green-900 
                     p-3 rounded flex flex-col items-center justify-center 
                     transition-all duration-150

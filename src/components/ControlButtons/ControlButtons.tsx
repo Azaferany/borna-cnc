@@ -7,7 +7,6 @@ import {MainGasButton} from "../MainGasButton/MainGasButton.tsx";
 import {SecondaryGasButton} from "../SecondaryGasButton/SecondaryGasButton.tsx";
 
 export const ControlButtons = () => {
-
     return (
         <div className="bg-gray-800 p-4 rounded-lg h-full">
             <h2 className="text-xl font-bold mb-4 flex items-center">
@@ -16,20 +15,17 @@ export const ControlButtons = () => {
                 </svg>
                 Machine Control
             </h2>
-            <div className="grid grid-cols-3 gap-4 items-center mt-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4 items-stretch mt-6">
                 <PreviousButton />
                 <PauseButton />
                 <StartButton/>
-            </div>
-            <div className="grid grid-cols-3 gap-4 items-center mt-4">
                 <MainGasButton/>
                 <ResetButton/>
                 <SecondaryGasButton/>
             </div>
-            <div className="grid grid-cols-1 gap-4 items-center mt-4">
+            <div className="grid grid-cols-1 gap-4 items-stretch mt-4">
                 <DwellInfo/>
             </div>
-
         </div>
     );
 };

@@ -16,16 +16,24 @@ export const PauseButton = () => {
     };
 
     return (
-        <button
-            className={`bg-orange-600 hover:bg-orange-700 active:bg-orange-900 p-3 rounded flex flex-col items-center justify-center transition-colors duration-150 ${(!isConnected || status === "Door") ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={() => {
-                const command = status === "Hold" ? '~' : '!'; // '~' for cycle start, '!' for feed hold
-                handleCommand(command);
-            }}
-            disabled={!isConnected || status === "Door"}
-        >
-            {status === "Hold" ? <PlayIcon className="h-6 w-6" /> : <PauseIcon className="h-6 w-6" />}
-            <span className="text-sm mt-1">{status === "Hold" ? 'Continue' : 'Pause'}</span>
-        </button>
+        <div className="h-full">
+            <button
+                className={`
+                    w-full h-full
+                    bg-orange-600 hover:bg-orange-700 active:bg-orange-900 
+                    p-3 rounded flex flex-col items-center justify-center 
+                    transition-all duration-150
+                    ${(!isConnected || status === "Door") ? 'opacity-50 cursor-not-allowed' : ''}
+                `}
+                onClick={() => {
+                    const command = status === "Hold" ? '~' : '!'; // '~' for cycle start, '!' for feed hold
+                    handleCommand(command);
+                }}
+                disabled={!isConnected || status === "Door"}
+            >
+                {status === "Hold" ? <PlayIcon className="h-6 w-6"/> : <PauseIcon className="h-6 w-6"/>}
+                <span className="text-sm mt-1">{status === "Hold" ? 'Continue' : 'Pause'}</span>
+            </button>
+        </div>
     );
 }; 

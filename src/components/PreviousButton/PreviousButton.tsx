@@ -47,11 +47,11 @@ export const PreviousButton = () => {
         }
     };
 
-
     return (
-        <div className="relative group flex flex-col">
+        <div className="relative group h-full">
             <button
                 className={`
+                    w-full h-full
                     bg-purple-600 hover:bg-purple-700 active:bg-purple-900 
                     p-3 rounded flex flex-col items-center justify-center 
                     transition-all duration-150

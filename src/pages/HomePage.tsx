@@ -113,13 +113,13 @@ function HomePage() {
                             <div className="col-span-12">
                                 <Scene3D />
                             </div>
-                            <div className="col-span-12 md:col-span-4 h-[370px]">
+                            <div className="col-span-12 md:col-span-4">
                                 <GCodeEditor />
                             </div>
-                            <div className="col-span-12 md:col-span-4 h-[370px]">
+                            <div className="col-span-12 md:col-span-4">
                                 <ControlButtons />
                             </div>
-                            <div className="col-span-12 md:col-span-4 h-[370px]">
+                            <div className="col-span-12 md:col-span-4">
                                 <OverrideControls/>
                             </div>
                             <div className="col-span-12">

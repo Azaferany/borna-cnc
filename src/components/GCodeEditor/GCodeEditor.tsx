@@ -268,8 +268,8 @@ export const GCodeEditor = () => {
   };
 
   return (
-      <div className="bg-gray-800 p-4 rounded-lg h-full flex flex-col">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-gray-800 p-4 rounded-lg h-full w-full flex flex-col">
+        <div className="flex justify-between items-center mb-4 flex-shrink-0">
           <h2 className="text-xl font-bold">G-code Editor</h2>
           <div className="flex flex-col sm:flex-row gap-2">
             <OpenFileButton />
@@ -281,7 +281,7 @@ export const GCodeEditor = () => {
             </button>
           </div>
         </div>
-        <div className="relative flex-1 min-h-0">
+        <div className="relative flex-1 min-h-0 w-full">
           <button
               onClick={handleFind}
               className="absolute top-2 right-4 z-20 bg-gray-700 hover:bg-gray-600 active:bg-gray-800 px-1.5 py-1.5 rounded"
@@ -336,7 +336,7 @@ export const GCodeEditor = () => {
                 tooltipDelay: 0,
                 tooltipPosition: 'mouse',
               }}
-              className="rounded"
+              className="rounded h-full w-full"
           />
           {/* Transparent Overlay that blocks interaction */}
           {isSending &&(

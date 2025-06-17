@@ -26,7 +26,9 @@ export const DwellInfo = () => {
         return () => clearInterval(interval);
     }, [dwell, updateDwell, status]);
 
-    if (dwell.RemainingSeconds <= 0) return null;
+    if (dwell.RemainingSeconds <= 0) return (
+        <div className="h-[68px] bg-gray-700 px-3 py-4 rounded opacity-0"/>
+    );
 
     const handleSkip = async () => {
         try {

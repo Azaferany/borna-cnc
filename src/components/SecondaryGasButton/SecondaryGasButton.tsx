@@ -21,13 +21,21 @@ export const SecondaryGasButton = () => {
     };
 
     return (
-        <button
-            onClick={handleClick}
-            className={`py-4.5 ${isOn ? 'bg-green-600 hover:bg-green-700 active:bg-green-900' : 'bg-red-600 hover:bg-red-700 active:bg-red-900'} p-3 rounded flex flex-col items-center justify-center transition-colors duration-150 ${(!isConnected || isSending || status != "Idle") ? 'opacity-50 cursor-not-allowed' : ''}`}
-            disabled={!isConnected || isSending || status != "Idle"}
-        >
-            {isOn ? <FireIcon className="h-6 w-6"/> : <NoSymbolIcon className="h-6 w-6"/>}
-            <span className="text-sm mt-1">Secondary Gas {isOn ? 'ON' : 'OFF'}</span>
-        </button>
+        <div className="h-full">
+            <button
+                className={`
+                    w-full h-full
+                    ${isOn ? 'bg-green-600 hover:bg-green-700 active:bg-green-900' : 'bg-red-600 hover:bg-red-700 active:bg-red-900'} 
+                    p-3 rounded flex flex-col items-center justify-center 
+                    transition-all duration-150
+                    ${(!isConnected || isSending || status != "Idle") ? 'opacity-50 cursor-not-allowed' : ''}
+                `}
+                onClick={handleClick}
+                disabled={!isConnected || isSending || status != "Idle"}
+            >
+                {isOn ? <FireIcon className="h-6 w-6"/> : <NoSymbolIcon className="h-6 w-6"/>}
+                <span className="text-sm mt-1">Secondary Gas {isOn ? 'ON' : 'OFF'}</span>
+            </button>
+        </div>
     );
 }; 
