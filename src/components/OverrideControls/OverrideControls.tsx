@@ -42,7 +42,7 @@ const SliderControl = ({
     }, [storeValue]);
 
     return (
-        <div className="bg-gray-700/50 p-3 rounded-lg">
+        <div className="bg-gray-700/50 p-3 px-4 rounded-lg">
             <div className="space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <label className="text-sm font-medium" htmlFor={label.replace(" ",'')}>{label}</label>
@@ -218,7 +218,7 @@ export const OverrideControls = () => {
     };
 
     return (
-        <div className="bg-gray-800 p-4 rounded-lg h-full">
+        <div className="bg-gray-800 p-3 rounded-lg h-full">
             <h2 className="text-xl font-bold mb-8 flex items-center">
                 <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

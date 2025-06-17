@@ -129,7 +129,7 @@ function HomePage() {
                     </div>
 
                     {/* Right column - Controls */}
-                    <div className="lg:col-span-3 space-y-4 pt-2.5">
+                    <div className="lg:col-span-3 space-y-1.5 pt-1.5">
                         <StatusDisplay />
                         <JogControls />
                         <Console />
