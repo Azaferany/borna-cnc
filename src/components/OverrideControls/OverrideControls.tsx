@@ -42,66 +42,74 @@ const SliderControl = ({
     }, [storeValue]);
 
     return (
-        <div className="space-y-2">
-            <div className="space-y-2">
-                <div className="flex justify-between items-center">
+        <div className="bg-gray-700/50 p-3 rounded-lg">
+            <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <label className="text-sm font-medium" htmlFor={label.replace(" ",'')}>{label}</label>
                     <div className="flex items-center gap-2">
                         {children}
                         <span className={`text-sm font-mono px-2 py-1 rounded flex items-center gap-1 ${isLoading ? 'bg-yellow-700' : 'bg-gray-700'}`}>
-                                {isLoading ? `${storeValue}%  →  ${localValue}%` : `${storeValue}%`}
+                            {isLoading ? `${storeValue}%  →  ${localValue}%` : `${storeValue}%`}
                             {isLoading && (
                                 <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
                             )}
-                            </span>
+                        </span>
                     </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                    {!allowedValues &&(<button
-                        onClick={() => {
-                            onCommit && onCommit(Math.max(min, storeValue - 10))
-                            setLocalValue(prevState => prevState - 10);
-                        }}
-                        className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={!isConnected}
-                    >
-                        -10%
-                    </button>)}
-                    <input
-                        id={label.replace(" ",'')}
-                        type="range"
-                        min={min}
-                        max={max}
-                        step={step}
-                        value={localValue}
-                        onChange={(e) => {
-                            const v = Number(e.target.value);
+                <div className="flex items-center gap-2 min-w-0">
+                    {!allowedValues && (
+                        <button
+                            onClick={() => {
+                                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                                onCommit && onCommit(Math.max(min, storeValue - 10))
+                                setLocalValue(prevState => prevState - 10);
+                            }}
+                            className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            disabled={!isConnected}
+                        >
+                            -10%
+                        </button>
+                    )}
+                    <div className="flex-1 min-w-0">
+                        <input
+                            id={label.replace(" ", '')}
+                            type="range"
+                            min={min}
+                            max={max}
+                            step={step}
+                            value={localValue}
+                            onChange={(e) => {
+                                const v = Number(e.target.value);
 
-                            if (allowedValues && !allowedValues.includes(v)) {
-                                // Find nearest allowed value
-                                const nearest = allowedValues.reduce((prev, curr) =>
-                                    Math.abs(curr - v) < Math.abs(prev - v) ? curr : prev
-                                );
-                                setLocalValue(nearest);
-                            } else {
-                                setLocalValue(v);
-                            }
-                        }}
-                        className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={!isConnected}
-                        onMouseUp={() => onCommit(localValue)}
-                        onTouchEnd={() => onCommit(localValue)}
-                    />
-                    {!allowedValues && (<button
-                        onClick={() => {
-                            onCommit && onCommit(Math.max(min, storeValue + 10))
-                            setLocalValue(prevState => prevState + 10);
-                        }}
-                        className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={!isConnected}
-                    >
-                        +10%
-                    </button>)}
+                                if (allowedValues && !allowedValues.includes(v)) {
+                                    // Find nearest allowed value
+                                    const nearest = allowedValues.reduce((prev, curr) =>
+                                        Math.abs(curr - v) < Math.abs(prev - v) ? curr : prev
+                                    );
+                                    setLocalValue(nearest);
+                                } else {
+                                    setLocalValue(v);
+                                }
+                            }}
+                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!isConnected}
+                            onMouseUp={() => onCommit(localValue)}
+                            onTouchEnd={() => onCommit(localValue)}
+                        />
+                    </div>
+                    {!allowedValues && (
+                        <button
+                            onClick={() => {
+                                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                                onCommit && onCommit(Math.max(min, storeValue + 10))
+                                setLocalValue(prevState => prevState + 10);
+                            }}
+                            className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            disabled={!isConnected}
+                        >
+                            +10%
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
@@ -218,41 +226,47 @@ export const OverrideControls = () => {
                 </svg>
                 Override Controls
             </h2>
-            <div className="space-y-7">
-                <SliderControl
-                    label="Rapid Speed Override"
-                    value={rapidSpeedOverridePercent}
-                    onCommit={handleRapidOverride}
-                    min={0}
-                    max={100}
-                    step={25}
-                    allowedValues={[25, 50, 100]}
-                >
-                    <span className="text-xs text-gray-400"
-                          title="Adjust how fast the machine moves during rapid movements">Quick movements</span>
-                </SliderControl>
-                <SliderControl
-                    label="Feed Rate Override"
-                    value={feedrateOverridePercent}
-                    onCommit={handleFeedOverride}
-                    min={10}
-                    max={200}
-                >
-                    <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700" title="Current feed rate">
-                        {feedrate.toFixed(0)} <FeedrateUnitDisplay/>
-                    </span>
-                </SliderControl>
-                <SliderControl
-                    label="Spindle Speed Override"
-                    value={spindleSpeedOverridePercent}
-                    onCommit={handleSpindleOverride}
-                    min={10}
-                    max={200}
-                >
-                    <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700" title="Current spindle speed">
-                        {spindleSpeed.toFixed(0)} RPM
-                    </span>
-                </SliderControl>
+            <div className="grid grid-cols-1 gap-2">
+                <div className="col-span-1">
+                    <SliderControl
+                        label="Rapid Speed Override"
+                        value={rapidSpeedOverridePercent}
+                        onCommit={handleRapidOverride}
+                        min={0}
+                        max={100}
+                        step={25}
+                        allowedValues={[25, 50, 100]}
+                    >
+                        <span className="text-xs text-gray-400"
+                              title="Adjust how fast the machine moves during rapid movements">Quick movements</span>
+                    </SliderControl>
+                </div>
+                <div className="col-span-1">
+                    <SliderControl
+                        label="Feed Rate Override"
+                        value={feedrateOverridePercent}
+                        onCommit={handleFeedOverride}
+                        min={10}
+                        max={200}
+                    >
+                        <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700" title="Current feed rate">
+                            {feedrate.toFixed(0)} <FeedrateUnitDisplay/>
+                        </span>
+                    </SliderControl>
+                </div>
+                <div className="col-span-1">
+                    <SliderControl
+                        label="Spindle Speed Override"
+                        value={spindleSpeedOverridePercent}
+                        onCommit={handleSpindleOverride}
+                        min={10}
+                        max={200}
+                    >
+                        <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700" title="Current spindle speed">
+                            {spindleSpeed.toFixed(0)} RPM
+                        </span>
+                    </SliderControl>
+                </div>
             </div>
         </div>
     );

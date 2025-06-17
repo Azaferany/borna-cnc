@@ -281,7 +281,7 @@ export const GCodeEditor = () => {
             </button>
           </div>
         </div>
-        <div className="relative flex-1 min-h-0 w-full">
+        <div className="relative flex-1 min-h-70 w-full">
           <button
               onClick={handleFind}
               className="absolute top-2 right-4 z-20 bg-gray-700 hover:bg-gray-600 active:bg-gray-800 px-1.5 py-1.5 rounded"
