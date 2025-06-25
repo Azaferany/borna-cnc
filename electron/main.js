@@ -17,9 +17,9 @@ function createWindow () {
             nodeIntegration: false,
             contextIsolation: true,
             enableRemoteModule: false,
-
-            allowRunningInsecureContent: true,
             enableBlinkFeatures: 'Serial',
+            webSecurity: false, // Disables CORS restrictions (use cautiously)
+            allowRunningInsecureContent: true, // Allows HTTP/WS from HTTPS pages
 
         },
     });
