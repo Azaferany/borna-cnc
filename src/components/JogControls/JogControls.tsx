@@ -285,7 +285,7 @@ export const JogControls = () => {
                                 <input
                                     id={"Feedrate"}
                                     type="number"
-                                    value={feedrate}
+                                    defaultValue={feedrate}
                                     onChange={(e) => setFeedrate(Number(e.target.value))}
                                     className="w-full bg-gray-700 rounded px-4 py-2 text-white text-sm"
                                     min={1}
@@ -297,7 +297,7 @@ export const JogControls = () => {
                                 {!continuousMode &&(<><label className="block text-sm font-medium mb-1" htmlFor={"Distance"}>Distance (<UnitDisplay/>)</label><input
                                     type="number"
                                     id={"Distance"}
-                                    value={stepSize}
+                                    defaultValue={stepSize}
                                     onChange={(e) => setStepSize(Number(e.target.value))}
                                     className={`w-full bg-gray-700 rounded px-4 py-2 text-white text-sm ${continuousMode || isMachineRunning ? "cursor-not-allowed" : ""}`}
                                     disabled={continuousMode || isMachineRunning}

@@ -6,6 +6,7 @@ import {ResetButton} from "../ResetButton/ResetButton.tsx";
 import {DwellInfo} from "../DwellInfo/DwellInfo.tsx";
 import {MainGasButton} from "../MainGasButton/MainGasButton.tsx";
 import {SecondaryGasButton} from "../SecondaryGasButton/SecondaryGasButton.tsx";
+import {SpindleControl} from "../SpindleControl/SpindleControl.tsx";
 
 interface ButtonConfig {
     id: string;
@@ -45,7 +46,7 @@ const DraggableButton: React.FC<DraggableButtonProps> = ({
     const buttonRef = useRef<HTMLDivElement>(null);
 
     // Snap to grid helper function
-    const snapToGrid = (value: number) => Math.round(value / gridSize) * gridSize;
+    const snapToGrid = useCallback((value: number) => Math.round(value / gridSize) * gridSize, [gridSize]);
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         if (!isEditMode) return;
@@ -136,7 +137,7 @@ const DraggableButton: React.FC<DraggableButtonProps> = ({
 
             onResize(config.id, {width: newWidth, height: newHeight});
         }
-    }, [isDragging, isResizing, dragStart, resizeStart, config.id, config.position, config.size, config.minSize, onMove, onResize, gridSize, originalPosition, originalSize]);
+    }, [isDragging, isResizing, onMove, config.id, config.size.width, config.size.height, config.minSize.width, config.minSize.height, config.position.x, config.position.y, originalPosition, onResize, originalSize, snapToGrid, dragStart.x, dragStart.y, resizeStart.x, resizeStart.y, resizeStart.width, resizeStart.height]);
 
     const handleMouseUp = useCallback(() => {
         setIsDragging(false);
@@ -169,6 +170,8 @@ const DraggableButton: React.FC<DraggableButtonProps> = ({
                 return 'Main Gas Button';
             case 'SecondaryGasButton':
                 return 'Secondary Gas Button';
+            case 'SpindleControl':
+                return 'Spindle Control';
             case 'DwellInfo':
                 return 'Dwell Info';
             default:
@@ -252,6 +255,7 @@ const AddButtonModal: React.FC<AddButtonModalProps> = ({onAdd, onCancel}) => {
         {value: 'ResetButton', label: 'Reset Button'},
         {value: 'MainGasButton', label: 'Main Gas Button'},
         {value: 'SecondaryGasButton', label: 'Secondary Gas Button'},
+        {value: 'SpindleControl', label: 'Spindle Control'},
         {value: 'DwellInfo', label: 'Dwell Info'}
     ];
 
@@ -263,9 +267,11 @@ const AddButtonModal: React.FC<AddButtonModalProps> = ({onAdd, onCancel}) => {
             case 'ResetButton':
             case 'MainGasButton':
             case 'SecondaryGasButton':
-                return {width: 80, height: 40};
+                return {width: 100, height: 70};
+            case 'SpindleControl':
+                return {width: 200, height: 150};
             case 'DwellInfo':
-                return {width: 120, height: 50};
+                return {width: 200, height: 80};
             default:
                 return {width: 80, height: 40};
         }
@@ -281,10 +287,7 @@ const AddButtonModal: React.FC<AddButtonModalProps> = ({onAdd, onCancel}) => {
             type: 'built-in',
             component: selectedBuiltIn,
             position: {x: snapToGrid(50), y: snapToGrid(310)},
-            size: {
-                width: snapToGrid(120),
-                height: snapToGrid(selectedBuiltIn === 'DwellInfo' ? 60 : 50)
-            },
+            size: minSize,
             visible: true,
             minSize: minSize
         };
@@ -350,6 +353,8 @@ export const ControlButtons = () => {
             case 'MainGasButton':
             case 'SecondaryGasButton':
                 return {width: 80, height: 40};
+            case 'SpindleControl':
+                return {width: 150, height: 200};
             case 'DwellInfo':
                 return {width: 120, height: 50};
             default:
@@ -495,6 +500,8 @@ export const ControlButtons = () => {
                 return <MainGasButton/>;
             case 'SecondaryGasButton':
                 return <SecondaryGasButton/>;
+            case 'SpindleControl':
+                return <SpindleControl/>;
             case 'DwellInfo':
                 return <DwellInfo/>;
             default:
@@ -561,7 +568,8 @@ export const ControlButtons = () => {
                 </div>
             </div>
 
-            <div className="relative" style={isEditMode ? {minHeight: '400px'} : undefined}>
+            <div className="relative"
+                 style={{minHeight: `${Math.max(...buttons.map(x => x.size.height + x.position.y))}px`}}>
                 {/* Grid background - only visible in edit mode */}
                 {isEditMode && <GridBackground/>}
 
