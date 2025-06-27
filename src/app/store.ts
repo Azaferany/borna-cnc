@@ -124,8 +124,9 @@ export const useStore = create<CNCState>((set) => ({
     lastSentLine: 0,
 
     messageHistory: [],
-    addMessageToHistory: () => {
-    },
+    addMessageToHistory: (type, message) => set((state) => ({
+        messageHistory: [...state.messageHistory, {type, message, timestamp: Date.now()}]
+    })),
     clearMessageHistory: () => set({messageHistory: []}),
 
     loadToolPathGCodes: (allGCodes,toolPathGCodes,) => set({ toolPathGCodes, allGCodes }),
