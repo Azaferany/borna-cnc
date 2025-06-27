@@ -275,7 +275,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 switch (paramNumber) {
                     // Spindle max RPM ($30)
                     case '30':
-                        updateMachineConfig({spindleMaxRpm: numValue});
+                        updateMachineConfig({spindleMaxRpm: numValue == 0 ? 1000 : numValue});
                         break;
                     // Spindle min RPM ($31)
                     case '31':
