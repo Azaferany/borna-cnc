@@ -22,131 +22,401 @@ interface GrblParameter {
     description: string;
     hasDescription: boolean;
     group: string;
+    datatype: 'integer' | 'float' | 'boolean' | 'string' | 'axis_mask' | 'coolant_mask' | 'spindle_mask' | 'control_mask' | 'report_mask' | 'network_mask';
+    min?: number;
+    max?: number;
+    options?: Array<{ value: string, label: string }>;
 }
 
-const PARAMETER_DESCRIPTIONS: Record<number, { name: string; description: string }> = {
+const PARAMETER_DESCRIPTIONS: Record<number, {
+    name: string;
+    description: string;
+    datatype: 'integer' | 'float' | 'boolean' | 'string' | 'axis_mask' | 'coolant_mask' | 'spindle_mask' | 'control_mask' | 'report_mask' | 'network_mask';
+    min?: number;
+    max?: number;
+    options?: Array<{ value: string, label: string }>
+}> = {
     // Basic Settings
-    0: {name: 'Step pulse time', description: 'Microseconds step pulse time'},
-    1: {name: 'Step idle delay', description: 'Milliseconds step idle delay'},
-    2: {name: 'Step port invert', description: 'Step port invert mask'},
-    3: {name: 'Direction port invert', description: 'Direction port invert mask'},
-    4: {name: 'Step enable invert', description: 'Step enable invert mask (per axis)'},
-    5: {name: 'Limit pins invert', description: 'Limit pins invert mask'},
-    6: {name: 'Probe pin invert', description: 'Probe pin invert mask'},
-    9: {name: 'PWM Spindle Enable', description: 'PWM Spindle Enable'},
-    10: {name: 'Status report options', description: 'Status report options mask'},
-    11: {name: 'Junction deviation', description: 'Junction deviation in mm'},
-    12: {name: 'Arc tolerance', description: 'Arc tolerance in mm'},
-    13: {name: 'Report inches', description: 'Report in inches (0=mm, 1=inches)'},
-    14: {name: 'Control pin invert', description: 'Invert control input signals'},
-    15: {name: 'Coolant pin invert', description: 'Invert coolant output signals'},
-    16: {name: 'Spindle pin invert', description: 'Invert spindle output signals'},
-    17: {name: 'Control pullup disable', description: 'Disable control signal pullup'},
-    18: {name: 'Limit pullup disable', description: 'Disable limit signals pull up'},
-    19: {name: 'Probe pullup disable', description: 'Disable probe pull up'},
+    0: {name: 'Step pulse time', description: 'Microseconds step pulse time', datatype: 'integer', min: 1, max: 10},
+    1: {name: 'Step idle delay', description: 'Milliseconds step idle delay', datatype: 'integer', min: 0, max: 65535},
+    2: {name: 'Step port invert', description: 'Step port invert mask', datatype: 'axis_mask'},
+    3: {name: 'Direction port invert', description: 'Direction port invert mask', datatype: 'axis_mask'},
+    4: {name: 'Step enable invert', description: 'Step enable invert mask (per axis)', datatype: 'axis_mask'},
+    5: {name: 'Limit pins invert', description: 'Limit pins invert mask', datatype: 'axis_mask'},
+    6: {name: 'Probe pin invert', description: 'Probe pin invert mask', datatype: 'boolean'},
+    9: {name: 'PWM Spindle Enable', description: 'PWM Spindle Enable', datatype: 'boolean'},
+    10: {name: 'Status report options', description: 'Status report options mask', datatype: 'report_mask'},
+    11: {name: 'Junction deviation', description: 'Junction deviation in mm', datatype: 'float', min: 0.001, max: 2.0},
+    12: {name: 'Arc tolerance', description: 'Arc tolerance in mm', datatype: 'float', min: 0.001, max: 0.5},
+    13: {name: 'Report inches', description: 'Report in inches (0=mm, 1=inches)', datatype: 'boolean'},
+    14: {name: 'Control pin invert', description: 'Invert control input signals', datatype: 'control_mask'},
+    15: {name: 'Coolant pin invert', description: 'Invert coolant output signals', datatype: 'coolant_mask'},
+    16: {name: 'Spindle pin invert', description: 'Invert spindle output signals', datatype: 'spindle_mask'},
+    17: {name: 'Control pullup disable', description: 'Disable control signal pullup', datatype: 'control_mask'},
+    18: {name: 'Limit pullup disable', description: 'Disable limit signals pull up', datatype: 'axis_mask'},
+    19: {name: 'Probe pullup disable', description: 'Disable probe pull up', datatype: 'boolean'},
 
     // Motion Settings
-    20: {name: 'Soft limits', description: 'Soft limits enable (0=disable, 1=enable)'},
-    21: {name: 'Hard limits', description: 'Hard limits enable and strict mode (bitmask)'},
-    22: {name: 'Homing cycle', description: 'Homing cycle enable and features (bitmask)'},
-    23: {name: 'Homing dir invert', description: 'Homing direction invert mask'},
-    24: {name: 'Homing feed', description: 'Homing feed rate in mm/min'},
-    25: {name: 'Homing seek', description: 'Homing seek rate in mm/min'},
-    26: {name: 'Homing debounce', description: 'Homing debounce delay in ms'},
-    27: {name: 'Homing pull-off', description: 'Homing pull-off distance in mm'},
-    28: {name: 'G73 retract', description: 'G73 retract distance in mm'},
-    29: {name: 'Step pulse delay', description: 'Stepper pulse delay in microseconds (0-10)'},
-    40: {name: 'Soft limits jog', description: 'Enable soft limits for jogging (0=disable, 1=enable)'},
-    43: {name: 'Homing locate cycles', description: 'Number of homing locate cycles (0-255)'},
-    44: {name: 'Homing priority 1', description: 'Axis priority for homing (first)'},
-    45: {name: 'Homing priority 2', description: 'Axis priority for homing (second)'},
-    46: {name: 'Homing priority 3', description: 'Axis priority for homing (third)'},
-    47: {name: 'Homing priority 4', description: 'Axis priority for homing (fourth)'},
-    48: {name: 'Homing priority 5', description: 'Axis priority for homing (fifth)'},
-    49: {name: 'Homing priority 6', description: 'Axis priority for homing (sixth)'},
+    20: {name: 'Soft limits', description: 'Soft limits enable (0=disable, 1=enable)', datatype: 'boolean'},
+    21: {
+        name: 'Hard limits',
+        description: 'Hard limits enable and strict mode (bitmask)',
+        datatype: 'integer',
+        options: [{value: '0', label: 'Disabled'}, {value: '1', label: 'Enabled'}, {
+            value: '3',
+            label: 'Enabled + Strict Mode'
+        }]
+    },
+    22: {
+        name: 'Homing cycle',
+        description: 'Homing cycle enable and features (bitmask)',
+        datatype: 'integer',
+        min: 0,
+        max: 255
+    },
+    23: {name: 'Homing dir invert', description: 'Homing direction invert mask', datatype: 'axis_mask'},
+    24: {name: 'Homing feed', description: 'Homing feed rate in mm/min', datatype: 'float', min: 1.0, max: 50000.0},
+    25: {name: 'Homing seek', description: 'Homing seek rate in mm/min', datatype: 'float', min: 1.0, max: 50000.0},
+    26: {name: 'Homing debounce', description: 'Homing debounce delay in ms', datatype: 'integer', min: 0, max: 65535},
+    27: {
+        name: 'Homing pull-off',
+        description: 'Homing pull-off distance in mm',
+        datatype: 'float',
+        min: 0.0,
+        max: 100.0
+    },
+    28: {name: 'G73 retract', description: 'G73 retract distance in mm', datatype: 'float', min: 0.0, max: 100.0},
+    29: {
+        name: 'Step pulse delay',
+        description: 'Stepper pulse delay in microseconds (0-10)',
+        datatype: 'integer',
+        min: 0,
+        max: 10
+    },
+    40: {
+        name: 'Soft limits jog',
+        description: 'Enable soft limits for jogging (0=disable, 1=enable)',
+        datatype: 'boolean'
+    },
+    43: {
+        name: 'Homing locate cycles',
+        description: 'Number of homing locate cycles (0-255)',
+        datatype: 'integer',
+        min: 0,
+        max: 255
+    },
+    44: {
+        name: 'Homing priority 1',
+        description: 'Axis priority for homing (first)',
+        datatype: 'integer',
+        min: 0,
+        max: 5
+    },
+    45: {
+        name: 'Homing priority 2',
+        description: 'Axis priority for homing (second)',
+        datatype: 'integer',
+        min: 0,
+        max: 5
+    },
+    46: {
+        name: 'Homing priority 3',
+        description: 'Axis priority for homing (third)',
+        datatype: 'integer',
+        min: 0,
+        max: 5
+    },
+    47: {
+        name: 'Homing priority 4',
+        description: 'Axis priority for homing (fourth)',
+        datatype: 'integer',
+        min: 0,
+        max: 5
+    },
+    48: {
+        name: 'Homing priority 5',
+        description: 'Axis priority for homing (fifth)',
+        datatype: 'integer',
+        min: 0,
+        max: 5
+    },
+    49: {
+        name: 'Homing priority 6',
+        description: 'Axis priority for homing (sixth)',
+        datatype: 'integer',
+        min: 0,
+        max: 5
+    },
 
     // Spindle Settings
-    30: {name: 'Max spindle speed', description: 'Maximum spindle speed in RPM'},
-    31: {name: 'Min spindle speed', description: 'Minimum spindle speed in RPM'},
-    32: {name: 'Machine mode', description: 'Machine mode (0=normal, 1=laser, 2=lathe)'},
-    33: {name: 'Spindle PWM freq', description: 'Spindle PWM frequency in Hz'},
-    34: {name: 'Spindle PWM off', description: 'Spindle off PWM duty cycle in percent'},
-    35: {name: 'Spindle PWM min', description: 'Spindle minimum PWM duty cycle in percent'},
-    36: {name: 'Spindle PWM max', description: 'Spindle maximum PWM duty cycle in percent'},
-    37: {name: 'Stepper deenergize', description: 'Steppers to deenergize when motion completes'},
-    38: {name: 'Spindle encoder PPR', description: 'Spindle encoder pulses per revolution'},
-    340: {name: 'Spindle at speed tolerance', description: 'Spindle at speed tolerance in percent'},
+    30: {
+        name: 'Max spindle speed',
+        description: 'Maximum spindle speed in RPM',
+        datatype: 'integer',
+        min: 1,
+        max: 100000
+    },
+    31: {
+        name: 'Min spindle speed',
+        description: 'Minimum spindle speed in RPM',
+        datatype: 'integer',
+        min: 0,
+        max: 100000
+    },
+    32: {
+        name: 'Machine mode',
+        description: 'Machine mode (0=normal, 1=laser, 2=lathe)',
+        datatype: 'integer',
+        options: [{value: '0', label: 'Normal'}, {value: '1', label: 'Laser'}, {value: '2', label: 'Lathe'}]
+    },
+    33: {
+        name: 'Spindle PWM freq',
+        description: 'Spindle PWM frequency in Hz',
+        datatype: 'float',
+        min: 5.0,
+        max: 50000.0
+    },
+    34: {
+        name: 'Spindle PWM off',
+        description: 'Spindle off PWM duty cycle in percent',
+        datatype: 'float',
+        min: 0.0,
+        max: 100.0
+    },
+    35: {
+        name: 'Spindle PWM min',
+        description: 'Spindle minimum PWM duty cycle in percent',
+        datatype: 'float',
+        min: 0.0,
+        max: 100.0
+    },
+    36: {
+        name: 'Spindle PWM max',
+        description: 'Spindle maximum PWM duty cycle in percent',
+        datatype: 'float',
+        min: 0.0,
+        max: 100.0
+    },
+    37: {
+        name: 'Stepper deenergize',
+        description: 'Steppers to deenergize when motion completes',
+        datatype: 'axis_mask'
+    },
+    38: {
+        name: 'Spindle encoder PPR',
+        description: 'Spindle encoder pulses per revolution',
+        datatype: 'integer',
+        min: 1,
+        max: 10000
+    },
+    340: {
+        name: 'Spindle at speed tolerance',
+        description: 'Spindle at speed tolerance in percent',
+        datatype: 'float',
+        min: 0.0,
+        max: 100.0
+    },
 
     // PID Settings
-    80: {name: 'Spindle PID P', description: 'Spindle PID proportional gain'},
-    81: {name: 'Spindle PID I', description: 'Spindle PID integral gain'},
-    82: {name: 'Spindle PID D', description: 'Spindle PID derivative gain'},
-    84: {name: 'Spindle PID max error', description: 'Spindle PID max output error'},
-    85: {name: 'Spindle PID max integral', description: 'Spindle PID max integral error'},
-    90: {name: 'Sync PID P', description: 'Spindle synced motion PID proportional gain'},
-    91: {name: 'Sync PID I', description: 'Spindle synced motion PID integral gain'},
-    92: {name: 'Sync PID D', description: 'Spindle synced motion PID derivative gain'},
+    80: {name: 'Spindle PID P', description: 'Spindle PID proportional gain', datatype: 'float', min: 0.0, max: 1000.0},
+    81: {name: 'Spindle PID I', description: 'Spindle PID integral gain', datatype: 'float', min: 0.0, max: 1000.0},
+    82: {name: 'Spindle PID D', description: 'Spindle PID derivative gain', datatype: 'float', min: 0.0, max: 1000.0},
+    84: {
+        name: 'Spindle PID max error',
+        description: 'Spindle PID max output error',
+        datatype: 'float',
+        min: 0.0,
+        max: 1000.0
+    },
+    85: {
+        name: 'Spindle PID max integral',
+        description: 'Spindle PID max integral error',
+        datatype: 'float',
+        min: 0.0,
+        max: 1000.0
+    },
+    90: {
+        name: 'Sync PID P',
+        description: 'Spindle synced motion PID proportional gain',
+        datatype: 'float',
+        min: 0.0,
+        max: 1000.0
+    },
+    91: {
+        name: 'Sync PID I',
+        description: 'Spindle synced motion PID integral gain',
+        datatype: 'float',
+        min: 0.0,
+        max: 1000.0
+    },
+    92: {
+        name: 'Sync PID D',
+        description: 'Spindle synced motion PID derivative gain',
+        datatype: 'float',
+        min: 0.0,
+        max: 1000.0
+    },
 
     // Jogging Settings
-    50: {name: 'Jog step speed', description: 'Jogging step speed in mm/min'},
-    51: {name: 'Jog slow speed', description: 'Jogging slow speed in mm/min'},
-    52: {name: 'Jog fast speed', description: 'Jogging fast speed in mm/min'},
-    53: {name: 'Jog step distance', description: 'Jogging step distance in mm'},
-    54: {name: 'Jog slow distance', description: 'Jogging slow distance in mm'},
-    55: {name: 'Jog fast distance', description: 'Jogging fast distance in mm'},
+    50: {
+        name: 'Jog step speed',
+        description: 'Jogging step speed in mm/min',
+        datatype: 'float',
+        min: 1.0,
+        max: 50000.0
+    },
+    51: {
+        name: 'Jog slow speed',
+        description: 'Jogging slow speed in mm/min',
+        datatype: 'float',
+        min: 1.0,
+        max: 50000.0
+    },
+    52: {
+        name: 'Jog fast speed',
+        description: 'Jogging fast speed in mm/min',
+        datatype: 'float',
+        min: 1.0,
+        max: 50000.0
+    },
+    53: {
+        name: 'Jog step distance',
+        description: 'Jogging step distance in mm',
+        datatype: 'float',
+        min: 0.001,
+        max: 1000.0
+    },
+    54: {
+        name: 'Jog slow distance',
+        description: 'Jogging slow distance in mm',
+        datatype: 'float',
+        min: 0.001,
+        max: 1000.0
+    },
+    55: {
+        name: 'Jog fast distance',
+        description: 'Jogging fast distance in mm',
+        datatype: 'float',
+        min: 0.001,
+        max: 1000.0
+    },
 
     // Network Settings
-    70: {name: 'Network services', description: 'Network services mask'},
-    71: {name: 'Bluetooth name', description: 'Bluetooth device name (max 32 chars)'},
-    72: {name: 'Bluetooth service', description: 'Bluetooth service name (max 32 chars)'},
-    73: {name: 'WiFi mode', description: 'WiFi mode (0=NULL, 1=STA, 2=AP, 3=APSTA)'},
-    74: {name: 'WiFi STA SSID', description: 'WiFi Station SSID (max 64 chars)'},
-    75: {name: 'WiFi STA password', description: 'WiFi Station password (max 32 chars)'},
-    76: {name: 'WiFi AP SSID', description: 'WiFi Access Point SSID (max 64 chars)'},
-    77: {name: 'WiFi AP password', description: 'WiFi Access Point password (max 32 chars)'},
-    78: {name: 'WiFi AP country', description: 'WiFi AP Country (max 3 chars)'},
-    79: {name: 'WiFi AP channel', description: 'WiFi AP Channel (0-11)'},
+    70: {name: 'Network services', description: 'Network services mask', datatype: 'network_mask'},
+    71: {name: 'Bluetooth name', description: 'Bluetooth device name (max 32 chars)', datatype: 'string'},
+    72: {name: 'Bluetooth service', description: 'Bluetooth service name (max 32 chars)', datatype: 'string'},
+    73: {
+        name: 'WiFi mode',
+        description: 'WiFi mode (0=NULL, 1=STA, 2=AP, 3=APSTA)',
+        datatype: 'integer',
+        options: [{value: '0', label: 'NULL'}, {value: '1', label: 'Station'}, {
+            value: '2',
+            label: 'Access Point'
+        }, {value: '3', label: 'Station + AP'}]
+    },
+    74: {name: 'WiFi STA SSID', description: 'WiFi Station SSID (max 64 chars)', datatype: 'string'},
+    75: {name: 'WiFi STA password', description: 'WiFi Station password (max 32 chars)', datatype: 'string'},
+    76: {name: 'WiFi AP SSID', description: 'WiFi Access Point SSID (max 64 chars)', datatype: 'string'},
+    77: {name: 'WiFi AP password', description: 'WiFi Access Point password (max 32 chars)', datatype: 'string'},
+    78: {name: 'WiFi AP country', description: 'WiFi AP Country (max 3 chars)', datatype: 'string'},
+    79: {name: 'WiFi AP channel', description: 'WiFi AP Channel (0-11)', datatype: 'integer', min: 0, max: 11},
 
     // Tool Change Settings
-    341: {name: 'Tool change mode', description: 'Manual tool change mode (0-4)'},
-    342: {name: 'Probing distance', description: 'Probing distance in mm'},
-    343: {name: 'Probing slow feed', description: 'Probing slow feed rate in mm/min'},
-    344: {name: 'Probing seek feed', description: 'Probing seek feed rate in mm/min'},
+    341: {
+        name: 'Tool change mode',
+        description: 'Manual tool change mode (0-4)',
+        datatype: 'integer',
+        options: [{value: '0', label: 'Normal'}, {value: '1', label: 'Manual touch off'}, {
+            value: '2',
+            label: 'Manual @ G59.3'
+        }, {value: '3', label: 'Auto @ G59.3'}, {value: '4', label: 'Ignore M6'}]
+    },
+    342: {name: 'Probing distance', description: 'Probing distance in mm', datatype: 'float', min: 0.1, max: 1000.0},
+    343: {
+        name: 'Probing slow feed',
+        description: 'Probing slow feed rate in mm/min',
+        datatype: 'float',
+        min: 1.0,
+        max: 1000.0
+    },
+    344: {
+        name: 'Probing seek feed',
+        description: 'Probing seek feed rate in mm/min',
+        datatype: 'float',
+        min: 1.0,
+        max: 5000.0
+    },
 
     // Other Settings
-    39: {name: 'Realtime commands', description: 'Enable printable realtime command characters'},
-    60: {name: 'Restore overrides', description: 'Restore default overrides when program ends'},
-    61: {name: 'Ignore safety door', description: 'Ignore safety door signal when idle'},
-    62: {name: 'Sleep enable', description: 'Enable sleep function'},
-    63: {name: 'Disable laser hold', description: 'Disable laser during hold'},
-    64: {name: 'Force alarm', description: 'Force grbl to enter alarm mode on startup'},
-    65: {name: 'Probe feed override', description: 'Allow feed rate override during probing'},
+    39: {name: 'Realtime commands', description: 'Enable printable realtime command characters', datatype: 'boolean'},
+    60: {name: 'Restore overrides', description: 'Restore default overrides when program ends', datatype: 'boolean'},
+    61: {name: 'Ignore safety door', description: 'Ignore safety door signal when idle', datatype: 'boolean'},
+    62: {name: 'Sleep enable', description: 'Enable sleep function', datatype: 'boolean'},
+    63: {name: 'Disable laser hold', description: 'Disable laser during hold', datatype: 'boolean'},
+    64: {name: 'Force alarm', description: 'Force grbl to enter alarm mode on startup', datatype: 'boolean'},
+    65: {name: 'Probe feed override', description: 'Allow feed rate override during probing', datatype: 'boolean'},
 
     // Axis Settings
-    100: {name: 'X steps/mm', description: 'X axis steps per mm'},
-    101: {name: 'Y steps/mm', description: 'Y axis steps per mm'},
-    102: {name: 'Z steps/mm', description: 'Z axis steps per mm'},
-    103: {name: 'A steps/mm', description: 'A axis steps per mm'},
-    104: {name: 'B steps/mm', description: 'B axis steps per mm'},
-    105: {name: 'C steps/mm', description: 'C axis steps per mm'},
-    110: {name: 'X max rate', description: 'X axis maximum rate in mm/min'},
-    111: {name: 'Y max rate', description: 'Y axis maximum rate in mm/min'},
-    112: {name: 'Z max rate', description: 'Z axis maximum rate in mm/min'},
-    113: {name: 'A max rate', description: 'A axis maximum rate in mm/min'},
-    114: {name: 'B max rate', description: 'B axis maximum rate in mm/min'},
-    115: {name: 'C max rate', description: 'C axis maximum rate in mm/min'},
-    120: {name: 'X acceleration', description: 'X axis acceleration in mm/sec^2'},
-    121: {name: 'Y acceleration', description: 'Y axis acceleration in mm/sec^2'},
-    122: {name: 'Z acceleration', description: 'Z axis acceleration in mm/sec^2'},
-    123: {name: 'A acceleration', description: 'A axis acceleration in mm/sec^2'},
-    124: {name: 'B acceleration', description: 'B axis acceleration in mm/sec^2'},
-    125: {name: 'C acceleration', description: 'C axis acceleration in mm/sec^2'},
-    130: {name: 'X max travel', description: 'X axis maximum travel in mm'},
-    131: {name: 'Y max travel', description: 'Y axis maximum travel in mm'},
-    132: {name: 'Z max travel', description: 'Z axis maximum travel in mm'},
-    133: {name: 'A max travel', description: 'A axis maximum travel in mm'},
-    134: {name: 'B max travel', description: 'B axis maximum travel in mm'},
-    135: {name: 'C max travel', description: 'C axis maximum travel in mm'},
+    100: {name: 'X steps/mm', description: 'X axis steps per mm', datatype: 'float', min: 0.001, max: 50000.0},
+    101: {name: 'Y steps/mm', description: 'Y axis steps per mm', datatype: 'float', min: 0.001, max: 50000.0},
+    102: {name: 'Z steps/mm', description: 'Z axis steps per mm', datatype: 'float', min: 0.001, max: 50000.0},
+    103: {name: 'A steps/mm', description: 'A axis steps per mm', datatype: 'float', min: 0.001, max: 50000.0},
+    104: {name: 'B steps/mm', description: 'B axis steps per mm', datatype: 'float', min: 0.001, max: 50000.0},
+    105: {name: 'C steps/mm', description: 'C axis steps per mm', datatype: 'float', min: 0.001, max: 50000.0},
+    110: {name: 'X max rate', description: 'X axis maximum rate in mm/min', datatype: 'float', min: 1.0, max: 200000.0},
+    111: {name: 'Y max rate', description: 'Y axis maximum rate in mm/min', datatype: 'float', min: 1.0, max: 200000.0},
+    112: {name: 'Z max rate', description: 'Z axis maximum rate in mm/min', datatype: 'float', min: 1.0, max: 200000.0},
+    113: {name: 'A max rate', description: 'A axis maximum rate in mm/min', datatype: 'float', min: 1.0, max: 200000.0},
+    114: {name: 'B max rate', description: 'B axis maximum rate in mm/min', datatype: 'float', min: 1.0, max: 200000.0},
+    115: {name: 'C max rate', description: 'C axis maximum rate in mm/min', datatype: 'float', min: 1.0, max: 200000.0},
+    120: {
+        name: 'X acceleration',
+        description: 'X axis acceleration in mm/sec^2',
+        datatype: 'float',
+        min: 1.0,
+        max: 50000.0
+    },
+    121: {
+        name: 'Y acceleration',
+        description: 'Y axis acceleration in mm/sec^2',
+        datatype: 'float',
+        min: 1.0,
+        max: 50000.0
+    },
+    122: {
+        name: 'Z acceleration',
+        description: 'Z axis acceleration in mm/sec^2',
+        datatype: 'float',
+        min: 1.0,
+        max: 50000.0
+    },
+    123: {
+        name: 'A acceleration',
+        description: 'A axis acceleration in mm/sec^2',
+        datatype: 'float',
+        min: 1.0,
+        max: 50000.0
+    },
+    124: {
+        name: 'B acceleration',
+        description: 'B axis acceleration in mm/sec^2',
+        datatype: 'float',
+        min: 1.0,
+        max: 50000.0
+    },
+    125: {
+        name: 'C acceleration',
+        description: 'C axis acceleration in mm/sec^2',
+        datatype: 'float',
+        min: 1.0,
+        max: 50000.0
+    },
+    130: {name: 'X max travel', description: 'X axis maximum travel in mm', datatype: 'float', min: 0.0, max: 10000.0},
+    131: {name: 'Y max travel', description: 'Y axis maximum travel in mm', datatype: 'float', min: 0.0, max: 10000.0},
+    132: {name: 'Z max travel', description: 'Z axis maximum travel in mm', datatype: 'float', min: 0.0, max: 10000.0},
+    133: {name: 'A max travel', description: 'A axis maximum travel in mm', datatype: 'float', min: 0.0, max: 10000.0},
+    134: {name: 'B max travel', description: 'B axis maximum travel in mm', datatype: 'float', min: 0.0, max: 10000.0},
+    135: {name: 'C max travel', description: 'C axis maximum travel in mm', datatype: 'float', min: 0.0, max: 10000.0},
 };
 
 function GrblConfigPage() {
@@ -245,15 +515,333 @@ function GrblConfigPage() {
         }));
     };
 
+    // Component for rendering different input types based on datatype
+    const renderParameterInput = (param: GrblParameter) => {
+        const inputClasses = `w-full bg-gray-700/50 text-white px-3 py-2 rounded-lg border ${
+            savingParams[param.id] ? 'border-yellow-500/50' : 'border-gray-600/50'
+        } focus:border-blue-500/50 focus:outline-none transition-all duration-200`;
+
+        const isDisabled = savingParams[param.id];
+
+        switch (param.datatype) {
+            case 'boolean':
+                return (
+                    <select
+                        value={param.value}
+                        onChange={(e) => handleInputChange(param.id, e.target.value)}
+                        className={inputClasses}
+                        disabled={isDisabled}
+                        title={param.description}
+                    >
+                        <option value="0">False (0)</option>
+                        <option value="1">True (1)</option>
+                    </select>
+                );
+
+            case 'integer':
+                if (param.options) {
+                    return (
+                        <select
+                            value={param.value}
+                            onChange={(e) => handleInputChange(param.id, e.target.value)}
+                            className={inputClasses}
+                            disabled={isDisabled}
+                            title={param.description}
+                        >
+                            {param.options.map(option => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label} ({option.value})
+                                </option>
+                            ))}
+                        </select>
+                    );
+                }
+                return (
+                    <input
+                        type="number"
+                        value={param.value}
+                        onChange={(e) => handleInputChange(param.id, e.target.value)}
+                        className={inputClasses}
+                        disabled={isDisabled}
+                        title={param.description}
+                        min={param.min}
+                        max={param.max}
+                        step="1"
+                    />
+                );
+
+            case 'float':
+                return (
+                    <input
+                        type="number"
+                        value={param.value}
+                        onChange={(e) => handleInputChange(param.id, e.target.value)}
+                        className={inputClasses}
+                        disabled={isDisabled}
+                        title={param.description}
+                        min={param.min}
+                        max={param.max}
+                        step="any"
+                    />
+                );
+
+            case 'string':
+                return (
+                    <input
+                        type="text"
+                        value={param.value}
+                        onChange={(e) => handleInputChange(param.id, e.target.value)}
+                        className={inputClasses}
+                        disabled={isDisabled}
+                        title={param.description}
+                    />
+                );
+
+            case 'axis_mask':
+                return (
+                    <div className="space-y-2">
+                        <input
+                            type="number"
+                            value={param.value}
+                            onChange={(e) => handleInputChange(param.id, e.target.value)}
+                            className={inputClasses}
+                            disabled={isDisabled}
+                            title={param.description}
+                            min="0"
+                            max="63"
+                        />
+                        <div className="text-xs text-gray-400 grid grid-cols-3 gap-1">
+                            {['X', 'Y', 'Z', 'A', 'B', 'C'].map((axis, idx) => {
+                                const mask = parseInt(param.value || '0');
+                                const isSet = (mask & (1 << idx)) !== 0;
+                                return (
+                                    <label key={axis} className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={isSet}
+                                            onChange={(e) => {
+                                                const currentMask = parseInt(param.value || '0');
+                                                const newMask = e.target.checked
+                                                    ? currentMask | (1 << idx)
+                                                    : currentMask & ~(1 << idx);
+                                                handleInputChange(param.id, newMask.toString());
+                                            }}
+                                            className="mr-1 text-blue-500"
+                                            disabled={isDisabled}
+                                        />
+                                        {axis}
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+
+            case 'coolant_mask':
+                return (
+                    <div className="space-y-2">
+                        <input
+                            type="number"
+                            value={param.value}
+                            onChange={(e) => handleInputChange(param.id, e.target.value)}
+                            className={inputClasses}
+                            disabled={isDisabled}
+                            title={param.description}
+                            min="0"
+                            max="3"
+                        />
+                        <div className="text-xs text-gray-400 grid grid-cols-2 gap-1">
+                            {['Flood', 'Mist'].map((coolant, idx) => {
+                                const mask = parseInt(param.value || '0');
+                                const isSet = (mask & (1 << idx)) !== 0;
+                                return (
+                                    <label key={coolant} className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={isSet}
+                                            onChange={(e) => {
+                                                const currentMask = parseInt(param.value || '0');
+                                                const newMask = e.target.checked
+                                                    ? currentMask | (1 << idx)
+                                                    : currentMask & ~(1 << idx);
+                                                handleInputChange(param.id, newMask.toString());
+                                            }}
+                                            className="mr-1 text-blue-500"
+                                            disabled={isDisabled}
+                                        />
+                                        {coolant}
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+
+            case 'spindle_mask':
+                return (
+                    <div className="space-y-2">
+                        <input
+                            type="number"
+                            value={param.value}
+                            onChange={(e) => handleInputChange(param.id, e.target.value)}
+                            className={inputClasses}
+                            disabled={isDisabled}
+                            title={param.description}
+                            min="0"
+                            max="7"
+                        />
+                        <div className="text-xs text-gray-400 grid grid-cols-3 gap-1">
+                            {['Enable', 'CCW', 'PWM'].map((spindle, idx) => {
+                                const mask = parseInt(param.value || '0');
+                                const isSet = (mask & (1 << idx)) !== 0;
+                                return (
+                                    <label key={spindle} className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={isSet}
+                                            onChange={(e) => {
+                                                const currentMask = parseInt(param.value || '0');
+                                                const newMask = e.target.checked
+                                                    ? currentMask | (1 << idx)
+                                                    : currentMask & ~(1 << idx);
+                                                handleInputChange(param.id, newMask.toString());
+                                            }}
+                                            className="mr-1 text-blue-500"
+                                            disabled={isDisabled}
+                                        />
+                                        {spindle}
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+
+            case 'control_mask':
+                return (
+                    <div className="space-y-2">
+                        <input
+                            type="number"
+                            value={param.value}
+                            onChange={(e) => handleInputChange(param.id, e.target.value)}
+                            className={inputClasses}
+                            disabled={isDisabled}
+                            title={param.description}
+                            min="0"
+                            max="255"
+                        />
+                        <div className="text-xs text-gray-400 grid grid-cols-2 gap-1">
+                            {['Reset', 'Feed Hold', 'Cycle Start', 'Safety Door', 'Block Delete', 'Stop Disable', 'E-Stop', 'Probe'].map((control, idx) => {
+                                const mask = parseInt(param.value || '0');
+                                const isSet = (mask & (1 << idx)) !== 0;
+                                return (
+                                    <label key={control} className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={isSet}
+                                            onChange={(e) => {
+                                                const currentMask = parseInt(param.value || '0');
+                                                const newMask = e.target.checked
+                                                    ? currentMask | (1 << idx)
+                                                    : currentMask & ~(1 << idx);
+                                                handleInputChange(param.id, newMask.toString());
+                                            }}
+                                            className="mr-1 text-blue-500"
+                                            disabled={isDisabled}
+                                        />
+                                        {control}
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+
+            case 'report_mask':
+                return (
+                    <div className="space-y-2">
+                        <input
+                            type="number"
+                            value={param.value}
+                            onChange={(e) => handleInputChange(param.id, e.target.value)}
+                            className={inputClasses}
+                            disabled={isDisabled}
+                            title={param.description}
+                            min="0"
+                            max="4095"
+                        />
+                        <div className="text-xs text-gray-400 grid grid-cols-2 gap-1">
+                            {['Machine Pos', 'Buffer State', 'Line Numbers', 'Feed/Speed', 'Pin State', 'Work Coords', 'Overrides', 'Probe Coords', 'Sync WCO', 'Parser State', 'Alarm Sub', 'Run Sub'].map((report, idx) => {
+                                const mask = parseInt(param.value || '0');
+                                const isSet = (mask & (1 << idx)) !== 0;
+                                return (
+                                    <label key={report} className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={isSet}
+                                            onChange={(e) => {
+                                                const currentMask = parseInt(param.value || '0');
+                                                const newMask = e.target.checked
+                                                    ? currentMask | (1 << idx)
+                                                    : currentMask & ~(1 << idx);
+                                                handleInputChange(param.id, newMask.toString());
+                                            }}
+                                            className="mr-1 text-blue-500"
+                                            disabled={isDisabled}
+                                        />
+                                        {report}
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+
+            case 'network_mask':
+                return (
+                    <input
+                        type="number"
+                        value={param.value}
+                        onChange={(e) => handleInputChange(param.id, e.target.value)}
+                        className={inputClasses}
+                        disabled={isDisabled}
+                        title={param.description}
+                        min="0"
+                        max="255"
+                    />
+                );
+
+            default:
+                return (
+                    <input
+                        type="text"
+                        value={param.value}
+                        onChange={(e) => handleInputChange(param.id, e.target.value)}
+                        className={inputClasses}
+                        disabled={isDisabled}
+                        title={param.description}
+                    />
+                );
+        }
+    };
+
     const parameterList: GrblParameter[] = Object.entries(parameters)
-        .map(([id, value]) => ({
-            id: parseInt(id),
-            name: PARAMETER_DESCRIPTIONS[parseInt(id)]?.name || `Parameter ${id}`,
-            value: editedValues[parseInt(id)] ?? String(value),
-            description: PARAMETER_DESCRIPTIONS[parseInt(id)]?.description || 'No description available',
-            hasDescription: !!PARAMETER_DESCRIPTIONS[parseInt(id)]?.description,
-            group: getParameterGroup(parseInt(id))
-        }))
+        .map(([id, value]) => {
+            const paramId = parseInt(id);
+            const paramDesc = PARAMETER_DESCRIPTIONS[paramId];
+            return {
+                id: paramId,
+                name: paramDesc?.name || `Parameter ${id}`,
+                value: editedValues[paramId] ?? String(value),
+                description: paramDesc?.description || 'No description available',
+                hasDescription: !!paramDesc?.description,
+                group: getParameterGroup(paramId),
+                datatype: paramDesc?.datatype || 'string',
+                min: paramDesc?.min,
+                max: paramDesc?.max,
+                options: paramDesc?.options
+            };
+        })
         .sort((a, b) => {
             // First sort by description presence
             if (a.hasDescription !== b.hasDescription) {
@@ -610,8 +1198,20 @@ function GrblConfigPage() {
                                                                     <div
                                                                         className="flex justify-between items-start mb-2">
                                                                         <div>
-                                                                            <div
-                                                                                className="font-medium text-white">{param.name}</div>
+                                                                            <div className="flex items-center mb-1">
+                                                                                <div
+                                                                                    className="font-medium text-white">{param.name}</div>
+                                                                                <span
+                                                                                    className={`ml-2 px-2 py-1 text-xs rounded-md ${
+                                                                                        param.datatype === 'boolean' ? 'bg-green-600/20 text-green-400' :
+                                                                                            param.datatype === 'integer' ? 'bg-blue-600/20 text-blue-400' :
+                                                                                                param.datatype === 'float' ? 'bg-purple-600/20 text-purple-400' :
+                                                                                                    param.datatype === 'string' ? 'bg-yellow-600/20 text-yellow-400' :
+                                                                                                        'bg-orange-600/20 text-orange-400'
+                                                                                    }`}>
+                                                                                    {param.datatype.replace('_', ' ')}
+                                                                                </span>
+                                                                            </div>
                                                                             <div
                                                                                 className="text-sm text-gray-400">ID: {param.id}</div>
                                                                         </div>
@@ -625,19 +1225,16 @@ function GrblConfigPage() {
                                                                             </button>
                                                                         )}
                                                                     </div>
-                                                                    <div
-                                                                        className="text-sm text-gray-300 mb-3">{param.description}</div>
+                                                                    <div className="text-sm text-gray-300 mb-3">
+                                                                        {param.description}
+                                                                        {(param.datatype === 'integer' || param.datatype === 'float') && (param.min !== undefined || param.max !== undefined) && (
+                                                                            <div className="text-xs text-gray-400 mt-1">
+                                                                                Range: {param.min !== undefined ? param.min : '∞'} to {param.max !== undefined ? param.max : '∞'}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                     <div className="relative">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={param.value}
-                                                                            onChange={(e) => handleInputChange(param.id, e.target.value)}
-                                                                            className={`w-full bg-gray-700/50 text-white px-3 py-2 rounded-lg border ${
-                                                                                savingParams[param.id] ? 'border-yellow-500/50' : 'border-gray-600/50'
-                                                                            } focus:border-blue-500/50 focus:outline-none transition-all duration-200`}
-                                                                            disabled={savingParams[param.id]}
-                                                                            title={param.description}
-                                                                        />
+                                                                        {renderParameterInput(param)}
                                                                         {savingParams[param.id] && (
                                                                             <div
                                                                                 className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -720,6 +1317,16 @@ function GrblConfigPage() {
                                                                     <div className="flex items-center">
                                                                         <span
                                                                             className="font-medium">{param.name}</span>
+                                                                        <span
+                                                                            className={`ml-2 px-2 py-1 text-xs rounded-md ${
+                                                                                param.datatype === 'boolean' ? 'bg-green-600/20 text-green-400' :
+                                                                                    param.datatype === 'integer' ? 'bg-blue-600/20 text-blue-400' :
+                                                                                        param.datatype === 'float' ? 'bg-purple-600/20 text-purple-400' :
+                                                                                            param.datatype === 'string' ? 'bg-yellow-600/20 text-yellow-400' :
+                                                                                                'bg-orange-600/20 text-orange-400'
+                                                                            }`}>
+                                                                            {param.datatype.replace('_', ' ')}
+                                                                        </span>
                                                                         {!param.hasDescription && (
                                                                             <span
                                                                                 className="ml-2 text-xs text-gray-400">(Undocumented)</span>
@@ -728,16 +1335,7 @@ function GrblConfigPage() {
                                                                 </td>
                                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                                     <div className="relative">
-                                                                        <input
-                                                                            type="text"
-                                                                            defaultValue={param.value}
-                                                                            onChange={(e) => handleInputChange(param.id, e.target.value)}
-                                                                            className={`bg-gray-700/50 text-white px-3 py-2 rounded-lg border ${
-                                                                                savingParams[param.id] ? 'border-yellow-500/50' : 'border-gray-600/50'
-                                                                            } focus:border-blue-500/50 focus:outline-none transition-all duration-200 w-full`}
-                                                                            disabled={savingParams[param.id]}
-                                                                            title={param.description}
-                                                                        />
+                                                                        {renderParameterInput(param)}
                                                                         {savingParams[param.id] && (
                                                                             <div
                                                                                 className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -747,7 +1345,14 @@ function GrblConfigPage() {
                                                                         )}
                                                                     </div>
                                                                 </td>
-                                                                <td className="px-6 py-4 text-sm text-gray-300">{param.description}</td>
+                                                                <td className="px-6 py-4 text-sm text-gray-300">
+                                                                    {param.description}
+                                                                    {(param.datatype === 'integer' || param.datatype === 'float') && (param.min !== undefined || param.max !== undefined) && (
+                                                                        <div className="text-xs text-gray-400 mt-1">
+                                                                            Range: {param.min !== undefined ? param.min : '∞'} to {param.max !== undefined ? param.max : '∞'}
+                                                                        </div>
+                                                                    )}
+                                                                </td>
                                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                                                                     <div className="flex items-center space-x-2">
                                                                         <button
