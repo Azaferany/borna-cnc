@@ -191,7 +191,7 @@ export const SpindleControl = () => {
                 <div className="flex justify-between items-center mb-1">
                     <span className="text-gray-300 text-xs">RPM</span>
                     <span className="text-white font-mono text-sm">
-                        {targetSpeed.toLocaleString()}
+                        {targetSpeed.toLocaleString()} RPM
                     </span>
                 </div>
             </div>
