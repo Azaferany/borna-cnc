@@ -103,6 +103,7 @@ export const Console = () => {
     const [command, setCommand] = useState('');
     const historyEndRef = useRef<HTMLDivElement>(null);
     const status = useStore(x=>x.status);
+    const isSending = useStore(x => x.isSending);
     const { isConnected, sendCommand } = useGRBL();
     const [history, setHistory] = useState<string[]>([]);
     
@@ -115,6 +116,9 @@ export const Console = () => {
     const [ShowGCodeOffsetResponse, setShowGCodeOffsetResponse] = useState(false)
     const [ShowActiveModesResponse, setShowActiveModesResponse] = useState(false)
 
+    // Check if GCode file is running
+    const isGCodeFileRunning = isSending;
+
     const clearHistory = () => {
         setHistory([]);
         setCommandHistory([]);
@@ -124,6 +128,10 @@ export const Console = () => {
 
     // Listen for incoming messages
     useGRBLListener((line: string) => {
+
+        if (line.toLowerCase().includes("grbl")) {
+            return;
+        }
         if ((line.startsWith('<') && line.endsWith('>')) && !ShowStatusResponse) {
             return;
         }
@@ -274,30 +282,40 @@ export const Console = () => {
                     })}
                 </div>
             </div>
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
-                <label htmlFor="command"></label>
-                <input
-                    autoComplete="off"
-                    id={"command"}
-                    type="text"
-                    value={command}
-                    onChange={(e) => {
-                        setCommand(e.target.value);
-                        setHistoryIndex(-1); // Reset history index when typing
-                    }}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Enter command... (Use ↑↓ for history)"
-                    className={`w-full bg-gray-700 rounded px-3 py-2 text-white ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    disabled={!isConnected}
-                />
-                <button
-                    type="submit"
-                    className={`w-full sm:w-auto px-4 py-2 active:bg-blue-900 rounded ${isConnected ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-600/50 cursor-not-allowed'}`}
-                    disabled={!isConnected}
-                >
-                    Send
-                </button>
-            </form>
+            {isGCodeFileRunning ? (
+                <div className="flex items-center justify-center py-4 text-gray-400 bg-gray-700 rounded text-sm">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Console disabled when GCode file is running
+                </div>
+            ) : (
+                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
+                    <label htmlFor="command"></label>
+                    <input
+                        autoComplete="off"
+                        id={"command"}
+                        type="text"
+                        value={command}
+                        onChange={(e) => {
+                            setCommand(e.target.value);
+                            setHistoryIndex(-1); // Reset history index when typing
+                        }}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Enter command... (Use ↑↓ for history)"
+                        className={`w-full bg-gray-700 rounded px-3 py-2 text-white ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={!isConnected}
+                    />
+                    <button
+                        type="submit"
+                        className={`w-full sm:w-auto px-4 py-2 active:bg-blue-900 rounded ${isConnected ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-600/50 cursor-not-allowed'}`}
+                        disabled={!isConnected}
+                    >
+                        Send
+                    </button>
+                </form>
+            )}
         </div>
     );
 };

@@ -19,8 +19,8 @@ const CoordRow = memo(({
                            isSending,
                            status
                        }: {
-    axis: string; 
-    workOffset: number; 
+    axis: string;
+    workOffset: number;
     machine: number;
     onSetZero: (axis: string) => void;
     onReset: (axis: string) => void;
@@ -71,6 +71,7 @@ const CoordRow = memo(({
 
 export const StatusDisplay = () => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(true);
+    const [isActiveModesOpen, setIsActiveModesOpen] = useState(false);
     const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
     const workPlaceCoordinateOffset = useStore(useShallow(x => x.workPlaceCoordinateOffset));
     const status = useStore(x => x.status);
@@ -122,10 +123,10 @@ export const StatusDisplay = () => {
                 <h2 className="text-xl font-bold">Position</h2>
                 <span className={`px-4 py-1.5 text-base font-bold rounded-full ${
                     status === 'Run' ? 'bg-green-500 text-white' :
-                    status === 'Idle' ? 'bg-blue-500 text-white' :
-                    status === 'Alarm' ? 'bg-red-500 text-white' :
-                    status === 'Hold' ? 'bg-yellow-500 text-black' :
-                    'bg-gray-500 text-white'
+                        status === 'Idle' ? 'bg-blue-500 text-white' :
+                            status === 'Alarm' ? 'bg-red-500 text-white' :
+                                status === 'Hold' ? 'bg-yellow-500 text-black' :
+                                    'bg-gray-500 text-white'
                 }`}>
                     {status || 'Unknown'}
                 </span>
@@ -144,18 +145,18 @@ export const StatusDisplay = () => {
                     Axis
                 </div>
                 <div className="text-blue-400 text-xs flex items-center justify-center">
-                    Work (<UnitDisplay/>)
+                    Relative (<UnitDisplay/>)
                 </div>
                 <div className="text-green-400 text-xs flex items-center justify-center">
-                    Machine (<UnitDisplay/>)
+                    Absolute (<UnitDisplay/>)
                 </div>
                 <div className="text-green-400 text-xs flex items-center justify-center text-center">Temporary Work Offset</div>
             </div>
             <div className="space-y-0">
-                <CoordRow 
-                    axis="X" 
-                    workOffset={workPlaceCoordinateOffset?.x ?? 0} 
-                    machine={machineCoordinate?.x ?? 0} 
+                <CoordRow
+                    axis="X"
+                    workOffset={workPlaceCoordinateOffset?.x ?? 0}
+                    machine={machineCoordinate?.x ?? 0}
                     onSetZero={handleSetZero}
                     onReset={handleReset}
                     onHome={handleHome}
@@ -164,10 +165,10 @@ export const StatusDisplay = () => {
                     isSending={isSending}
                     status={status}
                 />
-                <CoordRow 
-                    axis="Y" 
-                    workOffset={workPlaceCoordinateOffset?.y ?? 0} 
-                    machine={machineCoordinate?.y ?? 0} 
+                <CoordRow
+                    axis="Y"
+                    workOffset={workPlaceCoordinateOffset?.y ?? 0}
+                    machine={machineCoordinate?.y ?? 0}
                     onSetZero={handleSetZero}
                     onReset={handleReset}
                     onHome={handleHome}
@@ -176,10 +177,10 @@ export const StatusDisplay = () => {
                     isSending={isSending}
                     status={status}
                 />
-                <CoordRow 
-                    axis="Z" 
-                    workOffset={workPlaceCoordinateOffset?.z ?? 0} 
-                    machine={machineCoordinate?.z ?? 0} 
+                <CoordRow
+                    axis="Z"
+                    workOffset={workPlaceCoordinateOffset?.z ?? 0}
+                    machine={machineCoordinate?.z ?? 0}
                     onSetZero={handleSetZero}
                     onReset={handleReset}
                     onHome={handleHome}
@@ -223,30 +224,66 @@ export const StatusDisplay = () => {
                 </div>
             )}
             {activeModes && (
-                <div className="space-y-2 mt-4">
-                    <h3 className="text-lg font-semibold mb-2 flex items-center">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        Active Modes :
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                        <span className="px-2 py-1 text-xs bg-blue-600 text-white rounded-full">
-                            Work Coordinate System: {activeModes.WorkCoordinateSystem}
+                <div className="space-y-2">
+                    <button
+                        onClick={() => setIsActiveModesOpen(!isActiveModesOpen)}
+                        className="w-full flex items-center justify-between text-lg font-semibold mb-2 text-left hover:text-gray-300 transition-colors"
+                    >
+                        <div className="flex items-center">
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            Active Modes
+                        </div>
+                        <span className="transition-transform duration-300">
+                            {isActiveModesOpen ? (
+                                <ChevronUpIcon className="w-4 h-4" />
+                            ) : (
+                                <ChevronDownIcon className="w-4 h-4" />
+                            )}
                         </span>
-                        <span className="px-2 py-1 text-xs bg-green-600 text-white rounded-full">
-                            Arc Plane: {activeModes.Plane === Plane.XY ? 'XY Plane' : activeModes.Plane === Plane.XZ ? 'XZ Plane' : 'YZ Plane'}
-                        </span>
-                        <span className="px-2 py-1 text-xs bg-purple-600 text-white rounded-full">
-                            Units Type: {activeModes.UnitsType}
-                        </span>
-                        <span className="px-2 py-1 text-xs bg-yellow-600 text-white rounded-full">
-                            Positioning Mode: {activeModes.PositioningMode}
-                        </span>
+                    </button>
+                    <div
+                        className={`grid transition-all duration-300 ease-in-out ${
+                            isActiveModesOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                        }`}
+                    >
+                        <div className="overflow-hidden">
+                            <div className="flex flex-wrap gap-2">
+                                <span className="px-2 py-1 text-xs bg-blue-600 text-white rounded-full">
+                                    Work Coordinate System: {activeModes.WorkCoordinateSystem}
+                                </span>
+                                <span className="px-2 py-1 text-xs bg-green-600 text-white rounded-full">
+                                    Arc Plane: {activeModes.Plane === Plane.XY ? 'XY Plane' : activeModes.Plane === Plane.XZ ? 'XZ Plane' : 'YZ Plane'}
+                                </span>
+                                <span className="px-2 py-1 text-xs bg-purple-600 text-white rounded-full">
+                                    Units Type: {activeModes.UnitsType}
+                                </span>
+                                <span className="px-2 py-1 text-xs bg-yellow-600 text-white rounded-full">
+                                    Positioning Mode: {activeModes.PositioningMode}
+                                </span>
+                            </div>
+                        </div>
                     </div>
+                    {!isActiveModesOpen && (
+                        <div className="flex flex-wrap gap-2">
+                            <span className="px-2 py-1 text-xs bg-blue-600 text-white rounded-full">
+                                {activeModes.WorkCoordinateSystem}
+                            </span>
+                            <span className="px-2 py-1 text-xs bg-green-600 text-white rounded-full">
+                                {activeModes.Plane === Plane.XY ? 'XY Plane' : activeModes.Plane === Plane.XZ ? 'XZ Plane' : 'YZ Plane'}
+                            </span>
+                            <span className="px-2 py-1 text-xs bg-purple-600 text-white rounded-full">
+                                {activeModes.UnitsType}
+                            </span>
+                            <span className="px-2 py-1 text-xs bg-yellow-600 text-white rounded-full">
+                                {activeModes.PositioningMode}
+                            </span>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

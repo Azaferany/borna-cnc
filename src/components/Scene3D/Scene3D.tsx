@@ -57,8 +57,8 @@ export const Scene3D = () => {
     }, [toolPathGCodes]);
 
     return (
-        <div className="w-full h-full min-h-[370px] relative">
-            <div className="absolute top-4 left-4 z-10 bg-black/40 rounded text-white shadow-xl">
+        <div className="w-full h-full min-h-[420px] relative">
+            <div className="absolute top-16 left-4 z-10 bg-black/40 rounded text-white shadow-xl">
                 <button
                     onClick={() => setLegendOpen(!legendOpen)}
                     className="w-full px-4 py-2 text-left font-bold hover:bg-black/20 rounded flex items-center justify-between"

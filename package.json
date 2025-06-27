@@ -25,6 +25,7 @@
     "react-dom": "^19.1.0",
     "react-modal": "^3.16.3",
     "react-router": "^7.6.0",
+    "react-toastify": "^11.0.5",
     "react-use": "^17.6.0",
     "tailwindcss": "^4.1.7",
     "typescript-event-target": "^1.1.1",

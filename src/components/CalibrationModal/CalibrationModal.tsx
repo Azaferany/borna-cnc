@@ -360,7 +360,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                         <div className="grid grid-cols-1 gap-2 w-full max-w-[180px]">
                                             {renderJogButton(1, `${axis}+`)}
                                             <button
-                                                className={`p-3 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+                                                className={`p-3 rounded disabled:opacity-50 text-white disabled:cursor-not-allowed ${
                                                     status === "Jog"
                                                         ? "bg-red-500 hover:bg-red-400 active:bg-red-300"
                                                         : "bg-gray-700 hover:bg-gray-600 active:bg-gray-400"

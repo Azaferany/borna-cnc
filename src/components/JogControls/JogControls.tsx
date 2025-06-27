@@ -236,7 +236,7 @@ export const JogControls = () => {
                     <h2 className="text-xl font-bold">Jog Controls</h2>
                     {isMachineRunning && (
                         <span className="px-2 py-1 bg-red-600 rounded-md text-xs font-sm">
-                            Jogging Disabled - Machine Running
+                            Can't open while running
                         </span>
                     )}
                 </div>

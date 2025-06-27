@@ -457,7 +457,7 @@ function GrblConfigPage() {
                             )}
 
                             {/* Parameters Table */}
-                            <div className="relative">
+                            {!isLoading && (<div className="relative">
                                 <div
                                     className="bg-gray-800/50 rounded-xl shadow-lg shadow-gray-900/20 backdrop-blur-sm border border-gray-700/50">
                                     {/* Mobile View */}
@@ -620,7 +620,7 @@ function GrblConfigPage() {
                                                                     <div className="relative">
                                                                         <input
                                                                             type="text"
-                                                                            value={param.value}
+                                                                            defaultValue={param.value}
                                                                             onChange={(e) => handleInputChange(param.id, e.target.value)}
                                                                             className={`bg-gray-700/50 text-white px-3 py-2 rounded-lg border ${
                                                                                 savingParams[param.id] ? 'border-yellow-500/50' : 'border-gray-600/50'
@@ -673,7 +673,7 @@ function GrblConfigPage() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                            )}                        </div>
                     )}
                 </div>
             </div>
@@ -692,7 +692,9 @@ function GrblConfigPage() {
                     onClose={() => {
                         setCalibrationAxis(null)
                         setIsLoading(true)
-                        sendCommand("$$")
+                        setTimeout(() => {
+                            sendCommand('$$');
+                        }, 1000);
                     }}
                     axis={calibrationAxis as 'X' | 'Y' | 'Z' | 'A' | 'B' | 'C'}
                 />

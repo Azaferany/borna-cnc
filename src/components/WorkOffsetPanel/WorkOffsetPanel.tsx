@@ -1,4 +1,4 @@
-import React, { useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import { useGRBL } from "../../app/useGRBL.ts";
 import { useStore } from "../../app/store.ts";
 import type {Point3D6Axis} from "../../types/GCodeTypes.ts";
@@ -15,7 +15,11 @@ const WorkOffsetPanel: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const isMachineBusy = status !== 'Idle' || isSending;
-
+    useEffect(() => {
+        if (isMachineBusy) {
+            setIsExpanded(false);
+        }
+    }, [isMachineBusy]);
   const handleActivateOffset = (offset: string) => {
     if (isMachineBusy) return;
     sendCommand(offset);
@@ -32,11 +36,18 @@ const WorkOffsetPanel: React.FC = () => {
     setEditingOffset(null);
   };
 
+    const handleExpandToggle = () => {
+        if (isMachineBusy) return;
+        setIsExpanded(!isExpanded);
+    };
+
   return (
     <div className="bg-gray-800 rounded-lg">
       <div
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-3 flex items-center justify-between text-white hover:bg-gray-700 transition-colors duration-200"
+          onClick={handleExpandToggle}
+          className={`w-full p-3 flex items-center justify-between text-white transition-colors duration-200 ${
+              isMachineBusy ? 'cursor-not-allowed opacity-60' : 'hover:bg-gray-700 cursor-pointer'
+          }`}
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
           <h2 className="text-xl font-bold">Work Offsets</h2>
@@ -44,18 +55,33 @@ const WorkOffsetPanel: React.FC = () => {
               <span className="px-2 py-1 bg-red-600 rounded-md text-sm font-medium">
               Please connect first
             </span>
-          ) : activeModes?.WorkCoordinateSystem && (
-              <span className="px-2 py-1 bg-blue-600 rounded-md text-sm font-medium whitespace-normal break-words">
-              Active : {activeModes.WorkCoordinateSystem} X : {gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].x.toFixed(3)} Y:{gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].y.toFixed(3)} Z : {gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].z.toFixed(3)}
-            </span>
+          ) : (
+              <div className="flex flex-col sm:flex-row gap-2">
+                  {isMachineBusy && (
+                      <span className="px-2 py-1 bg-orange-600 rounded-md text-sm font-medium">
+                  Can't open while running
+                </span>
+                  )}
+                  {activeModes?.WorkCoordinateSystem && (
+                      <span
+                          className="px-2 py-1 bg-blue-600 rounded-md text-sm font-medium whitespace-normal break-words">
+                  Active : {activeModes.WorkCoordinateSystem} X : {gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].x.toFixed(3)} Y:{gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].y.toFixed(3)} Z : {gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].z.toFixed(3)}
+                </span>
+                  )}
+              </div>
           )}
         </div>
         <button
           onClick={(e) => {
             e.stopPropagation();
-            setIsExpanded(!isExpanded);
+              handleExpandToggle();
           }}
-          className="p-1 hover:bg-gray-600 rounded-md transition-colors duration-200 flex items-center gap-1"
+          disabled={isMachineBusy}
+          className={`p-1 rounded-md transition-colors duration-200 flex items-center gap-1 ${
+              isMachineBusy
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-gray-600'
+          }`}
         >
           <span className="text-sm font-medium">{isExpanded ? 'Close' : 'Open Details'}</span>
           {isExpanded ? (

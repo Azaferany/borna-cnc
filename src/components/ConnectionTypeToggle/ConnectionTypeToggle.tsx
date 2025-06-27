@@ -13,7 +13,8 @@ export const ConnectionTypeToggle: React.FC = () => {
         setConnectionType(type);
         setIsOpen(false);
     };
-
+    if (isConnected)
+        return null;
     return (
         <div className="relative">
             <button

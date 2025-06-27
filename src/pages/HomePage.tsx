@@ -5,7 +5,8 @@ import {Console} from "../components/Console/Console.tsx";
 import {Scene3D} from "../components/Scene3D/Scene3D.tsx";
 import {JogControls} from "../components/JogControls/JogControls.tsx";
 import {OverrideControls} from "../components/OverrideControls/OverrideControls.tsx";
-import { ConnectButton } from "../components/ConnectButton/ConnectButton.tsx";
+// import { ConnectButton } from "../components/ConnectButton/ConnectButton.tsx"; // Removed - using auto-connection
+import {ConnectionStatus} from "../components/ConnectionStatus/ConnectionStatus.tsx";
 import {OpenFileButton} from "../components/OpenFileButton/OpenFileButton.tsx";
 import WorkOffsetPanel from "../components/WorkOffsetPanel/WorkOffsetPanel.tsx";
 import {MessageHistoryButton} from "../components/MessageHistoryButton/MessageHistoryButton.tsx";
@@ -23,8 +24,9 @@ function HomePage() {
                     {/* Left column - 3D view */}
                     <div className="lg:col-span-9">
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+                            {/* Header as overlay */}
                             <header
-                                className="col-span-12 pb-3.5 pl-2 md:pl-7 pt-2.5 border-b border-gray-700 flex flex-col md:flex-row justify-items-start items-start md:items-center">
+                                className="col-span-12 absolute top-0 left-0 right-0 z-10 pb-3.5 pl-2 md:pl-7 pt-2.5 flex flex-col md:flex-row justify-items-start items-start md:items-center bg-gray-900/20">
                                 <div className="flex items-center justify-between w-full md:w-auto">
                                     <h1 className="text-2xl md:text-3xl font-bold flex items-center">
                                         <svg className="w-6 h-6 md:w-8 md:h-8 mr-2" fill="none" stroke="currentColor"
@@ -46,15 +48,10 @@ function HomePage() {
                                     </button>
                                 </div>
 
-                                {/* Desktop buttons */}
+                                {/* Desktop buttons - Left side */}
                                 <div className="hidden md:flex flex-wrap items-center gap-4 md:gap-4 md:ml-6">
-                                    <div className="group relative" title="Connect to your CNC machine">
-                                        <ConnectButton/>
-                                        <span
-                                            className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                            Connect to Machine
-                                        </span>
-                                    </div>
+                                    {/* Connection status display */}
+                                    <ConnectionStatus/>
                                     <div className="group relative" title="Switch between USB and Network connection">
                                         <ConnectionTypeToggle/>
                                         <span
@@ -62,20 +59,10 @@ function HomePage() {
                                             Connection Type
                                         </span>
                                     </div>
-                                    <div className="group relative" title="Load G-code file">
-                                        <OpenFileButton/>
-                                        <span
-                                            className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                            Load G-code File
-                                        </span>
-                                    </div>
-                                    <div className="group relative" title="View machine message history">
-                                        <MessageHistoryButton/>
-                                        <span
-                                            className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                            Message History
-                                        </span>
-                                    </div>
+                                </div>
+
+                                {/* Desktop buttons - Right side */}
+                                <div className="hidden md:flex items-center gap-4 md:ml-auto">
                                     <div className="group relative" title="Configure machine settings">
                                         <MachineConfigButton/>
                                         <span
@@ -89,8 +76,8 @@ function HomePage() {
                                 <div className={`md:hidden w-full mt-4 ${isMenuOpen ? 'block' : 'hidden'}`}>
                                     <div className="flex flex-col space-y-4 bg-gray-800 p-4 rounded-lg">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium">Connect to Machine</span>
-                                            <ConnectButton/>
+                                            <span className="text-sm font-medium">Connection Status</span>
+                                            <ConnectionStatus/>
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm font-medium">Connection Type</span>
@@ -110,6 +97,8 @@ function HomePage() {
                                     </div>
                                 </div>
                             </header>
+
+                            {/* Scene3D with top padding to account for header */}
                             <div className="col-span-12">
                                 <Scene3D />
                             </div>

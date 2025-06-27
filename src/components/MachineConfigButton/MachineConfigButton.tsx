@@ -15,10 +15,9 @@ export function MachineConfigButton() {
 
     return (
         <Link to={ROUTES.MACHINE_CONFIG}
-              className={`border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-gray-200 px-4 py-1.5 rounded flex items-center gap-2 ${!isConfigEnabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-gray-200 px-3 py-2 rounded flex items-center gap-2 ${!isConfigEnabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={(e) => !isConfigEnabled && e.preventDefault()}>
             <Cog6ToothIcon className="w-5 h-5"/>
-            Machine Config
         </Link>
     );
 }

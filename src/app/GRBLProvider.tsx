@@ -9,9 +9,13 @@ import {useShallowCompareEffect} from "react-use";
 import GRBLWebSocket from './GRBLWebSocket';
 import GRBLSerial from './GRBLSerial';
 import {useGRBL} from "./useGRBL.ts";
+import {useAutoConnection} from "./useAutoConnection.ts";
 
 export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const {isConnected, sendCommand} = useGRBL();
+
+    // Initialize auto-connection
+    useAutoConnection();
 
 
     const isSending = useStore(x => x.isSending);
