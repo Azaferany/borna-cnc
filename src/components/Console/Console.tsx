@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import {useGRBL} from "../../app/useGRBL.ts";
 import {useGRBLListener} from "../../app/useGRBLListener.ts";
 import {useStore} from "../../app/store.ts";
+import {useNavigate} from 'react-router';
+import {ROUTES} from '../../app/routes.ts';
 
 // GRBL error codes and their meanings
 const GRBL_ERROR_CODES: Record<number, string> = {
@@ -106,6 +108,7 @@ export const Console = () => {
     const isSending = useStore(x => x.isSending);
     const { isConnected, sendCommand } = useGRBL();
     const [history, setHistory] = useState<string[]>([]);
+    const navigate = useNavigate();
     
     // Track command history and current position
     const [commandHistory, setCommandHistory] = useState<string[]>([]);
@@ -149,6 +152,10 @@ export const Console = () => {
         }
         else if(!(line.startsWith('[') && line.endsWith(']')  && !line.startsWith('[GC:'))){
             setShowGCodeOffsetResponse(false)
+        }
+        // Filter configuration parameters like $131=305.000
+        if (line.match(/^\$\d+=[\d.-]+$/)) {
+            return;
         }
         if(line == "ok" && !ShowGCodeOk)
         {
@@ -203,6 +210,13 @@ export const Console = () => {
         e.preventDefault();
         if (command.trim()) {
             const c= command.trim();
+
+            // Navigate to config page when "$" is sent
+            if (c === "$$") {
+                navigate(ROUTES.MACHINE_CONFIG);
+                return;
+            }
+            
             if(c.includes("$") && (status != "Idle" && status !== "Alarm" ))
             {
                 setHistory(prev => [...prev, `> ${command}`]);

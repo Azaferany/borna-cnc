@@ -17,6 +17,7 @@ export interface ActiveModes {
     Plane: Plane;
     UnitsType: "Millimeters" | "Inches";
     PositioningMode: "Absolute" | "Relative";
+    SpindleDirection: "CW" | "CCW" | "OFF";
 }
 
 export interface MachineConfiguration {
@@ -141,7 +142,13 @@ export const useStore = create<CNCState>((set) => ({
         G28:{x: 0, y: 0, z: 0},
     },
     workPlaceCoordinateOffset: {x: 0, y: 0, z: 0},
-    activeModes:undefined,
+    activeModes: {
+        WorkCoordinateSystem: "G54",
+        Plane: Plane.XY,
+        UnitsType: "Millimeters",
+        PositioningMode: "Absolute",
+        SpindleDirection: "OFF"
+    },
     feedrate: 0,
     status: "NotConnected",
     spindleSpeed: 0,

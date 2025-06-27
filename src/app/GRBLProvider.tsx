@@ -237,13 +237,25 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const modesMatch = line.match(/\[GC:(.*?)\]/);
             if (modesMatch) {
                 const modes = modesMatch[1].split(' ');
+
+                // Parse spindle direction from M codes
+                let spindleDirection: "CW" | "CCW" | "OFF" = "OFF";
+                if (modes.find(m => m === 'M3')) {
+                    spindleDirection = "CW";
+                } else if (modes.find(m => m === 'M4')) {
+                    spindleDirection = "CCW";
+                } else if (modes.find(m => m === 'M5')) {
+                    spindleDirection = "OFF";
+                }
+                
                 const activeModes: ActiveModes = {
                     WorkCoordinateSystem: modes.find(m => m.startsWith('G5')) as "G54" | "G55" | "G56" | "G57" | "G58" | "G59" || "G54",
                     Plane: modes.find(m => m === 'G17') ? Plane.XY :
                         modes.find(m => m === 'G18') ? Plane.XZ :
                             modes.find(m => m === 'G19') ? Plane.YZ : Plane.XY,
                     UnitsType: modes.find(m => m === 'G21') ? "Millimeters" : "Inches",
-                    PositioningMode: modes.find(m => m === 'G90') ? "Absolute" : "Relative"
+                    PositioningMode: modes.find(m => m === 'G90') ? "Absolute" : "Relative",
+                    SpindleDirection: spindleDirection
                 };
                 updateActiveModes(activeModes);
             }

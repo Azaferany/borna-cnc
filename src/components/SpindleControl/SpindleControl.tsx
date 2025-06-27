@@ -10,15 +10,36 @@ export const SpindleControl = () => {
     const isSending = useStore(s => s.isSending);
     const spindleSpeed = useStore(s => s.spindleSpeed);
     const machineConfig = useStore(useShallow(s => s.machineConfig));
+    const activeModes = useStore(useShallow(s => s.activeModes));
 
     const [targetSpeed, setTargetSpeed] = useState(0);
     const [isSpindleOn, setIsSpindleOn] = useState(false);
+    const [spindleDirection, setSpindleDirection] = useState<'CW' | 'CCW'>('CW');
 
     // Sync with store state
     useEffect(() => {
-        setIsSpindleOn(spindleSpeed > 0);
+        // Spindle is on when GRBL reports M3 or M4 (not M5/OFF) AND speed > 0
+        const grblSpindleOn = activeModes?.SpindleDirection !== 'OFF';
+        setIsSpindleOn(grblSpindleOn && spindleSpeed > 0);
         setTargetSpeed(spindleSpeed);
-    }, [spindleSpeed, status, isSending]);
+    }, [spindleSpeed, activeModes?.SpindleDirection, status, isSending]);
+
+    // Sync spindle direction state based on conditions
+    useEffect(() => {
+        const isDisabled = !isConnected || isSending || status !== "Idle";
+        const grblSpindleOn = activeModes?.SpindleDirection !== 'OFF';
+
+        // Update direction from GRBL when disabled OR when spindle is running
+        if (isDisabled || grblSpindleOn) {
+            const grblDirection = activeModes?.SpindleDirection === 'CCW' ? 'CCW' : 'CW';
+            setSpindleDirection(grblDirection);
+        }
+        // When spindle is off and not disabled, keep user's manual selection
+    }, [isConnected, isSending, status, activeModes?.SpindleDirection]);
+
+    const getSpindleCommand = (speed: number): string => {
+        return spindleDirection === 'CW' ? `M3 S${speed}` : `M4 S${speed}`;
+    };
 
     const handleToggleSpindle = async () => {
         console.log(isSpindleOn)
@@ -32,12 +53,11 @@ export const SpindleControl = () => {
                 // Turn on spindle with current target speed (minimum from machine config if 0)
                 const minSpeed = machineConfig.spindleMinRpm > 0 ? machineConfig.spindleMinRpm : 1000;
                 const speed = targetSpeed > 0 ? targetSpeed : minSpeed;
-                await sendCommand(`M3 S${speed}`);
+                await sendCommand(getSpindleCommand(speed));
                 setTargetSpeed(speed);
 
             }
             setIsSpindleOn(prevState => !prevState);
-
         } catch (error) {
             console.error('Error toggling spindle:', error);
         }
@@ -48,9 +68,25 @@ export const SpindleControl = () => {
 
         if (isSpindleOn) {
             try {
-                await sendCommand(`M3 S${newSpeed}`);
+                await sendCommand(getSpindleCommand(newSpeed));
             } catch (error) {
                 console.error('Error changing spindle speed:', error);
+            }
+        }
+    };
+
+    const handleDirectionChange = async (newDirection: 'CW' | 'CCW') => {
+        setSpindleDirection(newDirection);
+
+        // If spindle is running, restart it with new direction
+        if (isSpindleOn && targetSpeed > 0) {
+            try {
+                await sendCommand('M5'); // Stop first
+                await new Promise(resolve => setTimeout(resolve, 100)); // Brief pause
+                const command = newDirection === 'CW' ? `M3 S${targetSpeed}` : `M4 S${targetSpeed}`;
+                await sendCommand(command);
+            } catch (error) {
+                console.error('Error changing spindle direction:', error);
             }
         }
     };
@@ -73,6 +109,56 @@ export const SpindleControl = () => {
 
     return (
         <div className="h-full bg-gray-800 rounded p-1.5 flex flex-col border border-gray-600">
+            {/* Direction control */}
+            <div className="mb-2">
+                <div className="text-gray-300 text-xs mb-1">Direction</div>
+                {isSpindleOn ? (
+                    // Show only active direction when running
+                    <div className="w-full">
+                        <button
+                            className="w-full py-1 px-2 text-xs rounded font-medium bg-blue-600 text-white"
+                            disabled={true}
+                        >
+                            {spindleDirection === 'CW' ? 'CW (M3)' : 'CCW (M4)'} - ACTIVE
+                        </button>
+                    </div>
+                ) : (
+                    // Show both direction options when stopped
+                    <div className="grid grid-cols-2 gap-1">
+                        <button
+                            className={`
+                                py-1 px-2 text-xs rounded font-medium
+                                transition-colors duration-150
+                                ${spindleDirection === 'CW'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                            }
+                                ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                            `}
+                            onClick={() => handleDirectionChange('CW')}
+                            disabled={isDisabled}
+                        >
+                            CW (M3)
+                        </button>
+                        <button
+                            className={`
+                                py-1 px-2 text-xs rounded font-medium
+                                transition-colors duration-150
+                                ${spindleDirection === 'CCW'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                            }
+                                ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                            `}
+                            onClick={() => handleDirectionChange('CCW')}
+                            disabled={isDisabled}
+                        >
+                            CCW (M4)
+                        </button>
+                    </div>
+                )}
+            </div>
+
             {/* Main control button */}
             <button
                 className={`
@@ -95,7 +181,7 @@ export const SpindleControl = () => {
                 ) : (
                     <>
                         <CogIcon className="h-4 w-4"/>
-                        START SPINDLE
+                        START SPINDLE ({spindleDirection})
                     </>
                 )}
             </button>
