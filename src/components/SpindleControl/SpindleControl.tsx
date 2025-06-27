@@ -133,7 +133,7 @@ export const SpindleControl = () => {
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
                             }
-                                ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                                ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                             `}
                             onClick={() => handleDirectionChange('CW')}
                             disabled={isDisabled}
@@ -148,7 +148,7 @@ export const SpindleControl = () => {
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
                             }
-                                ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                                ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                             `}
                             onClick={() => handleDirectionChange('CCW')}
                             disabled={isDisabled}
@@ -168,7 +168,7 @@ export const SpindleControl = () => {
                     ? 'bg-red-600 hover:bg-red-700 active:bg-red-800 text-white'
                     : 'bg-green-600 hover:bg-green-700 active:bg-green-800 text-white'
                 }
-                    ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                    ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 `}
                 onClick={handleToggleSpindle}
                 disabled={isDisabled}
@@ -232,7 +232,7 @@ export const SpindleControl = () => {
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
                             }
-                                ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                                ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                             `}
                             onClick={() => handleSpeedChange(preset)}
                             disabled={isDisabled}

@@ -64,7 +64,7 @@ const SliderControl = ({
                                 onCommit && onCommit(Math.max(min, storeValue - 10))
                                 setLocalValue(prevState => prevState - 10);
                             }}
-                            className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                             disabled={!isConnected}
                         >
                             -10%
@@ -104,7 +104,7 @@ const SliderControl = ({
                                 onCommit && onCommit(Math.max(min, storeValue + 10))
                                 setLocalValue(prevState => prevState + 10);
                             }}
-                            className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                             disabled={!isConnected}
                         >
                             +10%

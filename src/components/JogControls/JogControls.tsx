@@ -180,7 +180,7 @@ export const JogControls = () => {
         const isDisabled = !isConnected || isMachineRunning || isMachineRunning || (!continuousMode && stepSize <= 0);
         const isActive = activeButton === `${axis}${direction}`;
         const buttonClass = `p-3 px-6 rounded flex items-center justify-center transition-colors
-            ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+            ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             ${isActive
             ? 'bg-blue-600 hover:bg-blue-500 active:bg-blue-500'
             : 'bg-gray-700 hover:bg-gray-600 active:bg-gray-400'}`;
@@ -220,7 +220,7 @@ export const JogControls = () => {
         return (
             <button
                 key={`${axis1}${direction1}${axis2}${direction2}`}
-                className={`p-3 px-6 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`p-3 px-6 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                     activeButton === `${axis1}${direction1}${axis2}${direction2}`
                         ? 'bg-blue-600 hover:bg-blue-500'
                         : 'bg-gray-700 hover:bg-gray-600 active:bg-gray-400'
@@ -240,7 +240,7 @@ export const JogControls = () => {
     const renderCenterButton = () => {
         return (
             <button
-                className={`p-3 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`p-3 rounded      disabled:opacity-50 disabled:cursor-not-allowed ${
                     status === "Jog"
                         ? "bg-red-500 hover:bg-red-400 active:bg-red-300"
                         : "bg-gray-700 hover:bg-gray-600 active:bg-gray-400"
@@ -266,7 +266,7 @@ export const JogControls = () => {
             <div
                 onClick={() => !isMachineRunning && setIsExpanded(!isExpanded)}
                 className={`w-full p-3 flex items-center justify-between text-white transition-colors duration-200 ${
-                    isMachineRunning ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-700'
+                    isMachineRunning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-700'
                 }`}
             >
                 <div className="flex items-center gap-3">
@@ -290,7 +290,7 @@ export const JogControls = () => {
                         setIsExpanded(!isExpanded);
                     }}
                     className={`p-1 rounded-md transition-colors duration-200 flex items-center gap-1 ${
-                        isMachineRunning ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-600'
+                        isMachineRunning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-600'
                     }`}
                     disabled={isMachineRunning}
                 >

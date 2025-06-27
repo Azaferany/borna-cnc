@@ -32,7 +32,7 @@ export const ResetButton = () => {
         return (
             <div className="h-full">
                 <button
-                    className="w-full h-full bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-900 p-3 rounded flex flex-col items-center justify-center transition-all duration-150"
+                    className="w-full h-full bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-900 p-3 rounded flex flex-col items-center justify-center transition-all duration-150 cursor-pointer"
                     onClick={() => handleUnlock()}
                 >
                     <LockOpenIcon className="h-6 w-6"/>
@@ -50,7 +50,7 @@ export const ResetButton = () => {
                     bg-red-600 hover:bg-red-700 active:bg-red-900 
                     p-3 rounded flex flex-col items-center justify-center 
                     transition-all duration-150
-                    ${(!isConnected || status === "Door") ? 'opacity-50 cursor-not-allowed' : ''}
+                    ${(!isConnected || status === "Door") ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 `}
                 onClick={() => handleReset()}
                 disabled={!isConnected}

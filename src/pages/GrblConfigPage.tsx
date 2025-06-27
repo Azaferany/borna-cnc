@@ -1031,7 +1031,7 @@ function GrblConfigPage() {
             {/* Mobile Sidebar Toggle */}
             <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="lg:hidden fixed top-4 right-4 z-50 p-2 rounded-lg bg-gray-800/50 backdrop-blur-lg border border-gray-700/50"
+                className="lg:hidden fixed top-4 right-4 z-50 p-2 rounded-lg bg-gray-800/50 backdrop-blur-lg border border-gray-700/50 cursor-pointer"
             >
                 {isSidebarOpen ? (
                     <XMarkIcon className="w-6 h-6 text-white"/>
@@ -1052,7 +1052,7 @@ function GrblConfigPage() {
                     <div className="space-y-4">
                         <Link
                             to={ROUTES.HOME}
-                            className="flex items-center px-4 py-3 rounded-lg transition-all duration-200 text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                            className="flex items-center px-4 py-3 rounded-lg transition-all duration-200 text-gray-300 hover:bg-gray-700/50 hover:text-white cursor-pointer"
                             onClick={() => setIsSidebarOpen(false)}
                         >
                             <HomeIcon className="w-5 h-5 mr-3"/>
@@ -1072,7 +1072,7 @@ function GrblConfigPage() {
                                                 scrollToGroup(group);
                                                 setIsSidebarOpen(false);
                                             }}
-                                            className="w-full flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white rounded-lg transition-all duration-200"
+                                            className="w-full flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white rounded-lg transition-all duration-200 cursor-pointer"
                                         >
                                             {group}
                                         </button>
@@ -1092,7 +1092,7 @@ function GrblConfigPage() {
                         <div className="flex items-center space-x-15">
                             <div className="flex items-center">
                                 <Link to={ROUTES.HOME}
-                                      className="mr-4 bg-gray-700/50 hover:bg-gray-600/50 text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10">
+                                      className="mr-4 bg-gray-700/50 hover:bg-gray-600/50 text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10 cursor-pointer">
                                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                               d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -1109,7 +1109,7 @@ function GrblConfigPage() {
                                 <button
                                     onClick={handleExportConfig}
                                     disabled={!isConnected || isLoading || Object.keys(parameters).length === 0}
-                                    className="bg-green-600/50 hover:bg-green-500/50 disabled:bg-gray-600/30 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-green-500/10 disabled:hover:shadow-none"
+                                    className="bg-green-600/50 hover:bg-green-500/50 disabled:bg-gray-600/30 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-green-500/10 disabled:hover:shadow-none cursor-pointer"
                                     title="Export configuration"
                                 >
                                     <ArrowDownTrayIcon className="w-5 h-5 mr-2"/>
@@ -1188,7 +1188,7 @@ function GrblConfigPage() {
                                                      className="border-b border-gray-700/50 last:border-b-0">
                                                     <button
                                                         onClick={() => toggleGroup(group)}
-                                                        className="w-full px-4 py-3 flex items-center justify-between bg-gray-700/30 hover:bg-gray-700/50 transition-colors duration-200"
+                                                        className="w-full px-4 py-3 flex items-center justify-between bg-gray-700/30 hover:bg-gray-700/50 transition-colors duration-200 cursor-pointer"
                                                     >
                                                         <span className="text-blue-400 font-medium">{group}</span>
                                                         <svg
@@ -1235,7 +1235,7 @@ function GrblConfigPage() {
                                                                         {param.id >= 100 && param.id <= 105 && (
                                                                             <button
                                                                                 onClick={() => setCalibrationAxis(getAxisFromParamId(param.id))}
-                                                                                className="p-2 rounded-lg bg-blue-600/50 hover:bg-blue-500/50 text-white transition-all duration-200"
+                                                                                className="p-2 rounded-lg bg-blue-600/50 hover:bg-blue-500/50 text-white transition-all duration-200 cursor-pointer"
                                                                                 title="Calibrate steps/mm"
                                                                             >
                                                                                 <Cog6ToothIcon className="w-5 h-5"/>
@@ -1265,7 +1265,7 @@ function GrblConfigPage() {
                                                                             onClick={() => handleParameterChange(param.id, param.value)}
                                                                             className={`flex-1 px-4 py-2 rounded-lg transition-all duration-200 ${
                                                                                 editedValues[param.id] && !savingParams[param.id]
-                                                                                    ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20'
+                                                                                    ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20 cursor-pointer'
                                                                                     : 'bg-gray-600/50 cursor-not-allowed'
                                                                             } text-white`}
                                                                             disabled={!editedValues[param.id] || savingParams[param.id]}
@@ -1387,7 +1387,7 @@ function GrblConfigPage() {
                                                                             onClick={() => handleParameterChange(param.id, param.value)}
                                                                             className={`px-4 py-2 rounded-lg transition-all duration-200 ${
                                                                                 editedValues[param.id] && !savingParams[param.id]
-                                                                                    ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20'
+                                                                                    ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20 cursor-pointer'
                                                                                     : 'bg-gray-600/50 cursor-not-allowed'
                                                                             } text-white`}
                                                                             disabled={!editedValues[param.id] || savingParams[param.id]}
@@ -1397,7 +1397,7 @@ function GrblConfigPage() {
                                                                         {editedValues[param.id] && (
                                                                             <button
                                                                                 onClick={() => handleResetValue(param.id)}
-                                                                                className="px-3 py-2 rounded-lg bg-gray-600/50 hover:bg-gray-500/50 text-white transition-all duration-200"
+                                                                                className="px-3 py-2 rounded-lg bg-gray-600/50 hover:bg-gray-500/50 text-white transition-all duration-200 cursor-pointer"
                                                                                 title="Reset to saved value"
                                                                             >
                                                                                 ↺
@@ -1406,7 +1406,7 @@ function GrblConfigPage() {
                                                                         {param.id >= 100 && param.id <= 105 && (
                                                                             <button
                                                                                 onClick={() => setCalibrationAxis(getAxisFromParamId(param.id))}
-                                                                                className="px-4 py-2 rounded-lg bg-blue-600/50 hover:bg-blue-500/50 text-white transition-all duration-200 flex items-center space-x-2"
+                                                                                className="px-4 py-2 rounded-lg bg-blue-600/50 hover:bg-blue-500/50 text-white transition-all duration-200 flex items-center space-x-2 cursor-pointer"
                                                                                 title="Calibrate steps/mm"
                                                                             >
                                                                                 <Cog6ToothIcon className="w-5 h-5"/>

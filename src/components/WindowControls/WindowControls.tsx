@@ -27,7 +27,7 @@ export const WindowControls = () => {
             ) : (
                 <Link
                     to={ROUTES.HOME}
-                    className="p-3 hover:bg-gradient-to-br hover:from-indigo-400/30 hover:to-indigo-600/20 active:bg-gradient-to-br active:from-indigo-500/40 active:to-indigo-700/30 transition-all duration-200 group relative rounded-sm border border-transparent hover:border-indigo-400/30 active:border-indigo-500/40 shadow-sm hover:shadow-md active:shadow-lg"
+                    className="p-3 hover:bg-gradient-to-br hover:from-indigo-400/30 hover:to-indigo-600/20 active:bg-gradient-to-br active:from-indigo-500/40 active:to-indigo-700/30 transition-all duration-200 group relative rounded-sm border border-transparent hover:border-indigo-400/30 active:border-indigo-500/40 shadow-sm hover:shadow-md active:shadow-lg cursor-pointer"
                     title="Home"
                 >
                     <div
@@ -38,7 +38,7 @@ export const WindowControls = () => {
             )}
             <button
                 onClick={handleMinimize}
-                className="p-3 hover:bg-gradient-to-br hover:from-emerald-400/30 hover:to-emerald-600/20 active:bg-gradient-to-br active:from-emerald-500/40 active:to-emerald-700/30 transition-all duration-200 group relative rounded-sm border border-transparent hover:border-emerald-400/30 active:border-emerald-500/40 shadow-sm hover:shadow-md active:shadow-lg"
+                className="p-3 hover:bg-gradient-to-br hover:from-emerald-400/30 hover:to-emerald-600/20 active:bg-gradient-to-br active:from-emerald-500/40 active:to-emerald-700/30 transition-all duration-200 group relative rounded-sm border border-transparent hover:border-emerald-400/30 active:border-emerald-500/40 shadow-sm hover:shadow-md active:shadow-lg cursor-pointer"
                 title="Minimize"
             >
                 <div
@@ -54,7 +54,7 @@ export const WindowControls = () => {
             </button>
             <button
                 onClick={handleClose}
-                className="p-3 hover:bg-gradient-to-br hover:from-red-400/30 hover:to-red-600/20 active:bg-gradient-to-br active:from-red-500/40 active:to-red-700/30 transition-all duration-200 group relative rounded-sm border border-transparent hover:border-red-400/30 active:border-red-500/40 shadow-sm hover:shadow-md active:shadow-lg"
+                className="p-3 hover:bg-gradient-to-br hover:from-red-400/30 hover:to-red-600/20 active:bg-gradient-to-br active:from-red-500/40 active:to-red-700/30 transition-all duration-200 group relative rounded-sm border border-transparent hover:border-red-400/30 active:border-red-500/40 shadow-sm hover:shadow-md active:shadow-lg cursor-pointer"
                 title="Close"
             >
                 <div

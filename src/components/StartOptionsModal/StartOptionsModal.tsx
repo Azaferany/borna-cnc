@@ -170,13 +170,13 @@ export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onC
                     <div className="flex justify-end space-x-3">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors cursor-pointer"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={() => onStart(startFromLine)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center space-x-2 cursor-pointer"
                         >
                             <PlayIcon className="h-5 w-5"/>
                             <span>Start</span>

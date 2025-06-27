@@ -88,7 +88,7 @@ export const StartButton = () => {
                     bg-green-600 hover:bg-green-700 active:bg-green-900 
                     p-3 rounded flex flex-col items-center justify-center 
                     transition-all duration-150
-                    ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+                    ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                     ${isSendingRunning ? 'animate-pulse' : ''}
                 `}
                 onClick={() => !isDisabled && !isSendingRunning && setIsModalOpen(true)}

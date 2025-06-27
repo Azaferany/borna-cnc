@@ -26,7 +26,7 @@ export const MainGasButton = () => {
                     ${spindleSpeed > 0 ? 'bg-green-600 hover:bg-green-700 active:bg-green-900' : 'bg-red-600 hover:bg-red-700 active:bg-red-900'} 
                     p-3 rounded flex flex-col items-center justify-center 
                     transition-all duration-150
-                    ${(!isConnected || isSending || status != "Idle") ? 'opacity-50 cursor-not-allowed' : ''}
+                    ${(!isConnected || isSending || status != "Idle") ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 `}
                 onClick={handleClick}
                 disabled={!isConnected || isSending || status != "Idle"}

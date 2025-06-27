@@ -61,7 +61,7 @@ export const Scene3D = () => {
             <div className="absolute top-16 left-4 z-10 bg-black/40 rounded text-white shadow-xl">
                 <button
                     onClick={() => setLegendOpen(!legendOpen)}
-                    className="w-full px-4 py-2 text-left font-bold hover:bg-black/20 rounded flex items-center justify-between"
+                    className="w-full cursor-pointer px-4 py-2 text-left font-bold hover:bg-black/20 rounded flex items-center justify-between"
                 >
                     <span className={`transform mr-3 transition-transform ${!legendOpen ? 'rotate-180' : ''}`}>
                         <svg
@@ -141,7 +141,7 @@ export const Scene3D = () => {
             <div className="absolute top-4 right-4 z-10 bg-black/40 rounded text-white shadow-xl">
                 <button
                     onClick={() => setCameraControlsOpen(!cameraControlsOpen)}
-                    className="w-full px-4 py-2 text-left font-bold hover:bg-black/20 rounded flex items-center justify-between"
+                    className="w-full px-4 cursor-pointer py-2 text-left font-bold hover:bg-black/20 rounded flex items-center justify-between"
                 >
                   <span className={`transform mr-3 transition-transform ${!cameraControlsOpen ? 'rotate-180' : ''}`}>
                     <svg
@@ -162,35 +162,35 @@ export const Scene3D = () => {
                         <div className="flex flex-col gap-2 mb-3">
                             <button
                                 onClick={() => setCameraPreset("center")}
-                                className={`px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm`}
+                                className={`px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm cursor-pointer`}
                             >
                                 Go to Start
                             </button>
                             <button
                                 onClick={() => setCameraPreset('top')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
-                                className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 Top View
                             </button>
                             <button
                                 onClick={() => setCameraPreset('front')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
-                                className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 Front View
                             </button>
                             <button
                                 onClick={() => setCameraPreset('side')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
-                                className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 Side View
                             </button>
                             <button
                                 onClick={() => setCameraPreset('iso')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
-                                className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 Isometric View
                             </button>

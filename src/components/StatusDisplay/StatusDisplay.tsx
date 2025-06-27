@@ -1,6 +1,15 @@
 import { useStore } from '../../app/store';
-import { useState, memo } from 'react';
-import { ChevronUpIcon, ChevronDownIcon, HomeIcon, ArrowPathIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/solid';
+import {useState, memo, useEffect} from 'react';
+import {
+    ChevronUpIcon,
+    ChevronDownIcon,
+    HomeIcon,
+    ArrowPathIcon,
+    ArrowUturnLeftIcon,
+    XMarkIcon,
+    ArrowUturnUpIcon,
+    MapPinIcon
+} from '@heroicons/react/24/solid';
 import { useGRBL } from '../../app/useGRBL';
 import { Plane } from '../../types/GCodeTypes';
 import { UnitDisplay } from '../UnitDisplay/UnitDisplay';
@@ -34,7 +43,7 @@ const CoordRow = memo(({
         <div className="font-bold text-gray-300 flex items-center justify-center gap-1">
             <button
                 onClick={() => onHome(axis)}
-                className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 title={`Home ${axis} axis`}
                 disabled={!isConnected || isSending || status !== 'Idle'}
             >
@@ -47,22 +56,22 @@ const CoordRow = memo(({
         <div className="font-bold text-gray-300 flex gap-1">
             <button
                 onClick={() => onSetZero(axis)}
-                className={`w-full px-1 py-1 mr-1 text-[10px] bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full px-1 py-1 mr-1 text-[10px] bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 title={`Set ${axis} to zero`}
                 disabled={!isConnected || isSending || status !== 'Idle'}
             >
                 <span>Zero</span>
-                <ArrowUturnLeftIcon className="w-4 h-4 font-bold" />
+                <MapPinIcon className="w-4 h-4 font-bold"/>
 
             </button>
             <button
                 onClick={() => onReset(axis)}
-                className={`w-full px-1 py-1 mr-1 text-[10px] bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle' || g92Offset === 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full px-1 py-1 mr-1 text-[10px] bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle' || g92Offset === 0) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 title={`Reset ${axis} offset`}
                 disabled={!isConnected || isSending || status !== 'Idle' || g92Offset === 0}
             >
                 <span>Reset</span>
-                <ArrowPathIcon className="w-4 h-4 font-bold" />
+                <ArrowUturnUpIcon className="w-4 h-4 font-bold"/>
 
             </button>
         </div>
@@ -84,6 +93,9 @@ export const StatusDisplay = () => {
     const activeModes = useStore(useShallow(x => x.activeModes));
     const {sendCommand, isConnected} = useGRBL();
 
+    useEffect(() => {
+        console.log(gCodeOffsets)
+    }, [gCodeOffsets]);
     const handleSetZero = async (axis: string) => {
         try {
             await sendCommand(`G92 ${axis}0`);
@@ -97,7 +109,7 @@ export const StatusDisplay = () => {
         try {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            await sendCommand(`G92 ${axis}${gCodeOffsets.G92[axis.toLowerCase()]}`);
+            await sendCommand(`G92 ${axis}${machineCoordinate[axis.toLowerCase()] - workPlaceCoordinateOffset[axis.toLowerCase()] + gCodeOffsets.G92[axis.toLowerCase()]}`);
         } catch (error) {
             console.error('Error resetting offset:', error);
         }
@@ -123,11 +135,7 @@ export const StatusDisplay = () => {
 
     const handleResetAll = async () => {
         try {
-            const activeAxesCommands = [];
-            if (machineConfig.activeAxes.x) activeAxesCommands.push(`X${gCodeOffsets.G92.x}`);
-            if (machineConfig.activeAxes.y) activeAxesCommands.push(`Y${gCodeOffsets.G92.y}`);
-            if (machineConfig.activeAxes.z) activeAxesCommands.push(`Z${gCodeOffsets.G92.z}`);
-            await sendCommand(`G92 ${activeAxesCommands.join(' ')}`);
+            await sendCommand(`G92.1`);
         } catch (error) {
             console.error('Error resetting all offsets:', error);
         }
@@ -176,7 +184,7 @@ export const StatusDisplay = () => {
                     <button
                         onClick={() => handleHome(getActiveAxesForHome())}
                         title={`Home all active axes`}
-                        className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         disabled={!isConnected || isSending || status !== 'Idle'}
                     >
                         <HomeIcon className="w-4 h-4" />
@@ -192,20 +200,20 @@ export const StatusDisplay = () => {
                 <div className="flex items-center justify-center gap-2  ">
                     <button
                         onClick={handleSetZeroAll}
-                        className={`py-1 px-1 text-xs gap-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded-md transition-colors flex items-center justify-center ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`py-1 px-1 text-xs gap-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded-md transition-colors flex items-center justify-center ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         title="Set zero for all active axes"
                         disabled={!isConnected || isSending || status !== 'Idle'}
                     >
-                        <ArrowUturnLeftIcon className="w-3 h-3"/>
+                        <MapPinIcon className="w-3 h-3"/>
                         all
                     </button>
                     <button
                         onClick={handleResetAll}
-                        className={`py-1 px-1 text-xs gap-1 bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded-md transition-colors flex items-center justify-center ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`py-1 px-1 text-xs gap-1 bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded-md transition-colors flex items-center justify-center ${(!isConnected || isSending || status !== 'Idle' || ((gCodeOffsets?.G92?.x ?? 0) == 0 && (gCodeOffsets?.G92?.y ?? 0) == 0 && (gCodeOffsets?.G92?.z ?? 0) == 0)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         title="Reset all temporary work offsets for active axes"
-                        disabled={!isConnected || isSending || status !== 'Idle'}
+                        disabled={!isConnected || isSending || status !== 'Idle' || ((gCodeOffsets?.G92?.x ?? 0) == 0 && (gCodeOffsets?.G92?.y ?? 0) == 0 && (gCodeOffsets?.G92?.z ?? 0) == 0)}
                     >
-                        <ArrowPathIcon className="w-3 h-3"/>
+                        <ArrowUturnUpIcon className="w-3 h-3"/>
                         all
                     </button>
                 </div>

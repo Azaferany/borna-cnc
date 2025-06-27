@@ -91,7 +91,7 @@ const WorkOffsetPanel: React.FC = () => {
           className={`p-1 rounded-md transition-colors duration-200 flex items-center gap-1 ${
               isMachineBusy
                   ? 'opacity-50 cursor-not-allowed'
-                  : 'hover:bg-gray-600'
+                  : 'cursor-pointer hover:bg-gray-600'
           }`}
         >
           <span className="text-sm font-medium">{isExpanded ? 'Close' : 'Open Details'}</span>
@@ -169,13 +169,13 @@ const WorkOffsetPanel: React.FC = () => {
                                         onClick={() => {
                                           setEditingOffset(null);
                                         }}
-                                        className="flex-1 px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 active:bg-red-900 transition-colors duration-200"
+                                        className="flex-1 px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 active:bg-red-900 transition-colors duration-200 cursor-pointer"
                                     >
                                       Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        className="flex-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 active:bg-green-900 transition-colors duration-200"
+                                        className="flex-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 active:bg-green-900 transition-colors duration-200 cursor-pointer"
                                     >
                                       Save
                                     </button>
@@ -190,7 +190,7 @@ const WorkOffsetPanel: React.FC = () => {
                                         }}
                                         disabled={isMachineBusy}
                                         className={`flex-1 px-3 py-1.5 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 active:bg-red-700 transition-colors duration-200 ${
-                                            isMachineBusy ? 'opacity-50 cursor-not-allowed' : ''
+                                            isMachineBusy ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                                         }`}
                                     >
                                       Reset
@@ -204,7 +204,7 @@ const WorkOffsetPanel: React.FC = () => {
                                         }}
                                         disabled={isMachineBusy}
                                         className={`flex-1 px-3 py-1.5 bg-gray-500 text-white text-sm rounded-md hover:bg-gray-800 active:bg-gray-900 transition-colors duration-200 ${
-                                            isMachineBusy ? 'opacity-50 cursor-not-allowed' : ''
+                                            isMachineBusy ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                                         }`}
                                     >
                                       Edit
@@ -217,7 +217,7 @@ const WorkOffsetPanel: React.FC = () => {
                                   onClick={() => handleActivateOffset(offset)}
                                   disabled={isMachineBusy}
                                   className={`flex-1 px-3 py-1.5 text-white text-sm rounded-md transition-colors duration-200 bg-blue-600 hover:bg-blue-700 active:bg-blue-900 ${
-                                      isMachineBusy ? 'opacity-50 cursor-not-allowed' : ''
+                                      isMachineBusy ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                                   }`}
                               >
                                 Activate

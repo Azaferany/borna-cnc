@@ -23,7 +23,7 @@ export const PauseButton = () => {
                     bg-orange-600 hover:bg-orange-700 active:bg-orange-900 
                     p-3 rounded flex flex-col items-center justify-center 
                     transition-all duration-150
-                    ${(!isConnected || status === "Door") ? 'opacity-50 cursor-not-allowed' : ''}
+                    ${(!isConnected || status === "Door") ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 `}
                 onClick={() => {
                     const command = status === "Hold" ? '~' : '!'; // '~' for cycle start, '!' for feed hold

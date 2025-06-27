@@ -274,7 +274,7 @@ export const Console = () => {
                 </h2>
                 <button
                     onClick={clearHistory}
-                    className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 rounded active:bg-red-800"
+                    className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 rounded active:bg-red-800 cursor-pointer"
                 >
                     Clear
                 </button>
@@ -335,7 +335,7 @@ export const Console = () => {
                     />
                     <button
                         type="submit"
-                        className={`w-full sm:w-auto px-4 py-2 active:bg-blue-900 rounded ${isConnected ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-600/50 cursor-not-allowed'}`}
+                        className={`w-full sm:w-auto px-4 py-2 active:bg-blue-900 rounded ${isConnected ? 'bg-blue-600 hover:bg-blue-700 cursor-pointer' : 'bg-blue-600/50 cursor-not-allowed'}`}
                         disabled={!isConnected}
                     >
                         Send

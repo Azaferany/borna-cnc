@@ -275,7 +275,7 @@ export const GCodeEditor = () => {
             <OpenFileButton />
             <button
                 onClick={handleSave}
-                className="bg-green-600 hover:bg-green-700 active:bg-green-900 px-4 py-1.5 rounded"
+                className="bg-green-600 hover:bg-green-700 active:bg-green-900 px-4 py-1.5 cursor-pointer rounded"
             >
               Save File
             </button>
@@ -284,7 +284,7 @@ export const GCodeEditor = () => {
         <div className="relative flex-1 min-h-70 w-full">
           <button
               onClick={handleFind}
-              className="absolute top-2 right-4 z-20 bg-gray-700 hover:bg-gray-600 active:bg-gray-800 px-1.5 py-1.5 rounded"
+              className="absolute top-2 cursor-pointer right-4 z-20 bg-gray-700 hover:bg-gray-600 active:bg-gray-800 px-1.5 py-1.5 rounded"
               disabled={isSending}
               title="Find (Ctrl+F)"
           >
