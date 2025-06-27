@@ -1,12 +1,9 @@
 import { useStore } from '../../app/store';
-import {useState, memo, useEffect} from 'react';
+import {useState, memo} from 'react';
 import {
     ChevronUpIcon,
     ChevronDownIcon,
     HomeIcon,
-    ArrowPathIcon,
-    ArrowUturnLeftIcon,
-    XMarkIcon,
     ArrowUturnUpIcon,
     MapPinIcon
 } from '@heroicons/react/24/solid';
@@ -46,6 +43,7 @@ const CoordRow = memo(({
                 className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 title={`Home ${axis} axis`}
                 disabled={!isConnected || isSending || status !== 'Idle'}
+                data-tour="home-buttons"
             >
                 <HomeIcon className="w-4 h-4 font-bold" />
             </button>
@@ -59,6 +57,7 @@ const CoordRow = memo(({
                 className={`w-full px-1 py-1 mr-1 text-[10px] bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 title={`Set ${axis} to zero`}
                 disabled={!isConnected || isSending || status !== 'Idle'}
+                data-tour="zero-buttons"
             >
                 <span>Zero</span>
                 <MapPinIcon className="w-4 h-4 font-bold"/>
@@ -69,6 +68,7 @@ const CoordRow = memo(({
                 className={`w-full px-1 py-1 mr-1 text-[10px] bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle' || g92Offset === 0) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 title={`Reset ${axis} offset`}
                 disabled={!isConnected || isSending || status !== 'Idle' || g92Offset === 0}
+                data-tour="reset-buttons"
             >
                 <span>Reset</span>
                 <ArrowUturnUpIcon className="w-4 h-4 font-bold"/>
@@ -93,9 +93,6 @@ export const StatusDisplay = () => {
     const activeModes = useStore(useShallow(x => x.activeModes));
     const {sendCommand, isConnected} = useGRBL();
 
-    useEffect(() => {
-        console.log(gCodeOffsets)
-    }, [gCodeOffsets]);
     const handleSetZero = async (axis: string) => {
         try {
             await sendCommand(`G92 ${axis}0`);
@@ -186,15 +183,18 @@ export const StatusDisplay = () => {
                         title={`Home all active axes`}
                         className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         disabled={!isConnected || isSending || status !== 'Idle'}
+                        data-tour="home-buttons"
                     >
                         <HomeIcon className="w-4 h-4" />
                     </button>
                     Axis
                 </div>
-                <div className="text-blue-400 text-xs flex items-center justify-center">
+                <div className="text-blue-400 text-xs flex items-center justify-center"
+                     data-tour="relative-coordinates">
                     Relative (<UnitDisplay/>)
                 </div>
-                <div className="text-green-400 text-xs flex items-center justify-center">
+                <div className="text-green-400 text-xs flex items-center justify-center"
+                     data-tour="absolute-coordinates">
                     Absolute (<UnitDisplay/>)
                 </div>
                 <div className="flex items-center justify-center gap-2  ">
@@ -203,6 +203,7 @@ export const StatusDisplay = () => {
                         className={`py-1 px-1 text-xs gap-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded-md transition-colors flex items-center justify-center ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         title="Set zero for all active axes"
                         disabled={!isConnected || isSending || status !== 'Idle'}
+                        data-tour="zero-buttons"
                     >
                         <MapPinIcon className="w-3 h-3"/>
                         all
@@ -212,6 +213,7 @@ export const StatusDisplay = () => {
                         className={`py-1 px-1 text-xs gap-1 bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded-md transition-colors flex items-center justify-center ${(!isConnected || isSending || status !== 'Idle' || ((gCodeOffsets?.G92?.x ?? 0) == 0 && (gCodeOffsets?.G92?.y ?? 0) == 0 && (gCodeOffsets?.G92?.z ?? 0) == 0)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         title="Reset all temporary work offsets for active axes"
                         disabled={!isConnected || isSending || status !== 'Idle' || ((gCodeOffsets?.G92?.x ?? 0) == 0 && (gCodeOffsets?.G92?.y ?? 0) == 0 && (gCodeOffsets?.G92?.z ?? 0) == 0)}
+                        data-tour="reset-buttons"
                     >
                         <ArrowUturnUpIcon className="w-3 h-3"/>
                         all

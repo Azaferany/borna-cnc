@@ -363,6 +363,7 @@ export const JogControls = () => {
                                     id="continuous-mode"
                                     disabled={isMachineRunning}
                                     title="Toggle between step-by-step and continuous jogging modes"
+                                    data-tour="continuous-mode"
                                 />
                                 <label htmlFor="continuous-mode" className="text-sm font-medium cursor-pointer">
                                     Continuous Mode
@@ -382,6 +383,7 @@ export const JogControls = () => {
                                     id="keyboard-mode"
                                     disabled={isMachineRunning}
                                     title="Enable keyboard controls (Arrow keys for X/Y, Page Up/Down for Z, Shift + arrows for diagonal)"
+                                    data-tour="keyboard-mode"
                                 />
                                 <label htmlFor="keyboard-mode" className="text-sm font-medium cursor-pointer">
                                     Keyboard Mode

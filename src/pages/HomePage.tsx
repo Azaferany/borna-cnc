@@ -52,8 +52,11 @@ function HomePage() {
                                 {/* Desktop buttons - Left side */}
                                 <div className="hidden md:flex flex-wrap items-center gap-4 md:gap-4 md:ml-6">
                                     {/* Connection status display */}
-                                    <ConnectionStatus/>
-                                    <div className="group relative" title="Switch between USB and Network connection">
+                                    <div data-tour="connection-status">
+                                        <ConnectionStatus/>
+                                    </div>
+                                    <div className="group relative" title="Switch between USB and Network connection"
+                                         data-tour="connection-type">
                                         <ConnectionTypeToggle/>
                                         <span
                                             className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
@@ -88,13 +91,13 @@ function HomePage() {
                             </header>
 
                             {/* Scene3D with top padding to account for header */}
-                            <div className="col-span-12">
+                            <div className="col-span-12" data-tour="scene-3d">
                                 <Scene3D />
                             </div>
-                            <div className="col-span-12 md:col-span-4">
+                            <div className="col-span-12 md:col-span-4" data-tour="gcode-editor">
                                 <GCodeEditor />
                             </div>
-                            <div className="col-span-12 md:col-span-4">
+                            <div className="col-span-12 md:col-span-4" data-tour="control-buttons">
                                 <ControlButtons />
                             </div>
                             <div className="col-span-12 md:col-span-4">
@@ -108,9 +111,15 @@ function HomePage() {
 
                     {/* Right column - Controls */}
                     <div className="lg:col-span-3 space-y-1.5 pt-1.5">
-                        <StatusDisplay />
-                        <JogControls />
-                        <Console />
+                        <div data-tour="status-display">
+                            <StatusDisplay/>
+                        </div>
+                        <div data-tour="jog-controls">
+                            <JogControls/>
+                        </div>
+                        <div data-tour="console">
+                            <Console/>
+                        </div>
                     </div>
                 </div>
             </div>

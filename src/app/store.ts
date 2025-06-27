@@ -37,6 +37,13 @@ export interface DwellInfo {
     RemainingSeconds:number,
     TotalSeconds:number
 }
+
+export interface TourState {
+    isFirstTime: boolean;
+    isTourOpen: boolean;
+    hasCompletedTour: boolean;
+}
+
 interface CNCState {
     isConnected: boolean;
     setIsConnected: (isConnected: boolean) => void;
@@ -48,6 +55,12 @@ interface CNCState {
 
     machineConfig: MachineConfiguration;
     updateMachineConfig: (config: Partial<MachineConfiguration>) => void;
+
+    // Tour state
+    tourState: TourState;
+    setTourOpen: (isOpen: boolean) => void;
+    markTourCompleted: () => void;
+    resetTourState: () => void;
 
     isSending: boolean;
     bufferType?: BufferType,
@@ -186,4 +199,36 @@ export const useStore = create<CNCState>((set) => ({
     updateActiveModes: (activeModes) => set({ activeModes }),
     updateDwell: (dwell) => set({ dwell }),
     updateDwellWithPerv: (fn) => set(({dwell}) => ({dwell: fn(dwell)})),
+
+    // Tour state initialization
+    tourState: {
+        isFirstTime: !localStorage.getItem('tour-completed'),
+        isTourOpen: false,
+        hasCompletedTour: !!localStorage.getItem('tour-completed'),
+    },
+    setTourOpen: (isOpen: boolean) => set((state) => ({
+        tourState: {...state.tourState, isTourOpen: isOpen}
+    })),
+    markTourCompleted: () => {
+        localStorage.setItem('tour-completed', 'true');
+        set((state) => ({
+            tourState: {
+                ...state.tourState,
+
+                hasCompletedTour: true,
+                isFirstTime: false,
+                isTourOpen: false
+            }
+        }));
+    },
+    resetTourState: () => {
+        localStorage.removeItem('tour-completed');
+        set(() => ({
+            tourState: {
+                isFirstTime: true,
+                isTourOpen: false,
+                hasCompletedTour: false
+            }
+        }));
+    },
 }))
