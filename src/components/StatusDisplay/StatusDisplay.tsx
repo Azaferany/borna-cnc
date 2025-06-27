@@ -74,6 +74,7 @@ export const StatusDisplay = () => {
     const [isActiveModesOpen, setIsActiveModesOpen] = useState(false);
     const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
     const workPlaceCoordinateOffset = useStore(useShallow(x => x.workPlaceCoordinateOffset));
+    const machineConfig = useStore(useShallow(x => x.machineConfig));
     const status = useStore(x => x.status);
     const isSending = useStore(x => x.isSending);
     const lastSentLine = useStore(x => x.lastSentLine);
@@ -112,7 +113,8 @@ export const StatusDisplay = () => {
 
     const handleSetZeroAll = async () => {
         try {
-            await sendCommand('G92 X0 Y0 Z0');
+            const activeAxesStr = getActiveAxesString();
+            await sendCommand(`G92 ${activeAxesStr}`);
             await sendCommand('$#');
         } catch (error) {
             console.error('Error setting zero for all axes:', error);
@@ -121,12 +123,30 @@ export const StatusDisplay = () => {
 
     const handleResetAll = async () => {
         try {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            await sendCommand(`G92 X${gCodeOffsets.G92.x} Y${gCodeOffsets.G92.y} Z${gCodeOffsets.G92.z}`);
+            const activeAxesCommands = [];
+            if (machineConfig.activeAxes.x) activeAxesCommands.push(`X${gCodeOffsets.G92.x}`);
+            if (machineConfig.activeAxes.y) activeAxesCommands.push(`Y${gCodeOffsets.G92.y}`);
+            if (machineConfig.activeAxes.z) activeAxesCommands.push(`Z${gCodeOffsets.G92.z}`);
+            await sendCommand(`G92 ${activeAxesCommands.join(' ')}`);
         } catch (error) {
             console.error('Error resetting all offsets:', error);
         }
+    };
+
+    const getActiveAxesString = () => {
+        const axesCommands = [];
+        if (machineConfig.activeAxes.x) axesCommands.push('X0');
+        if (machineConfig.activeAxes.y) axesCommands.push('Y0');
+        if (machineConfig.activeAxes.z) axesCommands.push('Z0');
+        return axesCommands.join(' ');
+    };
+
+    const getActiveAxesForHome = () => {
+        const activeAxes = [];
+        if (machineConfig.activeAxes.x) activeAxes.push('X');
+        if (machineConfig.activeAxes.y) activeAxes.push('Y');
+        if (machineConfig.activeAxes.z) activeAxes.push('Z');
+        return activeAxes.join('');
     };
 
     const InfoRow = ({ label, value }: { label: string; value: string | number }) => (
@@ -154,8 +174,8 @@ export const StatusDisplay = () => {
             <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-1 mb-2 text-sm font-medium">
                 <div className="flex items-center justify-center gap-1">
                     <button
-                        onClick={() => handleHome('XYZ')}
-                        title={`Home all axis`}
+                        onClick={() => handleHome(getActiveAxesForHome())}
+                        title={`Home all active axes`}
                         className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
                         disabled={!isConnected || isSending || status !== 'Idle'}
                     >
@@ -173,7 +193,7 @@ export const StatusDisplay = () => {
                     <button
                         onClick={handleSetZeroAll}
                         className={`py-1 px-1 text-xs gap-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded-md transition-colors flex items-center justify-center ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        title="Set zero for all axes"
+                        title="Set zero for all active axes"
                         disabled={!isConnected || isSending || status !== 'Idle'}
                     >
                         <ArrowUturnLeftIcon className="w-3 h-3"/>
@@ -182,7 +202,7 @@ export const StatusDisplay = () => {
                     <button
                         onClick={handleResetAll}
                         className={`py-1 px-1 text-xs gap-1 bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded-md transition-colors flex items-center justify-center ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        title="Reset all temporary work offsets"
+                        title="Reset all temporary work offsets for active axes"
                         disabled={!isConnected || isSending || status !== 'Idle'}
                     >
                         <ArrowPathIcon className="w-3 h-3"/>
@@ -191,42 +211,48 @@ export const StatusDisplay = () => {
                 </div>
             </div>
             <div className="space-y-0">
-                <CoordRow
-                    axis="X"
-                    workOffset={workPlaceCoordinateOffset?.x ?? 0}
-                    machine={machineCoordinate?.x ?? 0}
-                    onSetZero={handleSetZero}
-                    onReset={handleReset}
-                    onHome={handleHome}
-                    isConnected={isConnected}
-                    g92Offset={gCodeOffsets.G92.x}
-                    isSending={isSending}
-                    status={status}
-                />
-                <CoordRow
-                    axis="Y"
-                    workOffset={workPlaceCoordinateOffset?.y ?? 0}
-                    machine={machineCoordinate?.y ?? 0}
-                    onSetZero={handleSetZero}
-                    onReset={handleReset}
-                    onHome={handleHome}
-                    isConnected={isConnected}
-                    g92Offset={gCodeOffsets.G92.y}
-                    isSending={isSending}
-                    status={status}
-                />
-                <CoordRow
-                    axis="Z"
-                    workOffset={workPlaceCoordinateOffset?.z ?? 0}
-                    machine={machineCoordinate?.z ?? 0}
-                    onSetZero={handleSetZero}
-                    onReset={handleReset}
-                    onHome={handleHome}
-                    isConnected={isConnected}
-                    g92Offset={gCodeOffsets.G92.z}
-                    isSending={isSending}
-                    status={status}
-                />
+                {machineConfig.activeAxes.x && (
+                    <CoordRow
+                        axis="X"
+                        workOffset={workPlaceCoordinateOffset?.x ?? 0}
+                        machine={machineCoordinate?.x ?? 0}
+                        onSetZero={handleSetZero}
+                        onReset={handleReset}
+                        onHome={handleHome}
+                        isConnected={isConnected}
+                        g92Offset={gCodeOffsets.G92.x}
+                        isSending={isSending}
+                        status={status}
+                    />
+                )}
+                {machineConfig.activeAxes.y && (
+                    <CoordRow
+                        axis="Y"
+                        workOffset={workPlaceCoordinateOffset?.y ?? 0}
+                        machine={machineCoordinate?.y ?? 0}
+                        onSetZero={handleSetZero}
+                        onReset={handleReset}
+                        onHome={handleHome}
+                        isConnected={isConnected}
+                        g92Offset={gCodeOffsets.G92.y}
+                        isSending={isSending}
+                        status={status}
+                    />
+                )}
+                {machineConfig.activeAxes.z && (
+                    <CoordRow
+                        axis="Z"
+                        workOffset={workPlaceCoordinateOffset?.z ?? 0}
+                        machine={machineCoordinate?.z ?? 0}
+                        onSetZero={handleSetZero}
+                        onReset={handleReset}
+                        onHome={handleHome}
+                        isConnected={isConnected}
+                        g92Offset={gCodeOffsets.G92.z}
+                        isSending={isSending}
+                        status={status}
+                    />
+                )}
             </div>
 
             {(isSending || status == "Run") && (

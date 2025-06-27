@@ -9,6 +9,7 @@ const WorkOffsetPanel: React.FC = () => {
   const gCodeOffsets = useStore(useShallow(state => state.gCodeOffsets));
   const updateGCodeOffsets = useStore(state => state.updateGCodeOffsets);
   const activeModes = useStore(useShallow(state => state.activeModes));
+    const machineConfig = useStore(useShallow(state => state.machineConfig));
   const status = useStore(state => state.status);
   const isSending = useStore(state => state.isSending);
   const [editingOffset, setEditingOffset] = useState<string | null>(null);
@@ -27,7 +28,14 @@ const WorkOffsetPanel: React.FC = () => {
 
   const handleSubmit = (point : Point3D6Axis, offset: string) => {
     if (isMachineBusy) return;
-    const command = `G10 L2 P${+offset.slice(1)-53} X${point.x} Y${point.y} Z${point.z}`;
+
+      // Build command only for active axes
+      const commands = [];
+      if (machineConfig.activeAxes.x) commands.push(`X${point.x}`);
+      if (machineConfig.activeAxes.y) commands.push(`Y${point.y}`);
+      if (machineConfig.activeAxes.z) commands.push(`Z${point.z}`);
+
+      const command = `G10 L2 P${+offset.slice(1) - 53} ${commands.join(' ')}`;
     sendCommand(command);
     updateGCodeOffsets(perv => ({
       ...perv,
@@ -65,7 +73,10 @@ const WorkOffsetPanel: React.FC = () => {
                   {activeModes?.WorkCoordinateSystem && (
                       <span
                           className="px-2 py-1 bg-blue-600 rounded-md text-sm font-medium whitespace-normal break-words">
-                  Active : {activeModes.WorkCoordinateSystem} X : {gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].x.toFixed(3)} Y:{gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].y.toFixed(3)} Z : {gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].z.toFixed(3)}
+                  Active : {activeModes.WorkCoordinateSystem}
+                          {machineConfig.activeAxes.x && ` X:${gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].x.toFixed(3)}`}
+                          {machineConfig.activeAxes.y && ` Y:${gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].y.toFixed(3)}`}
+                          {machineConfig.activeAxes.z && ` Z:${gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].z.toFixed(3)}`}
                 </span>
                   )}
               </div>
@@ -215,45 +226,54 @@ const WorkOffsetPanel: React.FC = () => {
                           </div>
 
                           <div className="space-y-1.5">
-                            <div className="flex items-center gap-2">
-                              <label className="w-8 text-gray-300 font-medium" htmlFor={`x-${offset}`}>X:</label>
-                              <input name={"x"} id={`x-${offset}`}
-                                     type="number"
-                                     value={editingOffset !== offset ? values.x : undefined}
-                                     className={`w-full px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                         editingOffset !== offset ? 'opacity-50 cursor-not-allowed' : ''
-                                     }`}
-                                     placeholder="0.000"
-                                     step="0.001"
-                                     disabled={editingOffset !== offset}
-                              />
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <label className="w-8 text-gray-300 font-medium" htmlFor={`y-${offset}`}>Y:</label>
-                              <input name={"y"} id={`y-${offset}`}
-                                     type="number"
-                                     value={editingOffset !== offset ? values.y : undefined}
-                                     className={`w-full px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                         editingOffset !== offset ? 'opacity-50 cursor-not-allowed' : ''
-                                     }`}
-                                     placeholder="0.000"
-                                     step="0.001"
-                                     disabled={editingOffset !== offset}
-                              />
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <label className="w-8 text-gray-300 font-medium" htmlFor={`z-${offset}`}>Z:</label>
-                              <input name={"z"} id={`z-${offset}`}
-                                     type="number"
-                                     value={editingOffset !== offset ? values.z : undefined}
-                                     className={`w-full px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                         editingOffset !== offset ? 'opacity-50 cursor-not-allowed' : ''
-                                     }`}
-                                     placeholder="0.000"
-                                     step="0.001"
-                                     disabled={editingOffset !== offset}
-                              />
-                            </div>
+                              {machineConfig.activeAxes.x && (
+                                  <div className="flex items-center gap-2">
+                                      <label className="w-8 text-gray-300 font-medium"
+                                             htmlFor={`x-${offset}`}>X:</label>
+                                      <input name={"x"} id={`x-${offset}`}
+                                             type="number"
+                                             value={editingOffset !== offset ? values.x : undefined}
+                                             className={`w-full px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                 editingOffset !== offset ? 'opacity-50 cursor-not-allowed' : ''
+                                             }`}
+                                             placeholder="0.000"
+                                             step="0.001"
+                                             disabled={editingOffset !== offset}
+                                      />
+                                  </div>
+                              )}
+                              {machineConfig.activeAxes.y && (
+                                  <div className="flex items-center gap-2">
+                                      <label className="w-8 text-gray-300 font-medium"
+                                             htmlFor={`y-${offset}`}>Y:</label>
+                                      <input name={"y"} id={`y-${offset}`}
+                                             type="number"
+                                             value={editingOffset !== offset ? values.y : undefined}
+                                             className={`w-full px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                 editingOffset !== offset ? 'opacity-50 cursor-not-allowed' : ''
+                                             }`}
+                                             placeholder="0.000"
+                                             step="0.001"
+                                             disabled={editingOffset !== offset}
+                                      />
+                                  </div>
+                              )}
+                              {machineConfig.activeAxes.z && (
+                                  <div className="flex items-center gap-2">
+                                      <label className="w-8 text-gray-300 font-medium"
+                                             htmlFor={`z-${offset}`}>Z:</label>
+                                      <input name={"z"} id={`z-${offset}`}
+                                             type="number"
+                                             value={editingOffset !== offset ? values.z : undefined}
+                                             className={`w-full px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                                 editingOffset !== offset ? 'opacity-50 cursor-not-allowed' : ''
+                                             }`}
+                                             placeholder="0.000"
+                                             step="0.001"
+                                             disabled={editingOffset !== offset}
+                                      />
+                                  </div>
+                              )}
                           </div>
                         </form>
                     ))}

@@ -16,6 +16,7 @@ export const JogControls = () => {
     const status = useStore(state => state.status);
     const isSending = useStore(state => state.isSending);
     const machineCoordinate = useStore(useShallow(state => state.machineCoordinate));
+    const machineConfig = useStore(useShallow(state => state.machineConfig));
     const isMachineRunning = status === "Run" || status === "Hold" || isSending;
 
     useEffect(() => {
@@ -111,38 +112,42 @@ export const JogControls = () => {
 
             switch (e.key) {
                 case 'ArrowUp':
-                    if (isShiftPressed) {
+                    if (isShiftPressed && machineConfig.activeAxes.x && machineConfig.activeAxes.y) {
                         handleDiagonalJogStart('X', 1, 'Y', 1);
-                    } else {
+                    } else if (machineConfig.activeAxes.y) {
                         handleJogStart('Y', 1);
                     }
                     break;
                 case 'ArrowDown':
-                    if (isShiftPressed) {
+                    if (isShiftPressed && machineConfig.activeAxes.x && machineConfig.activeAxes.y) {
                         handleDiagonalJogStart('X', -1, 'Y', -1);
-                    } else {
+                    } else if (machineConfig.activeAxes.y) {
                         handleJogStart('Y', -1);
                     }
                     break;
                 case 'ArrowLeft':
-                    if (isShiftPressed) {
+                    if (isShiftPressed && machineConfig.activeAxes.x && machineConfig.activeAxes.y) {
                         handleDiagonalJogStart('X', -1, 'Y', 1);
-                    } else {
+                    } else if (machineConfig.activeAxes.x) {
                         handleJogStart('X', -1);
                     }
                     break;
                 case 'ArrowRight':
-                    if (isShiftPressed) {
+                    if (isShiftPressed && machineConfig.activeAxes.x && machineConfig.activeAxes.y) {
                         handleDiagonalJogStart('X', 1, 'Y', -1);
-                    } else {
+                    } else if (machineConfig.activeAxes.x) {
                         handleJogStart('X', 1);
                     }
                     break;
                 case 'PageUp':
-                    handleJogStart('Z', 1);
+                    if (machineConfig.activeAxes.z) {
+                        handleJogStart('Z', 1);
+                    }
                     break;
                 case 'PageDown':
-                    handleJogStart('Z', -1);
+                    if (machineConfig.activeAxes.z) {
+                        handleJogStart('Z', -1);
+                    }
                     break;
             }
         };
@@ -162,7 +167,7 @@ export const JogControls = () => {
             window.removeEventListener('keydown', handleKeyDown, true);
             window.removeEventListener('keyup', handleKeyUp);
         };
-    }, [keyboardMode, isConnected, isMachineRunning, continuousMode, stepSize, feedrate, handleJogStart, handleDiagonalJogStart, handleJogEnd, isExpanded]);
+    }, [keyboardMode, isConnected, isMachineRunning, continuousMode, stepSize, feedrate, handleJogStart, handleDiagonalJogStart, handleJogEnd, isExpanded, machineConfig.activeAxes]);
 
     useEffect(() => {
         if (activeButton || !keyboardMode) return;
@@ -203,22 +208,58 @@ export const JogControls = () => {
         );
     };
 
-    const renderDiagonalJogButton = (axis1: string, direction1: number, axis2: string, direction2: number, label: string) => (
-        <button 
-            className={`p-3 px-6 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
-                activeButton === `${axis1}${direction1}${axis2}${direction2}` 
-                    ? 'bg-blue-600 hover:bg-blue-500' 
-                    : 'bg-gray-700 hover:bg-gray-600 active:bg-gray-400'
-            }`}
-            onClick={() => handleDiagonalClick(axis1, direction1, axis2, direction2)}
-            onMouseDown={() => handleDiagonalJogStart(axis1, direction1, axis2, direction2)}
-            onMouseUp={handleJogEnd}
-            onMouseLeave={handleJogEnd}
-            disabled={!isConnected || isMachineRunning}
-        >
-            {label}
-        </button>
-    );
+    const renderDiagonalJogButton = (axis1: string, direction1: number, axis2: string, direction2: number, label: string) => {
+        // Only show diagonal buttons if both axes are active
+        const axis1Active = (axis1 === 'X' && machineConfig.activeAxes.x) || (axis1 === 'Y' && machineConfig.activeAxes.y);
+        const axis2Active = (axis2 === 'X' && machineConfig.activeAxes.x) || (axis2 === 'Y' && machineConfig.activeAxes.y);
+
+        if (!axis1Active || !axis2Active) {
+            return <div key={`${axis1}${direction1}${axis2}${direction2}`} className="p-3 px-6"></div>; // Empty space placeholder
+        }
+
+        return (
+            <button
+                key={`${axis1}${direction1}${axis2}${direction2}`}
+                className={`p-3 px-6 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+                    activeButton === `${axis1}${direction1}${axis2}${direction2}`
+                        ? 'bg-blue-600 hover:bg-blue-500'
+                        : 'bg-gray-700 hover:bg-gray-600 active:bg-gray-400'
+                }`}
+                onClick={() => handleDiagonalClick(axis1, direction1, axis2, direction2)}
+                onMouseDown={() => handleDiagonalJogStart(axis1, direction1, axis2, direction2)}
+                onMouseUp={handleJogEnd}
+                onMouseLeave={handleJogEnd}
+                disabled={!isConnected || isMachineRunning}
+            >
+                {label}
+            </button>
+        );
+    };
+
+    // Render center button or empty space
+    const renderCenterButton = () => {
+        return (
+            <button
+                className={`p-3 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+                    status === "Jog"
+                        ? "bg-red-500 hover:bg-red-400 active:bg-red-300"
+                        : "bg-gray-700 hover:bg-gray-600 active:bg-gray-400"
+                }`}
+                onClick={() => {
+                    if (status === "Jog")
+                        stopJog()
+                    else {
+                        setContinuousMode(!continuousMode)
+                        if (continuousMode)
+                            setKeyboardMode(!continuousMode)
+                    }
+                }}
+                disabled={!isConnected || isMachineRunning}
+            >
+                {status === "Jog" ? "✋" : (continuousMode ? "___" : ". . . ")}
+            </button>
+        );
+    };
 
     return (
         <div className={`bg-gray-800 rounded-lg ${keyboardMode ? 'ring-2 ring-yellow-500 ring-opacity-50' : ''}`}>
@@ -353,9 +394,11 @@ export const JogControls = () => {
                                 className={`mb-4 p-3 bg-gray-700 rounded text-sm ${keyboardMode ? 'ring-2 ring-yellow-500 ring-opacity-50' : ''}`}>
                                 <h3 className="font-medium mb-2">Keyboard Controls:</h3>
                                 <ul className="list-disc list-inside space-y-1">
-                                    <li>Arrow Keys: Move X/Y axes</li>
-                                    <li>Page Up/Down: Move Z axis</li>
-                                    <li>Shift + Arrows: Diagonal movement</li>
+                                    {(machineConfig.activeAxes.x || machineConfig.activeAxes.y) && <li>Arrow Keys:
+                                        Move {machineConfig.activeAxes.x && machineConfig.activeAxes.y ? 'X/Y' : machineConfig.activeAxes.x ? 'X' : 'Y'} axis</li>}
+                                    {machineConfig.activeAxes.z && <li>Page Up/Down: Move Z axis</li>}
+                                    {machineConfig.activeAxes.x && machineConfig.activeAxes.y &&
+                                        <li>Shift + Arrows: Diagonal movement</li>}
                                 </ul>
                             </div>
                         )}
@@ -363,40 +406,28 @@ export const JogControls = () => {
                         <div className="flex gap-4 justify-center">
                             <div className="grid grid-cols-3 gap-2">
                                 {renderDiagonalJogButton('X', -1, 'Y', 1, '↖️')}
-                                {renderJogButton('Y', 1, 'Y+')}
+                                {machineConfig.activeAxes.y ? renderJogButton('Y', 1, 'Y+') :
+                                    <div className="p-3 px-6"></div>}
                                 {renderDiagonalJogButton('X', 1, 'Y', 1, '↗️')}
-                                
-                                {renderJogButton('X', -1, 'X-')}
-                                <button
-                                    className={`p-3 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
-                                        status === "Jog"
-                                            ? "bg-red-500 hover:bg-red-400 active:bg-red-300"
-                                            : "bg-gray-700 hover:bg-gray-600 active:bg-gray-400"
-                                    }`}
-                                    onClick={() => {
-                                        if (status === "Jog")
-                                            stopJog()
-                                        else {
-                                            setContinuousMode(!continuousMode)
-                                            if (continuousMode)
-                                                setKeyboardMode(!continuousMode)
-                                        }
-                                    }}
-                                    disabled={!isConnected || isMachineRunning}
-                                >
-                                    {status === "Jog" ? "✋" : (continuousMode ? "___" : ". . . ")}
-                                </button>
-                                {renderJogButton('X', 1, 'X+')}
+
+                                {machineConfig.activeAxes.x ? renderJogButton('X', -1, 'X-') :
+                                    <div className="p-3 px-6"></div>}
+                                {renderCenterButton()}
+                                {machineConfig.activeAxes.x ? renderJogButton('X', 1, 'X+') :
+                                    <div className="p-3 px-6"></div>}
 
                                 {renderDiagonalJogButton('X', -1, 'Y', -1, '↙️')}
-                                {renderJogButton('Y', -1, 'Y-')}
+                                {machineConfig.activeAxes.y ? renderJogButton('Y', -1, 'Y-') :
+                                    <div className="p-3 px-6"></div>}
                                 {renderDiagonalJogButton('X', 1, 'Y', -1, '↘️')}
                             </div>
-                            
-                            <div className="grid grid-cols-1 gap-2 justify-between">
-                                {renderJogButton('Z', 1, 'Z+')}
-                                {renderJogButton('Z', -1, 'Z-')}
-                            </div>
+
+                            {machineConfig.activeAxes.z && (
+                                <div className="grid grid-cols-1 gap-2 justify-between">
+                                    {renderJogButton('Z', 1, 'Z+')}
+                                    {renderJogButton('Z', -1, 'Z-')}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

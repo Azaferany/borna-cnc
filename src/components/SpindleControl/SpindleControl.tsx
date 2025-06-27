@@ -2,12 +2,14 @@ import {useState, useEffect} from 'react';
 import {CogIcon, StopIcon} from '@heroicons/react/24/solid';
 import {useGRBL} from "../../app/useGRBL.ts";
 import {useStore} from "../../app/store.ts";
+import {useShallow} from "zustand/react/shallow";
 
 export const SpindleControl = () => {
     const {sendCommand, isConnected} = useGRBL();
     const status = useStore(s => s.status);
     const isSending = useStore(s => s.isSending);
     const spindleSpeed = useStore(s => s.spindleSpeed);
+    const machineConfig = useStore(useShallow(s => s.machineConfig));
 
     const [targetSpeed, setTargetSpeed] = useState(0);
     const [isSpindleOn, setIsSpindleOn] = useState(false);
@@ -27,8 +29,9 @@ export const SpindleControl = () => {
                 setTargetSpeed(0);
 
             } else {
-                // Turn on spindle with current target speed (minimum 1000 if 0)
-                const speed = targetSpeed > 0 ? targetSpeed : 1000;
+                // Turn on spindle with current target speed (minimum from machine config if 0)
+                const minSpeed = machineConfig.spindleMinRpm > 0 ? machineConfig.spindleMinRpm : 1000;
+                const speed = targetSpeed > 0 ? targetSpeed : minSpeed;
                 await sendCommand(`M3 S${speed}`);
                 setTargetSpeed(speed);
 
@@ -53,6 +56,20 @@ export const SpindleControl = () => {
     };
 
     const isDisabled = !isConnected || isSending || status !== "Idle";
+
+    // Generate preset speeds based on machine configuration
+    const generatePresets = () => {
+        const maxRpm = machineConfig.spindleMaxRpm;
+        return [
+            0,
+            Math.round(maxRpm * 0.25),
+            Math.round(maxRpm * 0.5),
+            Math.round(maxRpm * 0.75),
+            maxRpm
+        ];
+    };
+
+    const presets = generatePresets();
 
     return (
         <div className="h-full bg-gray-800 rounded p-1.5 flex flex-col border border-gray-600">
@@ -99,8 +116,8 @@ export const SpindleControl = () => {
                 <div className="flex-1 flex items-center mb-2">
                     <input
                         type="range"
-                        min="0"
-                        max="24000"
+                        min={machineConfig.spindleMinRpm}
+                        max={machineConfig.spindleMaxRpm}
                         step="100"
                         value={targetSpeed}
                         onChange={(e) => handleSpeedChange(parseInt(e.target.value))}
@@ -112,14 +129,14 @@ export const SpindleControl = () => {
                             ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
                         `}
                         style={{
-                            background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(targetSpeed / 24000) * 100}%, #4b5563 ${(targetSpeed / 24000) * 100}%, #4b5563 100%)`
+                            background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(targetSpeed / machineConfig.spindleMaxRpm) * 100}%, #4b5563 ${(targetSpeed / machineConfig.spindleMaxRpm) * 100}%, #4b5563 100%)`
                         }}
                     />
                 </div>
 
                 {/* Quick speed presets - Fixed at bottom */}
                 <div className="grid grid-cols-5 gap-1">
-                    {[0, 6000, 12000, 18000, 24000].map((preset) => (
+                    {presets.map((preset) => (
                         <button
                             key={preset}
                             className={`
@@ -134,7 +151,7 @@ export const SpindleControl = () => {
                             onClick={() => handleSpeedChange(preset)}
                             disabled={isDisabled}
                         >
-                            {preset === 0 ? '0' : `${preset / 1000}K`}
+                            {preset === 0 ? '0' : preset >= 1000 ? `${Math.round(preset / 1000)}K` : preset.toString()}
                         </button>
                     ))}
                 </div>

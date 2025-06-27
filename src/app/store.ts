@@ -18,6 +18,20 @@ export interface ActiveModes {
     UnitsType: "Millimeters" | "Inches";
     PositioningMode: "Absolute" | "Relative";
 }
+
+export interface MachineConfiguration {
+    spindleMinRpm: number;
+    spindleMaxRpm: number;
+    activeAxes: {
+        x: boolean;
+        y: boolean;
+        z: boolean;
+        a: boolean;
+        b: boolean;
+        c: boolean;
+    };
+}
+
 export interface DwellInfo {
     RemainingSeconds:number,
     TotalSeconds:number
@@ -30,6 +44,9 @@ interface CNCState {
     setConnectionType: (type: ConnectionType) => void;
     eventSource?: GRBLWebSocket | GRBLSerial;
     setEventSource: (eventSource: GRBLWebSocket | GRBLSerial) => void;
+
+    machineConfig: MachineConfiguration;
+    updateMachineConfig: (config: Partial<MachineConfiguration>) => void;
 
     isSending: boolean;
     bufferType?: BufferType,
@@ -87,6 +104,22 @@ export const useStore = create<CNCState>((set) => ({
     setEventSource(eventSource: GRBLWebSocket | GRBLSerial) {
         set({eventSource})
     },
+
+    machineConfig: {
+        spindleMinRpm: 0,
+        spindleMaxRpm: 24000,
+        activeAxes: {
+            x: false,
+            y: false,
+            z: false,
+            a: false,
+            b: false,
+            c: false,
+        },
+    },
+    updateMachineConfig: (config) => set((state) => ({
+        machineConfig: {...state.machineConfig, ...config}
+    })),
 
     isSending: false,
     bufferType: undefined,

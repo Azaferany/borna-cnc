@@ -38,6 +38,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updateGCodeOffsets = useStore(x => x.updateGCodeOffsets);
     const addMessageToHistory = useStore(x => x.addMessageToHistory);
     const clearMessageHistory = useStore(x => x.clearMessageHistory);
+    const updateMachineConfig = useStore(x => x.updateMachineConfig);
 
     const updateActiveModes = useStore(x => x.updateActiveModes);
 
@@ -53,6 +54,11 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsConnected(true);
         addMessageToHistory('received', "Connected ....");
         clearMessageHistory()
+
+        // Send $$ command to get machine configuration
+        setTimeout(async () => {
+            await sendCommand('$$');
+        }, 1000);
     }
 
     const disconnect = useCallback((async () => {
@@ -244,6 +250,95 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     },[updateActiveModes]);
 
+    const handleMachineConfig = useCallback((event: CustomEvent<string>) => {
+        const line = event.detail;
+
+        // Handle $$ configuration responses
+        if (line.startsWith('$') && line.includes('=')) {
+            const configMatch = line.match(/\$(\d+)=([\d.]+)/);
+            if (configMatch) {
+                const [, paramNumber, value] = configMatch;
+                const numValue = parseFloat(value);
+
+                switch (paramNumber) {
+                    // Spindle max RPM ($30)
+                    case '30':
+                        updateMachineConfig({spindleMaxRpm: numValue});
+                        break;
+                    // Spindle min RPM ($31)
+                    case '31':
+                        updateMachineConfig({spindleMinRpm: numValue});
+                        break;
+                    // X-axis steps/mm ($100)
+                    case '100': {
+                        const currentConfig = useStore.getState().machineConfig;
+                        updateMachineConfig({
+                            activeAxes: {
+                                ...currentConfig.activeAxes,
+                                x: numValue > 0
+                            }
+                        });
+                        break;
+                    }
+                    // Y-axis steps/mm ($101)
+                    case '101': {
+                        const currentConfig = useStore.getState().machineConfig;
+                        updateMachineConfig({
+                            activeAxes: {
+                                ...currentConfig.activeAxes,
+                                y: numValue > 0
+                            }
+                        });
+                        break;
+                    }
+                    // Z-axis steps/mm ($102)
+                    case '102': {
+                        const currentConfig = useStore.getState().machineConfig;
+                        updateMachineConfig({
+                            activeAxes: {
+                                ...currentConfig.activeAxes,
+                                z: numValue > 0
+                            }
+                        });
+                        break;
+                    }
+                    // a-axis steps/mm ($103)
+                    case '103': {
+                        const currentConfig = useStore.getState().machineConfig;
+                        updateMachineConfig({
+                            activeAxes: {
+                                ...currentConfig.activeAxes,
+                                a: numValue > 0
+                            }
+                        });
+                        break;
+                    }
+                    // b-axis steps/mm ($104)
+                    case '104': {
+                        const currentConfig = useStore.getState().machineConfig;
+                        updateMachineConfig({
+                            activeAxes: {
+                                ...currentConfig.activeAxes,
+                                b: numValue > 0
+                            }
+                        });
+                        break;
+                    }
+                    // c-axis steps/mm ($105)
+                    case '105': {
+                        const currentConfig = useStore.getState().machineConfig;
+                        updateMachineConfig({
+                            activeAxes: {
+                                ...currentConfig.activeAxes,
+                                c: numValue > 0
+                            }
+                        });
+                        break;
+                    }
+                }
+            }
+        }
+    }, [updateMachineConfig]);
 
     useShallowCompareEffect(() => {
         if((allGCodes?.length ?? 0) === 0)
@@ -267,6 +362,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }, 80);
         let pollGCodeOffsetsInterval:  NodeJS.Timeout | undefined;
         let pollActiveModesInterval:  NodeJS.Timeout | undefined;
+        let settingsInterval: NodeJS.Timeout | undefined;
         if(!isSending) {
             pollGCodeOffsetsInterval = setInterval(async () => {
                 await sendCommand('$#');
@@ -274,6 +370,10 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
             pollActiveModesInterval = setInterval(async () => {
                 await sendCommand('$G');
             }, 1000); // Poll every 5s
+
+            settingsInterval = setInterval(async () => {
+                await sendCommand('$$');
+            }, 3000);
         }
         return () => {
             clearInterval(pollStatusInterval)
@@ -282,6 +382,8 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 clearInterval(pollGCodeOffsetsInterval)
             if (pollActiveModesInterval)
                 clearInterval(pollActiveModesInterval)
+            if (settingsInterval)
+                clearInterval(settingsInterval)
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isConnected, eventSource,isSending]);
@@ -298,6 +400,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
         grblSerial.addEventListener('data', statusListenerAndParse);
         grblSerial.addEventListener('data', handleGCodeOffset);
         grblSerial.addEventListener('data', handleActiveModes);
+        grblSerial.addEventListener('data', handleMachineConfig);
         grblSerial.addEventListener('disconnect', disconnect);
         grblSerial.addEventListener('connect', connect);
 
@@ -308,12 +411,13 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 eventSource.removeEventListener('data', statusListenerAndParse);
                 eventSource.removeEventListener('data', handleGCodeOffset);
                 eventSource.removeEventListener('data', handleActiveModes);
+                eventSource.removeEventListener('data', handleMachineConfig);
                 grblSerial.removeEventListener('disconnect', disconnect);
                 grblSerial.removeEventListener('connect', connect);
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [statusListenerAndParse, eventSource, handleGCodeOffset, handleActiveModes]);
+    }, [statusListenerAndParse, eventSource, handleGCodeOffset, handleActiveModes, handleMachineConfig]);
 
     useEffect(() => {
         // Cleanup dwell timeout and interval on unmount
