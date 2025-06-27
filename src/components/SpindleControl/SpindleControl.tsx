@@ -19,17 +19,22 @@ export const SpindleControl = () => {
     }, [spindleSpeed, status, isSending]);
 
     const handleToggleSpindle = async () => {
+        console.log(isSpindleOn)
         try {
             if (isSpindleOn) {
                 // Turn off spindle
                 await sendCommand('M5');
                 setTargetSpeed(0);
+
             } else {
                 // Turn on spindle with current target speed (minimum 1000 if 0)
                 const speed = targetSpeed > 0 ? targetSpeed : 1000;
                 await sendCommand(`M3 S${speed}`);
                 setTargetSpeed(speed);
+
             }
+            setIsSpindleOn(prevState => !prevState);
+
         } catch (error) {
             console.error('Error toggling spindle:', error);
         }
@@ -50,7 +55,7 @@ export const SpindleControl = () => {
     const isDisabled = !isConnected || isSending || status !== "Idle";
 
     return (
-        <div className="h-full bg-gray-800 rounded p-2 flex flex-col border border-gray-600">
+        <div className="h-full bg-gray-800 rounded p-1.5 flex flex-col border border-gray-600">
             {/* Main control button */}
             <button
                 className={`

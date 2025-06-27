@@ -57,7 +57,7 @@ export const Scene3D = () => {
     }, [toolPathGCodes]);
 
     return (
-        <div className="w-full h-full min-h-[505px] relative">
+        <div className="w-full h-full min-h-[495px] relative">
             <div className="absolute top-16 left-4 z-10 bg-black/40 rounded text-white shadow-xl">
                 <button
                     onClick={() => setLegendOpen(!legendOpen)}
