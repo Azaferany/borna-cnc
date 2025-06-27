@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import {app, BrowserWindow, ipcMain} from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { powerSaveBlocker } from 'electron';
@@ -12,6 +12,8 @@ function createWindow () {
     mainWindow = new BrowserWindow({
         show: false,
         icon: path.join(__dirname, '../public/vite.ico'),
+        frame: false, // Remove the default window frame
+        fullscreen: true, // Hide the title bar
         webPreferences: {
             preload: path.join(__dirname, '../electron/preload.js'),
             nodeIntegration: false,
@@ -71,6 +73,19 @@ function createWindow () {
 
     }
 }
+
+// IPC handlers for window controls
+ipcMain.on('minimize-window', () => {
+    if (mainWindow) {
+        mainWindow.minimize();
+    }
+});
+
+ipcMain.on('close-window', () => {
+    if (mainWindow) {
+        mainWindow.close();
+    }
+});
 
 app.whenReady().then(() => {
     //additional logic here

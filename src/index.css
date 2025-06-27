@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+/* Disable text selection for all elements except form inputs */
+* {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Enable text selection for form inputs */
+input, textarea, select, .console-text-selectable {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* Enable text selection for contenteditable elements */
+[contenteditable="true"] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
 .ace_active-line{
     background:#ff000090 !important
 }
@@ -19,4 +43,20 @@
 input:focus, textarea:focus, select:focus {
     outline: 2px solid rgb(135, 206, 222);
     outline-offset: 2px;
+}
+
+/* Electron window draggable region */
+.draggable-header {
+    -webkit-app-region: drag;
+}
+
+.draggable-header button,
+.draggable-header input,
+.draggable-header select,
+.draggable-header label {
+    -webkit-app-region: no-drag;
+}
+
+.no-drag {
+    -webkit-app-region: no-drag;
 }

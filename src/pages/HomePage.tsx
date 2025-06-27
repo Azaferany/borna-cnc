@@ -26,7 +26,8 @@ function HomePage() {
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
                             {/* Header as overlay */}
                             <header
-                                className="col-span-12 absolute top-0 left-0 right-0 z-10 pb-3.5 pl-2 md:pl-7 pt-2.5 flex flex-col md:flex-row justify-items-start items-start md:items-center bg-gray-900/20">
+                                className="col-span-12 absolute top-0 left-0 right-0 z-10 pb-3.5 pl-2 md:pl-7 pt-2.5 flex flex-col md:flex-row justify-items-start items-start md:items-center bg-gray-900/20 draggable-header"
+                            >
                                 <div className="flex items-center justify-between w-full md:w-auto">
                                     <h1 className="text-2xl md:text-3xl font-bold flex items-center">
                                         <svg className="w-6 h-6 md:w-8 md:h-8 mr-2" fill="none" stroke="currentColor"
@@ -60,18 +61,6 @@ function HomePage() {
                                         </span>
                                     </div>
                                 </div>
-
-                                {/* Desktop buttons - Right side */}
-                                <div className="hidden md:flex items-center gap-4 md:ml-auto">
-                                    <div className="group relative" title="Configure machine settings">
-                                        <MachineConfigButton/>
-                                        <span
-                                            className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                            Machine Settings
-                                        </span>
-                                    </div>
-                                </div>
-
                                 {/* Mobile dropdown menu */}
                                 <div className={`md:hidden w-full mt-4 ${isMenuOpen ? 'block' : 'hidden'}`}>
                                     <div className="flex flex-col space-y-4 bg-gray-800 p-4 rounded-lg">

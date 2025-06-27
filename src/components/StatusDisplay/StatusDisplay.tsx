@@ -110,6 +110,25 @@ export const StatusDisplay = () => {
         }
     };
 
+    const handleSetZeroAll = async () => {
+        try {
+            await sendCommand('G92 X0 Y0 Z0');
+            await sendCommand('$#');
+        } catch (error) {
+            console.error('Error setting zero for all axes:', error);
+        }
+    };
+
+    const handleResetAll = async () => {
+        try {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            await sendCommand(`G92 X${gCodeOffsets.G92.x} Y${gCodeOffsets.G92.y} Z${gCodeOffsets.G92.z}`);
+        } catch (error) {
+            console.error('Error resetting all offsets:', error);
+        }
+    };
+
     const InfoRow = ({ label, value }: { label: string; value: string | number }) => (
         <div className="flex justify-between py-2 border-b border-gray-700">
             <div className="font-medium text-gray-300 text-sm">{label}</div>
@@ -120,7 +139,7 @@ export const StatusDisplay = () => {
     return (
         <div className="bg-gray-800 p-4 rounded-lg space-y-4">
             <div className="flex items-center gap-4">
-                <h2 className="text-xl font-bold">Position</h2>
+                <h2 className="text-xl font-bold text-gray-100">Position</h2>
                 <span className={`px-4 py-1.5 text-base font-bold rounded-full ${
                     status === 'Run' ? 'bg-green-500 text-white' :
                         status === 'Idle' ? 'bg-blue-500 text-white' :
@@ -150,7 +169,26 @@ export const StatusDisplay = () => {
                 <div className="text-green-400 text-xs flex items-center justify-center">
                     Absolute (<UnitDisplay/>)
                 </div>
-                <div className="text-green-400 text-xs flex items-center justify-center text-center">Temporary Work Offset</div>
+                <div className="flex items-center justify-center gap-2  ">
+                    <button
+                        onClick={handleSetZeroAll}
+                        className={`py-1 px-1 text-xs gap-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded-md transition-colors flex items-center justify-center ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title="Set zero for all axes"
+                        disabled={!isConnected || isSending || status !== 'Idle'}
+                    >
+                        <ArrowUturnLeftIcon className="w-3 h-3"/>
+                        all
+                    </button>
+                    <button
+                        onClick={handleResetAll}
+                        className={`py-1 px-1 text-xs gap-1 bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded-md transition-colors flex items-center justify-center ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title="Reset all temporary work offsets"
+                        disabled={!isConnected || isSending || status !== 'Idle'}
+                    >
+                        <ArrowPathIcon className="w-3 h-3"/>
+                        all
+                    </button>
+                </div>
             </div>
             <div className="space-y-0">
                 <CoordRow

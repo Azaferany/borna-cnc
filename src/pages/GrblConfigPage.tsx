@@ -9,7 +9,9 @@ import {
     HomeIcon,
     Cog6ToothIcon,
     Bars3Icon,
-    XMarkIcon
+    XMarkIcon,
+    ArrowDownTrayIcon,
+    ArrowUpTrayIcon
 } from '@heroicons/react/24/outline';
 import CalibrationModal from '../components/CalibrationModal/CalibrationModal';
 
@@ -339,6 +341,86 @@ function GrblConfigPage() {
         }
     };
 
+    const handleExportConfig = () => {
+        try {
+            const configData = {
+                parameters: parameters,
+                descriptions: PARAMETER_DESCRIPTIONS,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+
+            const blob = new Blob([JSON.stringify(configData, null, 2)], {
+                type: 'application/json'
+            });
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `grbl-config-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Failed to export config:', error);
+            setError('Failed to export configuration. Please try again.');
+        }
+    };
+
+    const handleImportConfig = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const content = e.target?.result as string;
+                const configData = JSON.parse(content);
+
+                if (!configData.parameters || typeof configData.parameters !== 'object') {
+                    throw new Error('Invalid configuration file format');
+                }
+
+                // Validate that all parameters are valid numbers
+                const validParameters: Record<number, string> = {};
+                for (const [key, value] of Object.entries(configData.parameters)) {
+                    const paramId = parseInt(key);
+                    if (!isNaN(paramId) && typeof value === 'string') {
+                        validParameters[paramId] = value;
+                    }
+                }
+
+                // Apply the imported parameters
+                for (const [paramId, value] of Object.entries(validParameters)) {
+                    try {
+                        setSavingParams(prev => ({
+                            ...prev,
+                            [paramId]: true
+                        }));
+                        await sendCommand(`$${paramId}=${value}`);
+                    } catch (error) {
+                        console.error(`Failed to update parameter ${paramId}:`, error);
+                    }
+                }
+
+                // Refresh parameters after import
+                setTimeout(() => {
+                    sendCommand('$$');
+                }, 1000);
+
+                setError(null);
+            } catch (error) {
+                console.error('Failed to import config:', error);
+                setError('Failed to import configuration. Please check the file format.');
+            }
+        };
+        reader.readAsText(file);
+
+        // Reset the input
+        event.target.value = '';
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex">
             {/* Mobile Sidebar Toggle */}
@@ -402,18 +484,46 @@ function GrblConfigPage() {
                 <header
                     className="fixed top-0 left-0 right-0 lg:left-64 bg-gray-900/80 backdrop-blur-lg border-b border-gray-700/50 z-10">
                     <div className="container mx-auto px-4 lg:px-6 py-4">
-                        <div className="flex items-center">
-                            <Link to={ROUTES.HOME}
-                                  className="mr-4 bg-gray-700/50 hover:bg-gray-600/50 text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10">
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                          d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                                </svg>
-                                <span className="hidden sm:inline">Back</span>
-                            </Link>
-                            <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                                Machine Config
-                            </h1>
+                        <div className="flex items-center space-x-15">
+                            <div className="flex items-center">
+                                <Link to={ROUTES.HOME}
+                                      className="mr-4 bg-gray-700/50 hover:bg-gray-600/50 text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10">
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                              d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                                    </svg>
+                                    <span className="hidden sm:inline">Back</span>
+                                </Link>
+                                <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+                                    Machine Config
+                                </h1>
+                            </div>
+
+                            {/* Export/Import Buttons */}
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={handleExportConfig}
+                                    disabled={!isConnected || isLoading || Object.keys(parameters).length === 0}
+                                    className="bg-green-600/50 hover:bg-green-500/50 disabled:bg-gray-600/30 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-green-500/10 disabled:hover:shadow-none"
+                                    title="Export configuration"
+                                >
+                                    <ArrowDownTrayIcon className="w-5 h-5 mr-2"/>
+                                    <span className="hidden sm:inline">Export</span>
+                                </button>
+
+                                <label
+                                    className="bg-blue-600/50 hover:bg-blue-500/50 disabled:bg-gray-600/30 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10 disabled:hover:shadow-none cursor-pointer">
+                                    <ArrowUpTrayIcon className="w-5 h-5 mr-2"/>
+                                    <span className="hidden sm:inline">Import</span>
+                                    <input
+                                        type="file"
+                                        accept=".json"
+                                        onChange={handleImportConfig}
+                                        className="hidden"
+                                        disabled={!isConnected}
+                                    />
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </header>

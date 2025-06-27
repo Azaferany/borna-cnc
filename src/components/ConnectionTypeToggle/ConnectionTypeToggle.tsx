@@ -13,6 +13,12 @@ export const ConnectionTypeToggle: React.FC = () => {
         setConnectionType(type);
         setIsOpen(false);
     };
+
+    // Don't render anything if not in development environment
+    if (!import.meta.env.DEV) {
+        return null;
+    }
+
     if (isConnected)
         return null;
     return (

@@ -255,7 +255,9 @@ export const Console = () => {
                     Clear
                 </button>
             </div>
-            <div className="h-40 max-h-[400px] bg-gray-900 rounded p-2 mb-4 overflow-y-auto custom-scrollbar" ref={historyEndRef}>
+            <div
+                className="h-40 max-h-[400px] bg-gray-900 rounded p-2 mb-4 overflow-y-auto custom-scrollbar console-text-selectable"
+                ref={historyEndRef}>
                 <div className="space-y-1 font-mono text-sm">
                     {history.map((line, index) => {
                         // Check if line contains an error code
@@ -264,7 +266,7 @@ export const Console = () => {
                             const errorCode = parseInt(errorMatch[1]);
                             const errorMeaning = GRBL_ERROR_CODES[errorCode] || "Unknown error";
                             return (
-                                <div key={index} className="text-red-400">
+                                <div key={index} className="text-red-400 console-text-selectable">
                                     {line} ({errorMeaning})
                                 </div>
                             );
@@ -272,7 +274,7 @@ export const Console = () => {
                         return (
                             <div
                                 key={index}
-                                className={`${
+                                className={` console-text-selectable ${
                                     line.startsWith('>') ? 'text-green-400' : 'text-gray-300'
                                 }`}
                             >

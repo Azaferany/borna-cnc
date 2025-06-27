@@ -7,6 +7,7 @@ import isElectron from 'is-electron';
 import {ROUTES} from './app/routes';
 import {ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {WindowControls} from "./components/WindowControls/WindowControls.tsx";
 
 function App() {
     const Router = isElectron() ? HashRouter : BrowserRouter;
@@ -14,10 +15,13 @@ function App() {
     return (
         <GRBLProvider>
             <GCodeBufferProvider>
+
                 <Router>
                     <Routes>
-                        <Route path={ROUTES.HOME} element={<HomePage/>}/>
-                        <Route path={ROUTES.MACHINE_CONFIG} element={<GrblConfigPage/>}/>
+
+
+                        <Route path={ROUTES.HOME} element={<><WindowControls/><HomePage/></>}/>
+                        <Route path={ROUTES.MACHINE_CONFIG} element={<><WindowControls/><GrblConfigPage/></>}/>
                     </Routes>
                 </Router>
                 <ToastContainer
@@ -31,6 +35,7 @@ function App() {
                     draggable
                     pauseOnHover
                     theme="dark"
+                    toastClassName="!top-8 opacity-85"
                 />
             </GCodeBufferProvider>
         </GRBLProvider>
