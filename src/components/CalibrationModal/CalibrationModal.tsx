@@ -102,7 +102,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
             disabled={!isConnected || isSending || status !== 'Idle'}
         >
             <div className="flex flex-col items-center">
-                <span className="text-lg font-bold">{label}</span>
+                <span className="text-lg font-bold  text-white">{label}</span>
                 {!continuousMode && (
                     <span className="text-xs text-gray-400">
                         {stepSize}<UnitDisplay/>
@@ -270,7 +270,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                     <div className="space-y-3">
                                         <div className="flex space-x-4">
                                             <div className="flex-1">
-                                                <label className="block text-sm font-medium mb-1"
+                                                <label className="block text-sm font-medium mb-1 text-white"
                                                        htmlFor="jog-feedrate">Feedrate
                                                     (<FeedrateUnitDisplay/>)</label>
                                                 <input
@@ -287,7 +287,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                             <div className="flex-1">
                                                 {!continuousMode && (
                                                     <>
-                                                        <label className="block text-sm font-medium mb-1"
+                                                        <label className="block text-sm font-medium mb-1 text-white"
                                                                htmlFor="jog-distance">Distance (<UnitDisplay/>)</label>
                                                         <input
                                                             type="number"
@@ -302,7 +302,8 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                                     </>
                                                 )}
                                                 {continuousMode && (
-                                                    <label className="block text-sm font-medium mt-6">Hold button to
+                                                    <label className="block text-sm font-medium mt-6 text-white">Hold
+                                                        button to
                                                         jog,
                                                         release to stop</label>
                                                 )}
@@ -320,7 +321,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                                 title="Toggle between step-by-step and continuous jogging modes"
                                             />
                                             <label htmlFor="continuous-mode"
-                                                   className="text-sm font-medium cursor-pointer">
+                                                   className="text-sm font-medium cursor-pointer text-white">
                                                 Continuous Mode
                                             </label>
                                         </div>
