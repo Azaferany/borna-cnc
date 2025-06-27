@@ -135,6 +135,11 @@ export const Console = () => {
         if (line.toLowerCase().includes("grbl")) {
             return;
         }
+
+        // Filter lines that end with ']' but don't contain '['
+        if (line.endsWith(']') && !line.includes('[')) {
+            return;
+        }
         if ((line.startsWith('<') && line.endsWith('>')) && !ShowStatusResponse) {
             return;
         }
