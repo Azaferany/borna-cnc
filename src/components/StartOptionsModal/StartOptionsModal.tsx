@@ -2,7 +2,10 @@ import React, {useState, useEffect} from 'react';
 import {useStore} from '../../app/store';
 import {useShallow} from 'zustand/react/shallow';
 import {PlayIcon} from '@heroicons/react/24/solid';
-import {Portal} from 'react-portal';
+import Modal from 'react-modal';
+
+// Set the app element for accessibility
+Modal.setAppElement('#root');
 
 interface StartOptionsModalProps {
     isOpen: boolean;
@@ -32,15 +35,41 @@ export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onC
         }
     }, [isOpen, selectedGCodeLine]);
 
-    if (!isOpen) return null;
-
     const totalLines = allGCodes?.length ?? 0;
     const isStartFromBeginning = startFromLine === 1;
 
+    const modalStyles = {
+        overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 99999999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+        },
+        content: {
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            inset: 'auto',
+            position: 'relative' as const,
+            width: '100%',
+            maxWidth: '28rem',
+            maxHeight: '90vh',
+            overflow: 'visible'
+        }
+    };
+
     return (
-        <Portal>
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <Modal
+            isOpen={isOpen}
+            onRequestClose={onClose}
+            style={modalStyles}
+            shouldCloseOnOverlayClick={true}
+            shouldCloseOnEsc={true}
+        >
+            <div className="bg-gray-800 rounded-lg shadow-xl w-full max-h-[90vh] overflow-y-auto">
                 <div className="sticky top-0 bg-gray-800 p-4 border-b border-gray-700">
                     <div className="flex justify-between items-center">
                         <h2 className="text-xl font-bold text-white">Start Options</h2>
@@ -155,7 +184,6 @@ export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onC
                     </div>
                 </div>
             </div>
-        </div>
-        </Portal>
+        </Modal>
     );
 }; 
