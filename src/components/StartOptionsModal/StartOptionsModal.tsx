@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {useStore} from '../../app/store';
 import {useShallow} from 'zustand/react/shallow';
 import {PlayIcon} from '@heroicons/react/24/solid';
+import {Portal} from 'react-portal';
 
 interface StartOptionsModalProps {
     isOpen: boolean;
@@ -37,7 +38,8 @@ export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onC
     const isStartFromBeginning = startFromLine === 1;
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
+        <Portal>
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
                 <div className="sticky top-0 bg-gray-800 p-4 border-b border-gray-700">
                     <div className="flex justify-between items-center">
@@ -154,5 +156,6 @@ export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onC
                 </div>
             </div>
         </div>
+        </Portal>
     );
 }; 
