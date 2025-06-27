@@ -469,19 +469,21 @@ function GrblConfigPage() {
             const [id, value] = line.substring(1).split('=');
             if (id && value) {
                 const paramId = parseInt(id);
+
+                // Update the parameter value from the machine
                 setParameters(prev => ({
                     ...prev,
                     [paramId]: value
                 }));
-                // Clear edited value and saving state when we receive the actual value
-                setEditedValues(prev => {
-                    const newValues = {...prev};
-                    delete newValues[paramId];
-                    return newValues;
-                });
-                setSavingParams({});
-                setIsLoading(false);
 
+                // Only clear saving state, preserve all edited values
+                setSavingParams(prev => {
+                    const newSavingParams = {...prev};
+                    delete newSavingParams[paramId];
+                    return newSavingParams;
+                });
+
+                setIsLoading(false);
             }
         }
     }, []);
@@ -494,9 +496,10 @@ function GrblConfigPage() {
                 [id]: true
             }));
             await sendCommand(`$${id}=${newValue}`);
+            // Only request the specific parameter that was saved, not all parameters
             setTimeout(() => {
-                sendCommand('$$');
-            }, 1000);
+                sendCommand(`$${id}`);
+            }, 500);
         } catch (error) {
             console.error('Failed to update parameter:', error);
             setError(`Failed to update parameter ${id}. Please try again.`);
@@ -513,6 +516,14 @@ function GrblConfigPage() {
             ...prev,
             [id]: value
         }));
+    };
+
+    const handleResetValue = (id: number) => {
+        setEditedValues(prev => {
+            const newValues = {...prev};
+            delete newValues[id];
+            return newValues;
+        });
     };
 
     // Component for rendering different input types based on datatype
@@ -829,10 +840,16 @@ function GrblConfigPage() {
         .map(([id, value]) => {
             const paramId = parseInt(id);
             const paramDesc = PARAMETER_DESCRIPTIONS[paramId];
+
+            // Always prioritize edited values over machine values
+            const currentValue = editedValues.hasOwnProperty(paramId)
+                ? editedValues[paramId]
+                : String(value);
+            
             return {
                 id: paramId,
                 name: paramDesc?.name || `Parameter ${id}`,
-                value: editedValues[paramId] ?? String(value),
+                value: currentValue,
                 description: paramDesc?.description || 'No description available',
                 hasDescription: !!paramDesc?.description,
                 group: getParameterGroup(paramId),
@@ -1243,17 +1260,28 @@ function GrblConfigPage() {
                                                                             </div>
                                                                         )}
                                                                     </div>
-                                                                    <button
-                                                                        onClick={() => handleParameterChange(param.id, param.value)}
-                                                                        className={`mt-3 w-full px-4 py-2 rounded-lg transition-all duration-200 ${
-                                                                            editedValues[param.id] && !savingParams[param.id]
-                                                                                ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20'
-                                                                                : 'bg-gray-600/50 cursor-not-allowed'
-                                                                        } text-white`}
-                                                                        disabled={!editedValues[param.id] || savingParams[param.id]}
-                                                                    >
-                                                                        {savingParams[param.id] ? 'Saving...' : 'Save'}
-                                                                    </button>
+                                                                    <div className="mt-3 flex space-x-2">
+                                                                        <button
+                                                                            onClick={() => handleParameterChange(param.id, param.value)}
+                                                                            className={`flex-1 px-4 py-2 rounded-lg transition-all duration-200 ${
+                                                                                editedValues[param.id] && !savingParams[param.id]
+                                                                                    ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20'
+                                                                                    : 'bg-gray-600/50 cursor-not-allowed'
+                                                                            } text-white`}
+                                                                            disabled={!editedValues[param.id] || savingParams[param.id]}
+                                                                        >
+                                                                            {savingParams[param.id] ? 'Saving...' : 'Save'}
+                                                                        </button>
+                                                                        {editedValues[param.id] && (
+                                                                            <button
+                                                                                onClick={() => handleResetValue(param.id)}
+                                                                                className="px-3 py-2 rounded-lg bg-gray-600/50 hover:bg-gray-500/50 text-white transition-all duration-200"
+                                                                                title="Reset to saved value"
+                                                                            >
+                                                                                ↺
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -1366,6 +1394,15 @@ function GrblConfigPage() {
                                                                         >
                                                                             {savingParams[param.id] ? 'Saving...' : 'Save'}
                                                                         </button>
+                                                                        {editedValues[param.id] && (
+                                                                            <button
+                                                                                onClick={() => handleResetValue(param.id)}
+                                                                                className="px-3 py-2 rounded-lg bg-gray-600/50 hover:bg-gray-500/50 text-white transition-all duration-200"
+                                                                                title="Reset to saved value"
+                                                                            >
+                                                                                ↺
+                                                                            </button>
+                                                                        )}
                                                                         {param.id >= 100 && param.id <= 105 && (
                                                                             <button
                                                                                 onClick={() => setCalibrationAxis(getAxisFromParamId(param.id))}
