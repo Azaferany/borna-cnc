@@ -141,18 +141,23 @@ export const Console = () => {
         else {
             setShowStatusResponse(false)
         }
-        if ((line.startsWith('[') && line.endsWith(']') && line.startsWith('[GC:')) && !ShowActiveModesResponse) {
+
+        // Filter active modes response (response to $G command)
+        if (line.startsWith('[GC:') && line.endsWith(']') && !ShowActiveModesResponse) {
             return;
         }
-        else {
-            setShowActiveModesResponse(false)
+        if (ShowActiveModesResponse && line.startsWith('[GC:') && line.endsWith(']')) {
+            setShowActiveModesResponse(false);
         }
-        if ((line.startsWith('[') && line.endsWith(']')) && !line.startsWith('[GC:') && !ShowGCodeOffsetResponse) {
+
+        // Filter G-code offset response (response to $# command)
+        if (line.match(/^\[G5[4-9]:|^\[G2[8-9]:|^\[G3[0-9]:|^\[G92:|^\[TLO:|^\[PRB:/) && !ShowGCodeOffsetResponse) {
             return;
         }
-        else if(!(line.startsWith('[') && line.endsWith(']')  && !line.startsWith('[GC:'))){
-            setShowGCodeOffsetResponse(false)
+        if (ShowGCodeOffsetResponse && line.match(/^\[G5[4-9]:|^\[G2[8-9]:|^\[G3[0-9]:|^\[G92:|^\[TLO:|^\[PRB:/)) {
+            setShowGCodeOffsetResponse(false);
         }
+
         // Filter configuration parameters like $131=305.000
         if (line.match(/^\$\d+=[\d.-]+$/)) {
             return;
