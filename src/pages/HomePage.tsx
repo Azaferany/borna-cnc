@@ -13,9 +13,11 @@ import {MessageHistoryButton} from "../components/MessageHistoryButton/MessageHi
 import {ConnectionTypeToggle} from "../components/ConnectionTypeToggle/ConnectionTypeToggle.tsx";
 import {MachineConfigButton} from "../components/MachineConfigButton/MachineConfigButton.tsx";
 import {useState} from "react";
+import {useTranslation} from 'react-i18next';
 
 function HomePage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const {t} = useTranslation();
 
     return (
         <div className="min-h-screen h-fill bg-gray-900 text-white">
@@ -55,12 +57,12 @@ function HomePage() {
                                     <div data-tour="connection-status">
                                         <ConnectionStatus/>
                                     </div>
-                                    <div className="group relative" title="Switch between USB and Network connection"
+                                    <div className="group relative" title={t('app.connectionType')}
                                          data-tour="connection-type">
                                         <ConnectionTypeToggle/>
                                         <span
                                             className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                            Connection Type
+                                            {t('app.connectionType')}
                                         </span>
                                     </div>
                                 </div>
@@ -68,19 +70,19 @@ function HomePage() {
                                 <div className={`md:hidden w-full mt-4 ${isMenuOpen ? 'block' : 'hidden'}`}>
                                     <div className="flex flex-col space-y-4 bg-gray-800 p-4 rounded-lg">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium">Connection Status</span>
+                                            <span className="text-sm font-medium">{t('app.connectionStatus')}</span>
                                             <ConnectionStatus/>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium">Connection Type</span>
+                                            <span className="text-sm font-medium">{t('app.connectionType')}</span>
                                             <ConnectionTypeToggle/>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium">Load G-code File</span>
+                                            <span className="text-sm font-medium">{t('app.loadGcodeFile')}</span>
                                             <OpenFileButton/>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium">Message History</span>
+                                            <span className="text-sm font-medium">{t('app.messageHistory')}</span>
                                             <MessageHistoryButton/>
                                         </div>
                                         <div className="flex items-center justify-end">

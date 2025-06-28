@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import CalibrationModal from '../components/CalibrationModal/CalibrationModal';
 import StartTourButton from '../components/StartTourButton/StartTourButton';
+import LanguageSwitcher from "../components/LanguageSwitcher/LanguageSwitcher.tsx";
 
 interface GrblParameter {
     id: number;
@@ -1107,6 +1108,8 @@ function GrblConfigPage() {
 
                             {/* Export/Import/Tour Buttons */}
                             <div className="flex items-center space-x-2">
+                                <LanguageSwitcher/>
+
                                 <StartTourButton/>
                                 
                                 <button
