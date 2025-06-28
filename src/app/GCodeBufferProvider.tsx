@@ -222,7 +222,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             console.error('GRBL reported an error:', line);
             stopSending(); // Stop sending on GRBL error (calls the memoized stopSending)
         }
-    });
+    },);
 
     // Add effect to update active modes based on G-code history
     useEffect(() => {

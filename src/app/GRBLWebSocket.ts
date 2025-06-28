@@ -10,7 +10,6 @@ export interface GRBLWebSocketEventMap {
 export default class GRBLWebSocket extends TypedEventTarget<GRBLWebSocketEventMap> {
     private socket: WebSocket | null = null;
     private url: string;
-    private lastMassage?: string;
     private messageBuffer: string = ""; // Buffer for incomplete messages
 
     constructor({ url = 'ws://192.168.5.1' } = {}) {
@@ -44,21 +43,9 @@ export default class GRBLWebSocket extends TypedEventTarget<GRBLWebSocketEventMa
                 for (const line of linesToProcess) {
                     const trimmedLine = line.trim();
                     if (trimmedLine) {
-                        // Ignore 'ok' responses that come after messages starting with '<'
-                        if ((trimmedLine?.startsWith("<") ||
-                            trimmedLine?.startsWith("[") || (this.lastMassage?.includes('$'))) && trimmedLine?.endsWith("ok")) {
-                            this.dispatchTypedEvent("data", new CustomEvent("data", {detail: trimmedLine.replace('ok', '').trim()}));
-                        }
-                        else {
-                            if (trimmedLine == 'ok' && ((this.lastMassage?.startsWith("<") && this.lastMassage?.endsWith(">")) || (this.lastMassage?.startsWith('[') && this.lastMassage?.endsWith(']')) || (this.lastMassage?.includes('$'))))
-                            {
-                                continue;
-                            }
-                            this.lastMassage = trimmedLine;
                             this.dispatchTypedEvent("data", new CustomEvent("data", {detail: trimmedLine}));
                         }
                     }
-                }
             };
 
             this.socket.onerror = (error) => {

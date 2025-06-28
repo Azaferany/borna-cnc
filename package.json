@@ -1,7 +1,7 @@
 {
   "name": "borna-cnc",
   "private": true,
-  "version": "0.22.0",
+  "version": "0.25.0",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
@@ -58,7 +58,7 @@
   },
   "build": {
     "appId": "ir.borna.cnc",
-    "productName": "Ali CNC",
+    "productName": "Borna CNC",
     "directories": {
       "output": "release-builds"
     },
