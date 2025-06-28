@@ -6,8 +6,8 @@ import { useStore } from "../../app/store.ts";
 import {useShallow} from "zustand/react/shallow";
 
 export const JogControls = () => {
-    const [feedrate, setFeedrate] = useState(100);
-    const [stepSize, setStepSize] = useState(1);
+    const [feedrate, setFeedrate] = useState(1000);
+    const [stepSize, setStepSize] = useState(20);
     const [continuousMode, setContinuousMode] = useState(false);
     const [activeButton, setActiveButton] = useState<string | null>(null);
     const [isExpanded, setIsExpanded] = useState(true);
@@ -103,9 +103,11 @@ export const JogControls = () => {
         if (!keyboardMode || !isConnected || isMachineRunning || !isExpanded) return;
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            e.stopPropagation();
+            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown"].includes(e.key)) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                e.stopPropagation();
+            }
             if (e.repeat) return; // Prevent key repeat
 
             const isShiftPressed = e.shiftKey;
