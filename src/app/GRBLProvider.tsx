@@ -385,7 +385,7 @@ export const GRBLProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             settingsInterval = setInterval(async () => {
                 await sendCommand('$$');
-            }, 3000);
+            }, 6015);
         }
         return () => {
             clearInterval(pollStatusInterval)

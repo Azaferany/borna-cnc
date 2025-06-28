@@ -997,7 +997,7 @@ function GrblConfigPage() {
                         validParameters[paramId] = value;
                     }
                 }
-
+                setIsLoading(true)
                 // Apply the imported parameters
                 for (const [paramId, value] of Object.entries(validParameters)) {
                     try {
@@ -1014,7 +1014,11 @@ function GrblConfigPage() {
                 // Refresh parameters after import
                 setTimeout(() => {
                     sendCommand('$$');
+
                 }, 1000);
+                setTimeout(() => {
+                    setIsLoading(false)
+                }, 2000)
 
                 setError(null);
             } catch (error) {

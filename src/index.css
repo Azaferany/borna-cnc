@@ -1,5 +1,22 @@
 @import "tailwindcss";
 
+
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("./assets/fonts/Vazirmatn-FD-Regular.woff2") format("woff2");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("./assets/fonts/Vazirmatn-FD-Bold.woff2") format("woff2");
+    font-weight: bold;
+    font-style: bold;
+    font-display: swap;
+}
+
 /* Disable text selection for all elements except form inputs */
 * {
     -webkit-user-select: none;

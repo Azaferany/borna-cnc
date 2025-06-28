@@ -110,7 +110,7 @@ export const SpindleControl = () => {
     return (
         <div className="h-full bg-gray-800 rounded p-1.5 flex flex-col border border-gray-600">
             {/* Direction control */}
-            <div className="mb-2">
+            {/* <div className="mb-2">
                 <div className="text-gray-300 text-xs mb-1">Direction</div>
                 {isSpindleOn ? (
                     // Show only active direction when running
@@ -157,7 +157,7 @@ export const SpindleControl = () => {
                         </button>
                     </div>
                 )}
-            </div>
+            </div> */}
 
             {/* Main control button */}
             <button
@@ -181,7 +181,8 @@ export const SpindleControl = () => {
                 ) : (
                     <>
                         <CogIcon className="h-4 w-4"/>
-                        START SPINDLE ({spindleDirection})
+                        START SPINDLE
+                        {/* ({spindleDirection}) */}
                     </>
                 )}
             </button>

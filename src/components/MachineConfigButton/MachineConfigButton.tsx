@@ -7,7 +7,7 @@ export function MachineConfigButton() {
     const isConnected = useStore(x => x.isConnected);
     const status = useStore(x => x.status);
     const isSending = useStore(x => x.isSending);
-    const isConfigEnabled = isConnected && status === "Idle" && !isSending;
+    const isConfigEnabled = isConnected && (status === "Idle" || status == "Alarm") && !isSending;
 
     if (!isConnected) {
         return null;

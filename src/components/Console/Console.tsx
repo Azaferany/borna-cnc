@@ -132,10 +132,15 @@ export const Console = () => {
     // Listen for incoming messages
     useGRBLListener((line: string) => {
 
+        if (line.toLowerCase().includes("error:1")) {
+            return;
+        }
         if (line.toLowerCase().includes("grbl")) {
             return;
         }
-
+        if (line.toLowerCase().includes("grbl")) {
+            return;
+        }
         // Filter lines that end with ']' but don't contain '['
         if (line.endsWith(']') && !line.includes('[')) {
             return;
@@ -156,24 +161,24 @@ export const Console = () => {
         }
 
         // Filter G-code offset response (response to $# command)
-        if (line.match(/^\[G5[4-9]:|^\[G2[8-9]:|^\[G3[0-9]:|^\[G92:|^\[TLO:|^\[PRB:/) && !ShowGCodeOffsetResponse) {
+        if (line.match(/^\[G5[4-9]:|^\[G59\.[1-3]:|^\[G2[8-9]:|^\[G3[0-9]:|^\[G92:|^\[TLO:|^\[PRB:|^\[HOME:|^\[T:|^\[TLR:/) && !ShowGCodeOffsetResponse) {
             return;
         }
-        if (ShowGCodeOffsetResponse && line.match(/^\[G5[4-9]:|^\[G2[8-9]:|^\[G3[0-9]:|^\[G92:|^\[TLO:|^\[PRB:/)) {
+        if (ShowGCodeOffsetResponse && line.match(/^\[G5[4-9]:|^\[G59\.[1-3]:|^\[G2[8-9]:|^\[G3[0-9]:|^\[G92:|^\[TLO:|^\[PRB:|^\[HOME:|^\[T:|^\[TLR:/)) {
             setShowGCodeOffsetResponse(false);
         }
 
         // Filter configuration parameters like $131=305.000
-        if (line.match(/^\$\d+=[\d.-]+$/)) {
+        if (line.includes("$")) {
             return;
         }
-        if(line == "ok" && !ShowGCodeOk)
-        {
-            return;
-        }
-        else {
-            setShowGCodeOk(false);
-        }
+        // if(line == "ok" && !ShowGCodeOk)
+        // {
+        //     return;
+        // }
+        // else {
+        //     setShowGCodeOk(false);
+        // }
         setHistory(prev => [...prev, line]);
 
     },[ShowStatusResponse,ShowGCodeOffsetResponse,ShowGCodeOk,ShowActiveModesResponse],true);
