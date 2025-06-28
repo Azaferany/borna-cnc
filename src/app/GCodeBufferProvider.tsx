@@ -5,7 +5,13 @@ import {GCodeBufferContext} from "./GCodeBufferContext.ts";
 import {extractLineNumber} from "./GcodeParserUtils.ts";
 import {useStore} from "./store.ts";
 import type {BufferType} from "../types/GCodeTypes.ts";
-import { Plane } from "../types/GCodeTypes.ts";
+import {Plane} from "../types/GCodeTypes.ts";
+import {ErrorModal} from "../components/ErrorModal/ErrorModal.tsx";
+
+interface ErrorInfo {
+    message: string;
+    lineNumber?: number;
+}
 
 interface GCodeBufferProviderProps {
     children: ReactNode;
@@ -25,13 +31,14 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
     const bufferType = useStore((s) => s.bufferType);
     const setIsSending = useStore((s) => s.setIsSending);
 
-
     // Component-specific state
     const [bufferGCodesList, setBufferGCodesList] = useState<string[]>([]);
-    const [waitingForOk, setWaitingForOk] = useState<boolean>(false);
+    const [okCount, setOkCount] = useState<number>(0);
+    const [IsAllLineSent, setIsAllLineSent] = useState(false);
 
-    const [IsAllLineSent, setIsAllLineSent] = useState(false)
-
+    // Error modal state
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [errorInfo, setErrorInfo] = useState<ErrorInfo | null>(null);
 
     // useEffect(() => {
     //     if (dwell.RemainingSeconds <= 0 || !isSending || !selectedGCodeLine || bufferGCodesList.length === 0 || lastSentLine <= 0 || lastSentLine == selectedGCodeLine)
@@ -53,23 +60,21 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         setIsAllLineSent(false);
 
         updateLastSentLine(0); // Update Zustand store
-        setWaitingForOk(false); // Reset local state
+        setOkCount(0); // Reset ok count
     },[setIsSending, updateLastSentLine]); // Dependencies for useCallback
 
 
     /**
-     * Handles sending a single command to GRBL and sets the waitingForOk flag.
+     * Handles sending a single command to GRBL.
      * @param command The G-code command string to send.
      */
     const handleCommand =useCallback(async (command: string) => {
         try {
             console.log('Sending command:', command);
             await sendCommand(command);
-            setWaitingForOk(true); // Set true as we are now waiting for an 'ok'
         } catch (error) {
             console.error('Error sending command:', error);
             stopSending(); // Stop sending on error (calls the memoized stopSending from context)
-            setWaitingForOk(false); // Reset waiting state
         }
     },[sendCommand, stopSending]);
 
@@ -80,9 +85,9 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
     const sendNextLine = useCallback(async () => {
         const nextLineIndex = lastSentLine; // Calculate the index of the next line to send
 
-        // Skip if already waiting for an 'ok' or if buffer slots are low to prevent overflow
-        if (waitingForOk && nextLineIndex > 10) {
-            console.debug('AttemptSendNextLine skipped:', { isWaitingForOk: waitingForOk, availableBufferSlots });
+        // Skip if we're waiting for more ok responses (okCount should equal lastSentLine)
+        if (okCount < lastSentLine && nextLineIndex > 10) {
+            console.debug('AttemptSendNextLine skipped:', {okCount, lastSentLine, availableBufferSlots});
             return;
         }
 
@@ -107,6 +112,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             availableBufferSlots,
             lastSentLine,
             selectedGCodeLine,
+            okCount,
             totalLines: totalLines
         });
 
@@ -117,7 +123,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
 
         await handleCommand(lineToSend); // Send the command
         updateLastSentLine(nextLineIndex + 1); // Update the last sent line index
-    },[availableBufferSlots, bufferGCodesList, handleCommand, lastSentLine, selectedGCodeLine, updateLastSentLine, waitingForOk])
+    }, [availableBufferSlots, bufferGCodesList, handleCommand, lastSentLine, selectedGCodeLine, updateLastSentLine, okCount])
 
 
     /**
@@ -152,7 +158,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             setIsSending(true,bufferType); // Update Zustand store
             selectGCodeLine(1); // Update Zustand store
             updateLastSentLine(0); // Reset to 0 to start from line 1 (Zustand store)
-            setWaitingForOk(false); // Ensure not waiting for 'ok' when starting (local state)
+            setOkCount(0); // Reset ok count when starting
         },
         [isConnected, selectGCodeLine, setIsSending, updateLastSentLine] // Dependencies for useCallback
     );
@@ -188,7 +194,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             stopSending(); // Calls the memoized stopSending from context
             return;
         }
-        // If connected, sending, not waiting for 'ok', and GRBL is not on hold or homing, try to send the next line
+        // If connected, sending, and GRBL is not on hold or homing, try to send the next line
         if (
             isConnected &&
             isSending &&
@@ -198,31 +204,63 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             console.debug('Effect triggered, attempting to send next line');
             sendNextLine();
         }
-    }, [selectedGCodeLine, isConnected, isSending, status, waitingForOk, stopSending, sendNextLine]); // Dependencies for useEffect
+    }, [selectedGCodeLine, isConnected, isSending, status, okCount, stopSending, sendNextLine]); // Dependencies for useEffect
 
     /**
      * Callback for when an 'ok' response is received from GRBL.
-     * Resets the waitingForOk flag, allowing the next line to be sent.
+     * Increments the ok count.
      */
     const handleOkResponse = () => {
         console.debug('Received OK response.');
-        setWaitingForOk(false); // Allow next line to be sent (local state)
-    }; // No dependencies as it only sets a boolean state
+        setOkCount(prev => prev + 1); // Increment ok count
+    }; // No dependencies as it only sets a number state
+
+    /**
+     * Shows the error modal with error details
+     */
+    const showError = useCallback((errorInfo: ErrorInfo) => {
+        setErrorInfo(errorInfo);
+        setIsErrorModalOpen(true);
+    }, []);
+
+    /**
+     * Closes the error modal and clears error info
+     */
+    const handleCloseErrorModal = useCallback(() => {
+        setIsErrorModalOpen(false);
+        setErrorInfo(null);
+    }, []);
 
     /**
      * Listens for incoming lines from GRBL and handles 'ok' or 'error' responses.
      */
     useGRBLListener(line => {
-        if(!isSending)
+        if (!isSending || lastSentLine < 1)
             return;
         console.log(line);
         if (line === 'ok') {
             handleOkResponse(); // Call the memoized handler
         } else if (line.includes('error')) {
             console.error('GRBL reported an error:', line);
+            sendCommand("!")
+
+            setTimeout(() => {
+                sendCommand('\x18');
+            }, 500)
+            // Find the error line based on ok count (the line that caused the error)
+            // okCount represents the number of successfully processed lines
+            const errorLineNumber = okCount + 1; // Convert to 1-based line number
+
+            // Show error modal with details
+            const errorInfoData = {
+                message: line,
+                lineNumber: errorLineNumber
+            };
+            showError(errorInfoData);
+            
             stopSending(); // Stop sending on GRBL error (calls the memoized stopSending)
         }
-    },);
+    }, [selectedGCodeLine]);
 
     // Add effect to update active modes based on G-code history
     useEffect(() => {
@@ -306,7 +344,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             bufferType,      // Expose bufferType from Zustand store
             startSending,   // Expose memoized function
             stopSending,    // Expose memoized function
-            
+
         }),
         [bufferType, isSending, startSending, stopSending]
     );
@@ -314,6 +352,14 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
     return (
         <GCodeBufferContext.Provider value={contextValue}>
             {children}
+            <ErrorModal
+                isOpen={isErrorModalOpen}
+                onClose={handleCloseErrorModal}
+                errorMessage={errorInfo?.message || ''}
+                errorLine={bufferGCodesList[errorInfo?.lineNumber ?? 0]}
+                selectedGCodeLine={selectedGCodeLine}
+                selectedGCodeContent={bufferGCodesList.find(x => x.includes(`N${selectedGCodeLine}`)) ?? ""}
+            />
         </GCodeBufferContext.Provider>
     );
 };
