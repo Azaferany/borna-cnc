@@ -46,7 +46,7 @@ export const SpindleControl = () => {
         try {
             if (isSpindleOn) {
                 // Turn off spindle
-                await sendCommand('M5');
+                await sendCommand('M5 S0');
                 setTargetSpeed(0);
 
             } else {
@@ -81,7 +81,7 @@ export const SpindleControl = () => {
         // If spindle is running, restart it with new direction
         if (isSpindleOn && targetSpeed > 0) {
             try {
-                await sendCommand('M5'); // Stop first
+                await sendCommand('M5 S0'); // Stop first
                 await new Promise(resolve => setTimeout(resolve, 100)); // Brief pause
                 const command = newDirection === 'CW' ? `M3 S${targetSpeed}` : `M4 S${targetSpeed}`;
                 await sendCommand(command);

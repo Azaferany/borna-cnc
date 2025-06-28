@@ -9,6 +9,7 @@ import {ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {WindowControls} from "./components/WindowControls/WindowControls.tsx";
 import TourWrapper from "./components/Tour/Tour.tsx";
+import {AlarmModalProvider} from "./components/AlarmModal/AlarmModalProvider.tsx";
 
 function App() {
     const Router = isElectron() ? HashRouter : BrowserRouter;
@@ -19,7 +20,12 @@ function App() {
                 <GCodeBufferProvider>
                     <Router>
                         <Routes>
-                            <Route path={ROUTES.HOME} element={<><WindowControls/><HomePage/></>}/>
+                            <Route path={ROUTES.HOME} element={<>
+                                <AlarmModalProvider>
+                                    <WindowControls/>
+                                    <HomePage/>
+                                </AlarmModalProvider>
+                            </>}/>
                             <Route path={ROUTES.MACHINE_CONFIG} element={<><WindowControls/><GrblConfigPage/></>}/>
                         </Routes>
                     </Router>
