@@ -172,13 +172,11 @@ export const Console = () => {
         if (line.includes("$")) {
             return;
         }
-        // if(line == "ok" && !ShowGCodeOk)
-        // {
-        //     return;
-        // }
-        // else {
-        //     setShowGCodeOk(false);
-        // }
+        if (line == "ok" && !ShowGCodeOk) {
+            return;
+        } else {
+            setShowGCodeOk(false);
+        }
         setHistory(prev => [...prev, line]);
 
     },[ShowStatusResponse,ShowGCodeOffsetResponse,ShowGCodeOk,ShowActiveModesResponse],true);
