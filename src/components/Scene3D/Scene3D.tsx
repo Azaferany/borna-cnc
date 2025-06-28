@@ -24,7 +24,7 @@ export const Scene3D = () => {
     const [boundingBox, setBoundingBox] = useState<Box3 | null>(null);
     const [cameraControlsOpen, setCameraControlsOpen] = useState(false);
     const [legendOpen, setLegendOpen] = useState(false);
-    const [followToolhead, setFollowToolhead] = useState(true);
+    const [followToolhead, setFollowToolhead] = useState(false);
 
     // Color states
     const [rapidMoveColor, setRapidMoveColor] = useState("#ff0000");

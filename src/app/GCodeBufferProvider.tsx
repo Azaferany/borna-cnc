@@ -65,7 +65,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         try {
             console.log('Sending command:', command);
             await sendCommand(command);
-            setWaitingForOk(false); // Set true as we are now waiting for an 'ok'
+            setWaitingForOk(true); // Set true as we are now waiting for an 'ok'
         } catch (error) {
             console.error('Error sending command:', error);
             stopSending(); // Stop sending on error (calls the memoized stopSending from context)
@@ -78,16 +78,17 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
      * This function is memoized using useCallback to prevent unnecessary re-renders.
      */
     const sendNextLine = useCallback(async () => {
+        const nextLineIndex = lastSentLine; // Calculate the index of the next line to send
+
         // Skip if already waiting for an 'ok' or if buffer slots are low to prevent overflow
-        if (waitingForOk) {
+        if (waitingForOk && nextLineIndex > 10) {
             console.debug('AttemptSendNextLine skipped:', { isWaitingForOk: waitingForOk, availableBufferSlots });
             return;
         }
 
-        const nextLineIndex = lastSentLine; // Calculate the index of the next line to send
         const totalLines = bufferGCodesList?.length ?? 0;
 
-        if ((lastSentLine - (selectedGCodeLine ?? 0)) > 10) {
+        if ((lastSentLine - (selectedGCodeLine ?? 0)) > 15) {
             console.debug('AttemptSendNextLine skipped:', { buffered: (lastSentLine - (selectedGCodeLine ?? 0)), availableBufferSlots });
             return;
         }
@@ -191,7 +192,6 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         if (
             isConnected &&
             isSending &&
-            !waitingForOk && // local state
             status !== 'Hold' &&
             status !== 'Home'
         ) {
