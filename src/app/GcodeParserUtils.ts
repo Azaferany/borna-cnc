@@ -27,6 +27,25 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
     let isInches = false;
     let isMachineCoordinates = false;
 
+    // Track G92 offsets
+
+    let g92Offset: Omit<Point3D6Axis, "a" | "b" | "c"> & { a: number, b: number, c: number } = {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        x: 0,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        y: 0,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        z: 0,
+        a: 0,
+        b: 0,
+        c: 0,
+        ...workSpaces?.offsets.G92
+    };
+    let g92Active = true;
+
     // Track active M codes - newest first
     let activeMCodes: string[] = [];
 
@@ -173,6 +192,19 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                             } else if (value === 91) {
                                 command.isIncremental = true
                                 isIncrementalMode = true;
+                            } else if (value === 92) {
+                                // G92 - Set current position
+                                // This will be handled after processing X,Y,Z values
+                                command.isG92 = true;
+                            } else if (value === 92.1) {
+                                // G92.1 - Cancel G92 offset
+                                g92Offset = {x: 0, y: 0, z: 0, a: 0, b: 0, c: 0};
+                            } else if (value === 92.2) {
+                                // G92.2 - Suspend G92 offset
+                                g92Active = false;
+                            } else if (value === 92.3) {
+                                // G92.3 - Restore suspended G92 offset
+                                g92Active = true;
                             }
                             break;
                         case 'M':
@@ -196,6 +228,9 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                                     currentWorkSpace = "G54"
                                     isInches = false;
                                     isIncrementalMode = false;
+                                    // Reset G92 offset on program end
+                                    g92Offset = {x: 0, y: 0, z: 0, a: 0, b: 0, c: 0};
+                                    g92Active = false;
                                     // Reset active M codes on program end
                                     activeMCodes = [];
                                     command.activeMCodes = [];
@@ -272,28 +307,52 @@ export const parseGCode = (lines: string[],workSpaces: {offsets: GCodeOffsets,ac
                     }
             }
 
+            // Handle G92 command - Set current position
+            if (command.isG92) {
+                // Calculate G92 offset based on specified coordinates
+                if (newX !== undefined) {
+                    g92Offset.x = currentPosition.x - convertToMM(newX, isInches);
+                }
+                if (newY !== undefined) {
+                    g92Offset.y = currentPosition.y - convertToMM(newY, isInches);
+                }
+                if (newZ !== undefined) {
+                    g92Offset.z = currentPosition.z - convertToMM(newZ, isInches);
+                }
+                if (newA !== undefined) {
+                    g92Offset.a = currentPosition.a - newA;
+                }
+                if (newB !== undefined) {
+                    g92Offset.b = currentPosition.b - newB;
+                }
+                if (newC !== undefined) {
+                    g92Offset.c = currentPosition.c - newC;
+                }
+                g92Active = true;
+            }
+
             command.hasMove = hasMove;
             if (hasMove && [0,1,2,3].includes(command.commandCodeNumber) && command.commandCodeType === "G") {
                 // Convert to machine coordinates if needed
                 if (!isMachineCoordinates) {
                     command.endPoint = {
-                        x: newX !== undefined? newX + workSpaces.offsets[command.activeWorkSpace].x : command.startPoint.x,
-                        y: newY !== undefined? newY + workSpaces.offsets[command.activeWorkSpace].y : command.startPoint.y,
-                        z: newZ !== undefined? newZ + workSpaces.offsets[command.activeWorkSpace].z : command.startPoint.z,
+                        x: newX !== undefined ? newX + workSpaces.offsets[command.activeWorkSpace].x + (g92Active ? g92Offset.x : 0) : command.startPoint.x,
+                        y: newY !== undefined ? newY + workSpaces.offsets[command.activeWorkSpace].y + (g92Active ? g92Offset.y : 0) : command.startPoint.y,
+                        z: newZ !== undefined ? newZ + workSpaces.offsets[command.activeWorkSpace].z + (g92Active ? g92Offset.z : 0) : command.startPoint.z,
 
-                        a: newA !== undefined? newA + (workSpaces.offsets[command.activeWorkSpace].a ?? 0) : command.startPoint.a,
-                        b: newB !== undefined? newB + (workSpaces.offsets[command.activeWorkSpace].b ?? 0) : command.startPoint.b,
-                        c: newC !== undefined? newC + (workSpaces.offsets[command.activeWorkSpace].c ?? 0) : command.startPoint.c
+                        a: newA !== undefined ? newA + (workSpaces.offsets[command.activeWorkSpace].a ?? 0) + (g92Active ? g92Offset.a : 0) : command.startPoint.a,
+                        b: newB !== undefined ? newB + (workSpaces.offsets[command.activeWorkSpace].b ?? 0) + (g92Active ? g92Offset.b : 0) : command.startPoint.b,
+                        c: newC !== undefined ? newC + (workSpaces.offsets[command.activeWorkSpace].c ?? 0) + (g92Active ? g92Offset.c : 0) : command.startPoint.c
                     };
 
                 } else {
                     command.endPoint = {
-                        x: newX !== undefined ? newX : command.startPoint.x,
-                        y: newY !== undefined ? newY : command.startPoint.y,
-                        z: newZ !== undefined ? newZ : command.startPoint.z,
-                        a: newA !== undefined ? newA : command.startPoint.a,
-                        b: newB !== undefined ? newB : command.startPoint.b,
-                        c: newC !== undefined ? newC : command.startPoint.c,
+                        x: newX !== undefined ? newX + (g92Active ? g92Offset.x : 0) : command.startPoint.x,
+                        y: newY !== undefined ? newY + (g92Active ? g92Offset.y : 0) : command.startPoint.y,
+                        z: newZ !== undefined ? newZ + (g92Active ? g92Offset.z : 0) : command.startPoint.z,
+                        a: newA !== undefined ? newA + (g92Active ? g92Offset.a : 0) : command.startPoint.a,
+                        b: newB !== undefined ? newB + (g92Active ? g92Offset.b : 0) : command.startPoint.b,
+                        c: newC !== undefined ? newC + (g92Active ? g92Offset.c : 0) : command.startPoint.c,
                     };
                 }
 

@@ -77,6 +77,7 @@ export interface GCodeCommand {
     activePlane?: Plane;
     dwellTime?: number;
     hasMove: boolean;
+    isG92?: boolean;
 }
 
 export interface GCodePointData {

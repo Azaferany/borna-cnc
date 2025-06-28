@@ -11,18 +11,22 @@ export const CAMERA_PRESETS = {
     top: { offset: new Vector3(0, 0, 1) },
     front: { offset: new Vector3(0, 1, 0) },
     side: {offset: new Vector3(1, 0, 0)},
-    iso: {offset: new Vector3(1, 1, 1)}
+    iso: {offset: new Vector3(1, 1, 1)},
+    toolhead: {offset: new Vector3(100, 100, 100)},
 };
 
 // Camera Controller Component
-export const CameraController = ({preset, boundingBox, onPresetComplete}: {
+export const CameraController = ({preset, boundingBox, machineCoordinate, followToolhead, onPresetComplete}: {
     preset: keyof typeof CAMERA_PRESETS | null,
     boundingBox: Box3 | null,
+    machineCoordinate?: Vector3 | null,
+    followToolhead?: boolean,
     onPresetComplete?: () => void
 }) => {
     const { camera } = useThree();
     const controlsRef = useRef<TrackballControlsImpl>(null);
     const [hasInitialized, setHasInitialized] = useState(false);
+    const [lastToolheadPosition, setLastToolheadPosition] = useState<Vector3 | null>(null);
 
     const calculateCameraDistance = (box: Box3, camera: PerspectiveCamera) => {
         const size = new Vector3();
@@ -52,6 +56,27 @@ export const CameraController = ({preset, boundingBox, onPresetComplete}: {
 
             // Set the target to the center of the scene
             controlsRef.current?.target.set(0, 0, 0);
+            controlsRef.current?.update();
+
+            // Reset after animation
+            setTimeout(() => {
+                onPresetComplete?.();
+            }, 1000);
+            return;
+        }
+
+        if (preset == "toolhead" && machineCoordinate) {
+            const {offset} = CAMERA_PRESETS[preset];
+
+            // Position the camera relative to the toolhead position
+            camera.position.set(
+                machineCoordinate.x + offset.x,
+                machineCoordinate.y + offset.y,
+                machineCoordinate.z + offset.z
+            );
+
+            // Set the target to the toolhead position
+            controlsRef.current?.target.set(machineCoordinate.x, machineCoordinate.y, machineCoordinate.z);
             controlsRef.current?.update();
 
             // Reset after animation
@@ -99,7 +124,31 @@ export const CameraController = ({preset, boundingBox, onPresetComplete}: {
                 onPresetComplete?.();
             }, 1000);
         }
-    }, [preset, camera, boundingBox, onPresetComplete]);
+    }, [preset, camera, boundingBox, machineCoordinate, onPresetComplete]);
+
+    // Follow toolhead logic
+    useEffect(() => {
+        if (followToolhead && machineCoordinate && controlsRef.current) {
+            if (lastToolheadPosition) {
+                // Calculate the movement delta
+                const delta = new Vector3().subVectors(machineCoordinate, lastToolheadPosition);
+
+                // Move both camera and target by the same delta to maintain relative position
+                camera.position.add(delta);
+                controlsRef.current.target.add(delta);
+                controlsRef.current.update();
+            } else {
+                // First time following - set target to toolhead position
+                controlsRef.current.target.copy(machineCoordinate);
+                controlsRef.current.update();
+            }
+
+            setLastToolheadPosition(machineCoordinate.clone());
+        } else if (!followToolhead) {
+            // Reset last position when not following
+            setLastToolheadPosition(null);
+        }
+    }, [followToolhead, machineCoordinate, camera, lastToolheadPosition]);
 
     useEffect(() => {
         if (boundingBox && !hasInitialized && controlsRef.current && camera instanceof PerspectiveCamera) {

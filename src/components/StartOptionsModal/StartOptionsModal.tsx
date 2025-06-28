@@ -117,7 +117,7 @@ export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onC
 
                     {/* Start from line option */}
                     <div
-                        className={`p-4 rounded-lg border-2 transition-colors ${
+                        className={`p-4 rounded-lg border-2 transition-colors cursor-pointer ${
                             !isStartFromBeginning
                                 ? 'border-blue-500 bg-blue-500/10'
                                 : 'border-gray-600 hover:border-gray-500'

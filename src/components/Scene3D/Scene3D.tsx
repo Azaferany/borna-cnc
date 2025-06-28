@@ -11,7 +11,7 @@ import {ToolHead} from "./ToolHead.tsx";
 import {findGCodeCommandOrLatestBaseOnLine} from "../../app/findGCodeCommandOrLatestBaseOnLine.ts";
 import {useShallow} from "zustand/react/shallow";
 import {OffsetMarkers} from "./OffsetMarkers.tsx";
-import {type CAMERA_PRESETS, CameraController} from "./CameraController.tsx";
+import {CameraController} from "./CameraController.tsx";
 import {GridLabels} from "./GridLabels.tsx";
 
 export const Scene3D = () => {
@@ -19,11 +19,12 @@ export const Scene3D = () => {
     const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
     const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
     const [completeData, setCompleteData] = useState<GCodePointData | null>(null);
-    const [cameraPreset, setCameraPreset] = useState<keyof typeof CAMERA_PRESETS | null>(null);
+    const [cameraPreset, setCameraPreset] = useState<"center" | "top" | "front" | "side" | "iso" | "toolhead" | null>(null);
     const [showBoundingBox, setShowBoundingBox] = useState(false);
     const [boundingBox, setBoundingBox] = useState<Box3 | null>(null);
     const [cameraControlsOpen, setCameraControlsOpen] = useState(false);
     const [legendOpen, setLegendOpen] = useState(false);
+    const [followToolhead, setFollowToolhead] = useState(false);
 
     // Color states
     const [rapidMoveColor, setRapidMoveColor] = useState("#ff0000");
@@ -167,6 +168,13 @@ export const Scene3D = () => {
                                 Go to Start
                             </button>
                             <button
+                                onClick={() => setCameraPreset("toolhead")}
+                                disabled={!machineCoordinate}
+                                className={`px-3 py-1 bg-orange-600 hover:bg-orange-700 rounded text-sm ${!machineCoordinate ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                            >
+                                Go to Toolhead
+                            </button>
+                            <button
                                 onClick={() => setCameraPreset('top')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
                                 className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
@@ -196,18 +204,33 @@ export const Scene3D = () => {
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-2 pt-2 border-t border-gray-600">
-                            <input
-                                type="checkbox"
-                                id="show-bounding-box"
-                                checked={showBoundingBox}
-                                onChange={(e) => setShowBoundingBox(e.target.checked)}
-                                disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
-                                className={`w-4 h-4 ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            />
-                            <label htmlFor="show-bounding-box"
-                                   className={`cursor-pointer text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}>Show
-                                Bounding Box</label>
+                        <div className="flex flex-col gap-2 pt-2 border-t border-gray-600">
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="show-bounding-box"
+                                    checked={showBoundingBox}
+                                    onChange={(e) => setShowBoundingBox(e.target.checked)}
+                                    disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
+                                    className={`w-4 h-4 ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                />
+                                <label htmlFor="show-bounding-box"
+                                       className={`cursor-pointer text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}>Show
+                                    Bounding Box</label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="follow-toolhead"
+                                    checked={followToolhead}
+                                    onChange={(e) => setFollowToolhead(e.target.checked)}
+                                    disabled={!machineCoordinate}
+                                    className={`w-4 h-4 ${!machineCoordinate ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                />
+                                <label htmlFor="follow-toolhead"
+                                       className={`cursor-pointer text-sm ${!machineCoordinate ? 'opacity-50 cursor-not-allowed' : ''}`}>Follow
+                                    Toolhead</label>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -222,6 +245,8 @@ export const Scene3D = () => {
                 <CameraController
                     preset={cameraPreset}
                     boundingBox={boundingBox}
+                    machineCoordinate={machineCoordinate ? new Vector3(machineCoordinate.x, machineCoordinate.y, machineCoordinate.z) : null}
+                    followToolhead={followToolhead}
                     onPresetComplete={() => setCameraPreset(null)}
                 />
                 <ambientLight intensity={0.5} />
