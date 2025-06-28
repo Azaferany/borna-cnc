@@ -1,2 +1,8 @@
 {
+  "app": {
+    "connectionType": "Connection Type",
+    "connectionStatus": "Connection Status",
+    "loadGcodeFile": "Load G-code File",
+    "messageHistory": "Message History"
+  }
 }

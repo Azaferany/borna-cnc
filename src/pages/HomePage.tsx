@@ -74,7 +74,6 @@ function HomePage() {
                                             <ConnectionStatus/>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm font-medium">{t('app.connectionType')}</span>
                                             <ConnectionTypeToggle/>
                                         </div>
                                         <div className="flex items-center justify-between">

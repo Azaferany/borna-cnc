@@ -88,7 +88,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
 
         const totalLines = bufferGCodesList?.length ?? 0;
 
-        if ((lastSentLine - (selectedGCodeLine ?? 0)) > 15) {
+        if (Math.abs(lastSentLine - (selectedGCodeLine ?? 0)) > 15) {
             console.debug('AttemptSendNextLine skipped:', { buffered: (lastSentLine - (selectedGCodeLine ?? 0)), availableBufferSlots });
             return;
         }

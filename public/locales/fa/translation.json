@@ -1,2 +1,8 @@
 {
+  "app": {
+    "connectionType": "نوع اتصال",
+    "connectionStatus": "وضعیت اتصال",
+    "loadGcodeFile": "بارگذاری فایل G-code",
+    "messageHistory": "تاریخچه پیام‌ها"
+  }
 }
