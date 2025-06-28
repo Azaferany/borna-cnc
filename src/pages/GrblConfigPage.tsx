@@ -355,7 +355,7 @@ const PARAMETER_DESCRIPTIONS: Record<number, {
     61: {name: 'Ignore safety door', description: 'Ignore safety door signal when idle', datatype: 'boolean'},
     62: {name: 'Sleep enable', description: 'Enable sleep function', datatype: 'boolean'},
     63: {name: 'Disable laser hold', description: 'Disable laser during hold', datatype: 'boolean'},
-    64: {name: 'Force alarm', description: 'Force grbl to enter alarm mode on startup', datatype: 'boolean'},
+    64: {name: 'Force alarm', description: 'Force to enter alarm mode on startup', datatype: 'boolean'},
     65: {name: 'Probe feed override', description: 'Allow feed rate override during probing', datatype: 'boolean'},
 
     // Axis Settings

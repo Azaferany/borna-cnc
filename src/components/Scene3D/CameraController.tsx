@@ -1,7 +1,7 @@
 // Camera presets
 import {Vector3, Box3, PerspectiveCamera} from "three";
 import {useThree} from "@react-three/fiber";
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {TrackballControls} from "@react-three/drei";
 import {TrackballControls as TrackballControlsImpl} from 'three-stdlib';
 
@@ -27,6 +27,7 @@ export const CameraController = ({preset, boundingBox, machineCoordinate, follow
     const controlsRef = useRef<TrackballControlsImpl>(null);
     const [hasInitialized, setHasInitialized] = useState(false);
     const [lastToolheadPosition, setLastToolheadPosition] = useState<Vector3 | null>(null);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
     const calculateCameraDistance = (box: Box3, camera: PerspectiveCamera) => {
         const size = new Vector3();
@@ -42,6 +43,27 @@ export const CameraController = ({preset, boundingBox, machineCoordinate, follow
         // We want objectSize to be 80% of the view, so we divide by 0.8
         return (maxDim / 3) / Math.cosh(fovRad / 2) / 0.8;
     };
+
+    // Function to follow toolhead
+    const handleFollowToolhead = useCallback(() => {
+        if (machineCoordinate && controlsRef.current) {
+            if (lastToolheadPosition) {
+                // Calculate the movement delta
+                const delta = new Vector3().subVectors(machineCoordinate, lastToolheadPosition);
+
+                // Move both camera and target by the same delta to maintain relative position
+                camera.position.add(delta);
+                controlsRef.current.target.add(delta);
+                controlsRef.current.update();
+            } else {
+                // First time following - set target to toolhead position
+                controlsRef.current.target.copy(machineCoordinate);
+                controlsRef.current.update();
+            }
+
+            setLastToolheadPosition(machineCoordinate.clone());
+        }
+    }, [camera.position, lastToolheadPosition, machineCoordinate]);
 
     useEffect(() => {
         if (preset == "center") {
@@ -126,29 +148,39 @@ export const CameraController = ({preset, boundingBox, machineCoordinate, follow
         }
     }, [preset, camera, boundingBox, machineCoordinate, onPresetComplete]);
 
-    // Follow toolhead logic
+    // Follow toolhead logic with 3-second interval
     useEffect(() => {
-        if (followToolhead && machineCoordinate && controlsRef.current) {
-            if (lastToolheadPosition) {
-                // Calculate the movement delta
-                const delta = new Vector3().subVectors(machineCoordinate, lastToolheadPosition);
-
-                // Move both camera and target by the same delta to maintain relative position
-                camera.position.add(delta);
-                controlsRef.current.target.add(delta);
-                controlsRef.current.update();
-            } else {
-                // First time following - set target to toolhead position
-                controlsRef.current.target.copy(machineCoordinate);
-                controlsRef.current.update();
+        if (followToolhead && machineCoordinate) {
+            // Clear any existing interval
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
             }
 
-            setLastToolheadPosition(machineCoordinate.clone());
-        } else if (!followToolhead) {
+            // Set up interval to follow toolhead every 3 seconds
+            intervalRef.current = setInterval(() => {
+                handleFollowToolhead();
+            }, 5000);
+
+            // Initial follow
+            handleFollowToolhead();
+
+            // Cleanup function
+            return () => {
+                if (intervalRef.current) {
+                    clearInterval(intervalRef.current);
+                    intervalRef.current = null;
+                }
+            };
+        } else {
+            // Clear interval when not following
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
             // Reset last position when not following
             setLastToolheadPosition(null);
         }
-    }, [followToolhead, machineCoordinate, camera, lastToolheadPosition]);
+    }, [followToolhead, handleFollowToolhead, machineCoordinate]);
 
     useEffect(() => {
         if (boundingBox && !hasInitialized && controlsRef.current && camera instanceof PerspectiveCamera) {
@@ -178,6 +210,15 @@ export const CameraController = ({preset, boundingBox, machineCoordinate, follow
             setHasInitialized(true);
         }
     }, [boundingBox, camera, hasInitialized]);
+
+    // Cleanup interval on unmount
+    useEffect(() => {
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
+    }, []);
 
     return <TrackballControls
         makeDefault

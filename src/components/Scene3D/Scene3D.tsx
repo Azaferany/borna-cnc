@@ -229,7 +229,7 @@ export const Scene3D = () => {
                                 />
                                 <label htmlFor="follow-toolhead"
                                        className={`cursor-pointer text-sm ${!machineCoordinate ? 'opacity-50 cursor-not-allowed' : ''}`}>Follow
-                                    Toolhead</label>
+                                    Toolhead (Every 5s)</label>
                             </div>
                         </div>
                     </div>
