@@ -55,7 +55,8 @@
       "spindle mask": "spindle mask",
       "control mask": "control mask",
       "report mask": "report mask",
-      "network mask": "network mask"
+      "network mask": "network mask",
+      "homing mask": "homing mask"
     },
     "booleanOptions": {
       "false": "False (0)",

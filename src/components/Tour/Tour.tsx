@@ -165,10 +165,9 @@ const TourWrapper: React.FC<{ children: React.ReactNode }> = ({children}) => {
                     <p>{t('tour.resetButtons.description')}</p>
                     <div className="mt-4 flex justify-center">
                         <button
-                            onClick={() => {
-                                const {markTourCompleted, setTourOpen} = useStore.getState();
+                            onClick={async () => {
                                 setTourOpen(false);
-                                markTourCompleted();
+                                await markTourCompleted();
                             }}
                             className="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
                         >
@@ -183,18 +182,18 @@ const TourWrapper: React.FC<{ children: React.ReactNode }> = ({children}) => {
     return (
         <TourProvider
             steps={tourSteps}
-            onClickClose={() => {
+            onClickClose={async () => {
                 setTourOpen(false);
-                markTourCompleted();
+                await markTourCompleted();
             }}
-            onClickMask={() => {
+            onClickMask={async () => {
                 setTourOpen(false);
-                markTourCompleted();
+                await markTourCompleted();
             }}
             afterOpen={() => setTourOpen(true)}
-            beforeClose={() => {
+            beforeClose={async () => {
                 setTourOpen(false);
-                markTourCompleted();
+                await markTourCompleted();
             }}
             className="tour-provider z-[9999999999999]"
             padding={{mask: [8, 8, 8, 8]}}

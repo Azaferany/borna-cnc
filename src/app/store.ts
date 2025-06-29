@@ -9,6 +9,7 @@ import {
 } from "../types/GCodeTypes.ts";
 import GRBLWebSocket from "./GRBLWebSocket.ts";
 import GRBLSerial from "./GRBLSerial.ts";
+import {secureStorage} from './secureStorage';
 
 export type ConnectionType = 'websocket' | 'serial';
 
@@ -58,9 +59,10 @@ interface CNCState {
 
     // Tour state
     tourState: TourState;
+    initializeTourState: () => Promise<void>;
     setTourOpen: (isOpen: boolean) => void;
-    markTourCompleted: () => void;
-    resetTourState: () => void;
+    markTourCompleted: () => Promise<void>;
+    resetTourState: () => Promise<void>;
 
     isSending: boolean;
     bufferType?: BufferType,
@@ -199,35 +201,64 @@ export const useStore = create<CNCState>((set) => ({
     updateDwell: (dwell) => set({ dwell }),
     updateDwellWithPerv: (fn) => set(({dwell}) => ({dwell: fn(dwell)})),
 
-    // Tour state initialization
+    // Tour state initialization (default values, will be updated async)
     tourState: {
-        isFirstTime: !localStorage.getItem('tour-completed'),
+        isFirstTime: true,
         isTourOpen: false,
-        hasCompletedTour: !!localStorage.getItem('tour-completed'),
+        hasCompletedTour: false,
+    },
+    initializeTourState: async () => {
+        try {
+            const tourCompleted = await secureStorage.getItem('tour-completed');
+            const hasCompletedTour = !!tourCompleted;
+            console.log(`🎯 Tour state loaded: hasCompletedTour = ${hasCompletedTour}`);
+
+            set((state) => ({
+                tourState: {
+                    ...state.tourState,
+                    isFirstTime: !hasCompletedTour,
+                    hasCompletedTour: hasCompletedTour
+                }
+            }));
+        } catch (error) {
+            console.warn('❌ Failed to load tour state from secure storage:', error);
+            // Keep default values
+        }
     },
     setTourOpen: (isOpen: boolean) => set((state) => ({
         tourState: {...state.tourState, isTourOpen: isOpen}
     })),
-    markTourCompleted: () => {
-        localStorage.setItem('tour-completed', 'true');
-        set((state) => ({
-            tourState: {
-                ...state.tourState,
+    markTourCompleted: async () => {
+        try {
+            const saveSuccess = await secureStorage.setItem('tour-completed', 'true');
+            console.log(`🎯 Tour completion saved: ${saveSuccess}`);
 
-                hasCompletedTour: true,
-                isFirstTime: false,
-                isTourOpen: false
-            }
-        }));
+            set((state) => ({
+                tourState: {
+                    ...state.tourState,
+                    hasCompletedTour: true,
+                    isFirstTime: false,
+                    //isTourOpen: false
+                }
+            }));
+        } catch (error) {
+            console.error('❌ Failed to save tour completion to secure storage:', error);
+        }
     },
-    resetTourState: () => {
-        localStorage.removeItem('tour-completed');
-        set(() => ({
-            tourState: {
-                isFirstTime: true,
-                isTourOpen: false,
-                hasCompletedTour: false
-            }
-        }));
+    resetTourState: async () => {
+        try {
+            const removeSuccess = await secureStorage.removeItem('tour-completed');
+            console.log(`🎯 Tour state reset: ${removeSuccess}`);
+
+            set(() => ({
+                tourState: {
+                    isFirstTime: true,
+                    isTourOpen: false,
+                    hasCompletedTour: false
+                }
+            }));
+        } catch (error) {
+            console.error('❌ Failed to reset tour state in secure storage:', error);
+        }
     },
 }))

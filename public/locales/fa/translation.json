@@ -55,7 +55,8 @@
       "spindle mask": "ماسک اسپیندل",
       "control mask": "ماسک کنترل",
       "report mask": "ماسک گزارش",
-      "network mask": "ماسک شبکه"
+      "network mask": "ماسک شبکه",
+      "homing mask": "ماسک بازگشت به خانه"
     },
     "booleanOptions": {
       "false": "غلط (0)",

@@ -25,7 +25,7 @@ interface GrblParameter {
     description: string;
     hasDescription: boolean;
     group: string;
-    datatype: 'integer' | 'float' | 'boolean' | 'string' | 'axis_mask' | 'coolant_mask' | 'spindle_mask' | 'control_mask' | 'report_mask' | 'network_mask';
+    datatype: 'integer' | 'float' | 'boolean' | 'string' | 'axis_mask' | 'coolant_mask' | 'spindle_mask' | 'control_mask' | 'report_mask' | 'network_mask' | 'homing_mask';
     min?: number;
     max?: number;
     options?: Array<{ value: string, label: string }>;
@@ -34,7 +34,7 @@ interface GrblParameter {
 const PARAMETER_DESCRIPTIONS: Record<number, {
     name: string;
     description: string;
-    datatype: 'integer' | 'float' | 'boolean' | 'string' | 'axis_mask' | 'coolant_mask' | 'spindle_mask' | 'control_mask' | 'report_mask' | 'network_mask';
+    datatype: 'integer' | 'float' | 'boolean' | 'string' | 'axis_mask' | 'coolant_mask' | 'spindle_mask' | 'control_mask' | 'report_mask' | 'network_mask' | 'homing_mask';
     min?: number;
     max?: number;
     options?: Array<{ value: string, label: string }>
@@ -73,7 +73,7 @@ const PARAMETER_DESCRIPTIONS: Record<number, {
     22: {
         name: 'Homing cycle',
         description: 'Homing cycle enable and features (bitmask)',
-        datatype: 'integer',
+        datatype: 'homing_mask',
         min: 0,
         max: 255
     },
@@ -111,44 +111,38 @@ const PARAMETER_DESCRIPTIONS: Record<number, {
     44: {
         name: 'Homing priority 1',
         description: 'Axis priority for homing (first)',
-        datatype: 'integer',
-        min: 0,
-        max: 5
+        datatype: 'axis_mask'
+
     },
     45: {
         name: 'Homing priority 2',
         description: 'Axis priority for homing (second)',
-        datatype: 'integer',
-        min: 0,
-        max: 5
+        datatype: 'axis_mask'
+
     },
     46: {
         name: 'Homing priority 3',
         description: 'Axis priority for homing (third)',
-        datatype: 'integer',
-        min: 0,
-        max: 5
+        datatype: 'axis_mask'
+
     },
     47: {
         name: 'Homing priority 4',
         description: 'Axis priority for homing (fourth)',
-        datatype: 'integer',
-        min: 0,
-        max: 5
+        datatype: 'axis_mask'
+
     },
     48: {
         name: 'Homing priority 5',
         description: 'Axis priority for homing (fifth)',
-        datatype: 'integer',
-        min: 0,
-        max: 5
+        datatype: 'axis_mask'
+
     },
     49: {
         name: 'Homing priority 6',
         description: 'Axis priority for homing (sixth)',
-        datatype: 'integer',
-        min: 0,
-        max: 5
+        datatype: 'axis_mask'
+
     },
 
     // Spindle Settings
@@ -824,6 +818,46 @@ function GrblConfigPage() {
                         min="0"
                         max="255"
                     />
+                );
+
+            case 'homing_mask':
+                return (
+                    <div className="space-y-2">
+                        <input
+                            type="number"
+                            value={param.value}
+                            onChange={(e) => handleInputChange(param.id, e.target.value)}
+                            className={inputClasses}
+                            disabled={isDisabled}
+                            title={param.description}
+                            min="0"
+                            max="255"
+                        />
+                        <div className="text-xs text-gray-400 grid grid-cols-2 gap-1">
+                            {['Enable homing', 'Single axis homing', 'Homing on startup', 'Set origin to 0', 'Two switches per pin', 'Manual homing', 'Override locks', 'Keep homed status'].map((homingFeature, idx) => {
+                                const mask = parseInt(param.value || '0');
+                                const isSet = (mask & (1 << idx)) !== 0;
+                                return (
+                                    <label key={homingFeature} className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={isSet}
+                                            onChange={(e) => {
+                                                const currentMask = parseInt(param.value || '0');
+                                                const newMask = e.target.checked
+                                                    ? currentMask | (1 << idx)
+                                                    : currentMask & ~(1 << idx);
+                                                handleInputChange(param.id, newMask.toString());
+                                            }}
+                                            className="mr-1 text-blue-500"
+                                            disabled={isDisabled}
+                                        />
+                                        {homingFeature}
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    </div>
                 );
 
             default:
