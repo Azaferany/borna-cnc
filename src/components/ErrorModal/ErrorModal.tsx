@@ -1,6 +1,10 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import {XMarkIcon, ExclamationTriangleIcon} from '@heroicons/react/24/solid';
 import Modal from 'react-modal';
+import {useStore} from '../../app/store';
+import {UnitDisplay} from '../UnitDisplay/UnitDisplay';
+import {useShallow} from "zustand/react/shallow";
 
 // Set the app element for accessibility
 Modal.setAppElement('#root');
@@ -103,8 +107,13 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
                                                           errorMessage,
                                                           errorLine,
                                                           selectedGCodeLine,
-                                                          selectedGCodeContent
+                                                          selectedGCodeContent,
                                                       }) => {
+    const {t} = useTranslation();
+    const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
+    const workPlaceCoordinateOffset = useStore(useShallow(x => x.workPlaceCoordinateOffset));
+    const activeModes = useStore(useShallow(x => x.activeModes));
+    const machineConfig = useStore(useShallow(x => x.machineConfig));
     // Extract error code from error message
     const extractErrorCode = (message: string): number | undefined => {
         const match = message.match(/error:(\d+)/i);
@@ -112,7 +121,15 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
     };
 
     const errorCode = extractErrorCode(errorMessage);
-    const errorDescription = errorCode ? GRBL_ERROR_CODES[errorCode] : undefined;
+    const getErrorDescription = (code: number): string | undefined => {
+        try {
+            return t(`errorModal.grblErrors.${code}`);
+        } catch {
+            return GRBL_ERROR_CODES[code];
+        }
+    };
+
+    const errorDescription = errorCode ? getErrorDescription(errorCode) : undefined;
 
     const modalStyles = {
         overlay: {
@@ -152,12 +169,12 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <ExclamationTriangleIcon className="h-6 w-6 text-red-500"/>
-                            <h2 className="text-xl font-bold text-white">G-Code Error</h2>
+                            <h2 className="text-xl font-bold text-white">{t('errorModal.title')}</h2>
                         </div>
                         <button
                             onClick={onClose}
                             className="text-gray-400 hover:text-white transition-colors p-1"
-                            aria-label="Close error modal"
+                            aria-label={t('errorModal.closeAriaLabel')}
                         >
                             <XMarkIcon className="h-5 w-5"/>
                         </button>
@@ -169,22 +186,22 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
                     <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
                         <div className="flex items-center gap-2 mb-2">
                             <ExclamationTriangleIcon className="h-5 w-5 text-red-400"/>
-                            <h3 className="text-lg font-semibold text-red-400">G-Code Execution Stopped</h3>
+                            <h3 className="text-lg font-semibold text-red-400">{t('errorModal.executionStopped')}</h3>
                         </div>
                         <p className="text-gray-300 text-sm console-text-selectable">
-                            encountered an error while processing G-code and has stopped execution.
+                            {t('errorModal.executionStoppedDescription')}
                         </p>
                     </div>
 
                     {/* Error Details */}
                     <div className="bg-gray-900/50 border border-gray-600 rounded-lg p-4">
-                        <h4 className="text-white font-semibold mb-3">Error Details</h4>
+                        <h4 className="text-white font-semibold mb-3">{t('errorModal.errorDetails')}</h4>
 
                         {/* Error Code */}
                         {errorCode && (
                             <div className="mb-3">
                                 <div className="text-white font-bold text-lg mb-1 console-text-selectable">
-                                    Error Code: {errorCode}
+                                    {t('errorModal.errorCode')} {errorCode}
                                 </div>
                                 {errorDescription && (
                                     <div
@@ -199,7 +216,8 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
                         {/* Problematic Line */}
                         {errorLine && (
                             <div className="mb-3">
-                                <div className=" text-yellow-400 text-white font-semibold mb-1">Problematic G-Code:
+                                <div
+                                    className=" text-yellow-400 text-white font-semibold mb-1">{t('errorModal.problematicGCode')}
                                 </div>
                                 <div
                                     className="text-yellow-400 text-sm font-mono bg-gray-800 p-2 rounded console-text-selectable">
@@ -207,19 +225,56 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
                                 </div>
                             </div>
                         )}
-                        {/* Selected G-Code Line */}
-                        {selectedGCodeLine && (
-                            <div>
-                                <div className="text-white font-semibold mb-1">Stopped During G-Code Line:</div>
-                                <div
-                                    className="text-blue-400 text-sm font-mono bg-gray-800 p-2 rounded console-text-selectable">
-                                    Line {selectedGCodeLine}: {selectedGCodeContent || 'No content available'}
-                                </div>
-                            </div>
-                        )}
 
 
                     </div>
+
+                    {/* Current Coordinates */}
+                    {(machineCoordinate || workPlaceCoordinateOffset) && (
+                        <div className="bg-gray-900/50 border border-gray-600 rounded-lg p-4">
+                            {/* Selected G-Code Line */}
+                        {selectedGCodeLine && (
+                            <div className="mb-3">
+                                <div className="text-white font-semibold mb-1">{t('errorModal.stoppedDuringLine')}</div>
+                                <div
+                                    className="text-blue-400 text-sm font-mono bg-gray-800 p-2 rounded console-text-selectable">
+                                    {t('errorModal.line')} {selectedGCodeLine}: {selectedGCodeContent || t('errorModal.noContentAvailable')}
+                                </div>
+                            </div>
+                        )}
+                            {/* Machine Coordinates */}
+                            {machineCoordinate && (
+                                <div className="mb-3">
+                                    <div
+                                        className="text-green-400 font-semibold mb-1">{t('errorModal.machineCoordinates')}:
+                                    </div>
+                                    <div
+                                        className="text-green-300 text-sm font-mono bg-gray-800 p-2 rounded console-text-selectable">
+                                        {machineConfig?.activeAxes.x && `X: ${machineCoordinate.x.toFixed(3)} `}
+                                        {machineConfig?.activeAxes.y && `Y: ${machineCoordinate.y.toFixed(3)} `}
+                                        {machineConfig?.activeAxes.z && `Z: ${machineCoordinate.z.toFixed(3)} `}
+                                        {activeModes?.UnitsType && <UnitDisplay/>}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Work Coordinates */}
+                            {workPlaceCoordinateOffset && (
+                                <div>
+                                    <div className="text-blue-400 font-semibold mb-1">
+                                        {t('errorModal.workCoordinates')} ({activeModes?.WorkCoordinateSystem || 'G54'}):
+                                    </div>
+                                    <div
+                                        className="text-blue-300 text-sm font-mono bg-gray-800 p-2 rounded console-text-selectable">
+                                        {machineConfig?.activeAxes.x && `X: ${(machineCoordinate.x - workPlaceCoordinateOffset.x).toFixed(3)} `}
+                                        {machineConfig?.activeAxes.y && `Y: ${(machineCoordinate.y - workPlaceCoordinateOffset.y).toFixed(3)} `}
+                                        {machineConfig?.activeAxes.z && `Z: ${(machineCoordinate.z - workPlaceCoordinateOffset.z).toFixed(3)} `}
+                                        {activeModes?.UnitsType && <UnitDisplay/>}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
@@ -227,7 +282,7 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
                             onClick={onClose}
                             className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
                         >
-                            Close
+                            {t('errorModal.close')}
                         </button>
                     </div>
                 </div>

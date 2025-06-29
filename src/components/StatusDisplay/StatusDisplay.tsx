@@ -1,5 +1,6 @@
 import { useStore } from '../../app/store';
 import {useState, memo} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     ChevronUpIcon,
     ChevronDownIcon,
@@ -35,13 +36,15 @@ const CoordRow = memo(({
     g92Offset: number;
     isSending: boolean;
     status: string;
-}) => (
+}) => {
+    const {t} = useTranslation();
+    return (
     <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-1 py-1 border-b border-gray-700 items-center">
         <div className="font-bold text-gray-300 flex items-center justify-center gap-1">
             <button
                 onClick={() => onHome(axis)}
                 className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                title={`Home ${axis} axis`}
+                title={t('status.homeAxisTooltip', {axis})}
                 disabled={!isConnected || isSending || status !== 'Idle'}
                 data-tour="home-buttons"
             >
@@ -55,30 +58,32 @@ const CoordRow = memo(({
             <button
                 onClick={() => onSetZero(axis)}
                 className={`w-full px-1 py-1 mr-1 text-[10px] bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                title={`Set ${axis} to zero`}
+                title={t('status.setZeroTooltip', {axis})}
                 disabled={!isConnected || isSending || status !== 'Idle'}
                 data-tour="zero-buttons"
             >
-                <span>Zero</span>
+                <span>{t('status.zero')}</span>
                 <MapPinIcon className="w-4 h-4 font-bold"/>
 
             </button>
             <button
                 onClick={() => onReset(axis)}
                 className={`w-full px-1 py-1 mr-1 text-[10px] bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle' || g92Offset === 0) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                title={`Reset ${axis} offset`}
+                title={t('status.resetOffsetTooltip', {axis})}
                 disabled={!isConnected || isSending || status !== 'Idle' || g92Offset === 0}
                 data-tour="reset-buttons"
             >
-                <span>Reset</span>
+                <span>{t('status.reset')}</span>
                 <ArrowUturnUpIcon className="w-4 h-4 font-bold"/>
 
             </button>
         </div>
     </div>
-));
+    );
+});
 
 export const StatusDisplay = () => {
+    const {t} = useTranslation();
     const [isDetailsOpen, setIsDetailsOpen] = useState(true);
     const [isActiveModesOpen, setIsActiveModesOpen] = useState(false);
     const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
@@ -164,15 +169,18 @@ export const StatusDisplay = () => {
     return (
         <div className="bg-gray-800 p-4 rounded-lg space-y-4">
             <div className="flex items-center gap-4">
-                <h2 className="text-xl font-bold text-gray-100">Position</h2>
+                <h2 className="text-xl font-bold text-gray-100">{t('status.position')}</h2>
                 <span className={`px-4 py-1.5 text-base font-bold rounded-full ${
                     status === 'Run' ? 'bg-green-500 text-white' :
                         status === 'Idle' ? 'bg-blue-500 text-white' :
                             status === 'Alarm' ? 'bg-red-500 text-white' :
                                 status === 'Hold' ? 'bg-yellow-500 text-black' :
-                                    'bg-gray-500 text-white'
+                                    status === 'Door' ? 'bg-orange-500 text-white' :
+                                        status === 'Jog' ? 'bg-purple-500 text-white' :
+                                            !status ? 'bg-gray-600 text-white' :
+                                                'bg-gray-500 text-white'
                 }`}>
-                    {status || 'Unknown'}
+                    {status ? (t(`status.statusValues.${status}`) || status) : t('status.statusValues.NotConnected')}
                 </span>
 
             </div>
@@ -180,43 +188,43 @@ export const StatusDisplay = () => {
                 <div className="flex items-center justify-center gap-1">
                     <button
                         onClick={() => handleHome(getActiveAxesForHome())}
-                        title={`Home all active axes`}
+                        title={t('status.homeAllTooltip')}
                         className={`w-full px-1 py-1 mr-1 text-[10px] bg-green-600 hover:bg-green-700 active:bg-green-900 text-white rounded transition-colors flex items-center justify-center gap-1 ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         disabled={!isConnected || isSending || status !== 'Idle'}
                         data-tour="home-buttons"
                     >
                         <HomeIcon className="w-4 h-4" />
                     </button>
-                    Axis
+                    {t('status.axis')}
                 </div>
                 <div className="text-blue-400 text-xs flex items-center justify-center"
                      data-tour="relative-coordinates">
-                    Relative (<UnitDisplay/>)
+                    {t('status.relative')} (<UnitDisplay/>)
                 </div>
                 <div className="text-green-400 text-xs flex items-center justify-center"
                      data-tour="absolute-coordinates">
-                    Absolute (<UnitDisplay/>)
+                    {t('status.absolute')} (<UnitDisplay/>)
                 </div>
                 <div className="flex items-center justify-center gap-2  ">
                     <button
                         onClick={handleSetZeroAll}
                         className={`py-1 px-1 text-xs gap-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-900 text-white rounded-md transition-colors flex items-center justify-center ${(!isConnected || isSending || status !== 'Idle') ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                        title="Set zero for all active axes"
+                        title={t('status.setZeroAllTooltip')}
                         disabled={!isConnected || isSending || status !== 'Idle'}
                         data-tour="zero-buttons"
                     >
                         <MapPinIcon className="w-3 h-3"/>
-                        all
+                        {t('status.all')}
                     </button>
                     <button
                         onClick={handleResetAll}
                         className={`py-1 px-1 text-xs gap-1 bg-red-600 hover:bg-red-700 active:bg-red-900 text-white rounded-md transition-colors flex items-center justify-center ${(!isConnected || isSending || status !== 'Idle' || ((gCodeOffsets?.G92?.x ?? 0) == 0 && (gCodeOffsets?.G92?.y ?? 0) == 0 && (gCodeOffsets?.G92?.z ?? 0) == 0)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                        title="Reset all temporary work offsets for active axes"
+                        title={t('status.resetAllTooltip')}
                         disabled={!isConnected || isSending || status !== 'Idle' || ((gCodeOffsets?.G92?.x ?? 0) == 0 && (gCodeOffsets?.G92?.y ?? 0) == 0 && (gCodeOffsets?.G92?.z ?? 0) == 0)}
                         data-tour="reset-buttons"
                     >
                         <ArrowUturnUpIcon className="w-3 h-3"/>
-                        all
+                        {t('status.all')}
                     </button>
                 </div>
             </div>
@@ -279,7 +287,7 @@ export const StatusDisplay = () => {
                                     <ChevronDownIcon className="w-4 h-4 font-bold" />
                                 )}
                             </span>
-                            <span>Details</span>
+                            <span>{t('status.details')}</span>
                         </button>
                         <div
                             className={`grid transition-all duration-300 ease-in-out ${
@@ -288,9 +296,10 @@ export const StatusDisplay = () => {
                         >
                             <div className="overflow-hidden">
                                 <div className="px-2 mt-2 space-y-1">
-                                    <InfoRow label="Last Sent Line" value={lastSentLine ?? "Not Sending"}/>
-                                    <InfoRow label="Buffer Slots" value={availableBufferSlots}/>
-                                    <InfoRow label="Selected Line" value={selectedGCodeLine ?? '-'}/>
+                                    <InfoRow label={t('status.lastSentLine')}
+                                             value={lastSentLine ?? t('status.notSending')}/>
+                                    <InfoRow label={t('status.bufferSlots')} value={availableBufferSlots}/>
+                                    <InfoRow label={t('status.selectedLine')} value={selectedGCodeLine ?? '-'}/>
                                 </div>
                             </div>
                         </div>
@@ -310,7 +319,7 @@ export const StatusDisplay = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
-                            Active Modes
+                            {t('status.activeModes')}
                         </div>
                         <span className="transition-transform duration-300">
                             {isActiveModesOpen ? (
@@ -328,16 +337,16 @@ export const StatusDisplay = () => {
                         <div className="overflow-hidden">
                             <div className="flex flex-wrap gap-2">
                                 <span className="px-2 py-1 text-xs bg-blue-600 text-white rounded-full">
-                                    Work Coordinate System: {activeModes.WorkCoordinateSystem}
+                                    {t('status.workCoordinateSystem')}: {activeModes.WorkCoordinateSystem}
                                 </span>
                                 <span className="px-2 py-1 text-xs bg-green-600 text-white rounded-full">
-                                    Arc Plane: {activeModes.Plane === Plane.XY ? 'XY Plane' : activeModes.Plane === Plane.XZ ? 'XZ Plane' : 'YZ Plane'}
+                                    {t('status.arcPlane')}: {activeModes.Plane === Plane.XY ? t('status.xyPlane') : activeModes.Plane === Plane.XZ ? t('status.xzPlane') : t('status.yzPlane')}
                                 </span>
                                 <span className="px-2 py-1 text-xs bg-purple-600 text-white rounded-full">
-                                    Units Type: {activeModes.UnitsType}
+                                    {t('status.unitsType')}: {t(`status.unitsTypes.${activeModes.UnitsType}`) || activeModes.UnitsType}
                                 </span>
                                 <span className="px-2 py-1 text-xs bg-yellow-600 text-white rounded-full">
-                                    Positioning Mode: {activeModes.PositioningMode}
+                                    {t('status.positioningMode')}: {t(`status.positioningModes.${activeModes.PositioningMode}`) || activeModes.PositioningMode}
                                 </span>
                             </div>
                         </div>
@@ -348,13 +357,13 @@ export const StatusDisplay = () => {
                                 {activeModes.WorkCoordinateSystem}
                             </span>
                             <span className="px-2 py-1 text-xs bg-green-600 text-white rounded-full">
-                                {activeModes.Plane === Plane.XY ? 'XY Plane' : activeModes.Plane === Plane.XZ ? 'XZ Plane' : 'YZ Plane'}
+                                {activeModes.Plane === Plane.XY ? t('status.xyPlane') : activeModes.Plane === Plane.XZ ? t('status.xzPlane') : t('status.yzPlane')}
                             </span>
                             <span className="px-2 py-1 text-xs bg-purple-600 text-white rounded-full">
-                                {activeModes.UnitsType}
+                                {t(`status.unitsTypes.${activeModes.UnitsType}`) || activeModes.UnitsType}
                             </span>
                             <span className="px-2 py-1 text-xs bg-yellow-600 text-white rounded-full">
-                                {activeModes.PositioningMode}
+                                {t(`status.positioningModes.${activeModes.PositioningMode}`) || activeModes.PositioningMode}
                             </span>
                         </div>
                     )}

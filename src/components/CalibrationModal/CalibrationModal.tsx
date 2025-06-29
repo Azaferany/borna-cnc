@@ -5,6 +5,7 @@ import {useGRBLListener} from '../../app/useGRBLListener';
 import {UnitDisplay} from '../UnitDisplay/UnitDisplay';
 import {FeedrateUnitDisplay} from '../UnitDisplay/FeedrateUnitDisplay';
 import Modal from 'react-modal';
+import {useTranslation} from 'react-i18next';
 
 // Set the app element for accessibility
 Modal.setAppElement('#root');
@@ -16,6 +17,7 @@ interface CalibrationModalProps {
 }
 
 const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axis}) => {
+    const {t} = useTranslation();
     const [firstMeasurement, setFirstMeasurement] = useState<number>(0);
     const [secondMeasurement, setSecondMeasurement] = useState<number>(0);
     const [currentSteps, setCurrentSteps] = useState<number>(0);
@@ -93,7 +95,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
 
     const renderJogButton = (direction: number, label: string) => (
         <button
-            className={`p-3 px-6 rounded disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`p-3 px-6 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed ${
                 activeButton === `${direction}`
                     ? 'bg-blue-600 hover:bg-blue-500'
                     : 'bg-gray-700 hover:bg-gray-600 active:bg-gray-400'
@@ -130,7 +132,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
 
         // Guard against zero or very small measured distance
         if (measuredDistance < 0.001) {
-            setError(`Measured distance too small: ${measuredDistance.toFixed(3)}`);
+            setError(t('calibrationModal.errors.measuredDistanceTooSmall', {distance: measuredDistance.toFixed(3)}));
             return;
         }
         setError(null);
@@ -140,7 +142,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
 
         // Guard against invalid calculations
         if (!isFinite(newStepsPerMm) || newStepsPerMm <= 0) {
-            setError('Invalid steps calculation. Please check your measurements.');
+            setError(t('calibrationModal.errors.invalidStepsCalculation'));
             console.log('Invalid steps calculation:', {
                 currentSteps,
                 machineDistance,
@@ -208,16 +210,16 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
             <div className="bg-gray-800 p-4 rounded-lg shadow-xl w-full max-w-[32rem] my-2">
                 <div className="flex justify-between items-center mb-2">
                     <div>
-                        <h2 className="text-lg font-bold text-white">Calibrate {axis} Axis</h2>
+                        <h2 className="text-lg font-bold text-white">{t('calibrationModal.title', {axis})}</h2>
                         <p className="text-xs text-gray-400 mt-0.5">
-                            {step === 'first' && "Enter the first measurement to start calibration"}
-                            {step === 'jog' && "Move the machine to a new position"}
-                            {step === 'second' && "Enter the second measurement to complete calibration"}
+                            {step === 'first' && t('calibrationModal.stepDescriptions.first')}
+                            {step === 'jog' && t('calibrationModal.stepDescriptions.jog')}
+                            {step === 'second' && t('calibrationModal.stepDescriptions.second')}
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-white transition-colors"
+                        className="text-gray-400 cursor-pointer hover:text-white transition-colors"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24"
                              stroke="currentColor">
@@ -231,42 +233,42 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                     {step === 'first' && (
                         <>
                             <div className="bg-gray-700/50 p-3 rounded-lg mb-2">
-                                <h3 className="text-white font-medium mb-1 text-sm">Instructions:</h3>
+                                <h3 className="text-white font-medium mb-1 text-sm">{t('calibrationModal.instructions.title')}</h3>
                                 <ol className="list-decimal list-inside text-gray-300 space-y-1 text-xs">
-                                    <li>Place your measurement tool at the starting position</li>
-                                    <li>Enter the current measurement value</li>
-                                    <li>Click Next to proceed to jogging</li>
+                                    <li>{t('calibrationModal.instructions.first.step1')}</li>
+                                    <li>{t('calibrationModal.instructions.first.step2')}</li>
+                                    <li>{t('calibrationModal.instructions.first.step3')}</li>
                                 </ol>
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-gray-300 mb-1">
-                                    First Measurement (<UnitDisplay/>)
+                                    {t('calibrationModal.firstMeasurement')} (<UnitDisplay/>)
                                 </label>
                                 <input
                                     type="number"
                                     value={firstMeasurement}
                                     onChange={(e) => setFirstMeasurement(parseFloat(e.target.value))}
                                     className="w-full px-2 py-1.5 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
-                                    placeholder="Enter first measurement"
+                                    placeholder={t('calibrationModal.firstMeasurementPlaceholder')}
                                 />
                             </div>
                             <div className="flex justify-end space-x-2 mt-4">
                                 <button
                                     onClick={onClose}
-                                    className="px-3 py-1.5 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                                    className="px-3 py-1.5 cursor-pointer bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
                                 >
-                                    Cancel
+                                    {t('calibrationModal.buttons.cancel')}
                                 </button>
                                 <button
                                     onClick={handleFirstMeasurementSubmit}
                                     disabled={!isConnected || isSending || status !== 'Idle'}
-                                    className={`px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm ${
+                                    className={`px-3 cursor-pointer py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm ${
                                         (!isConnected || isSending || status !== 'Idle')
                                             ? 'opacity-50 cursor-not-allowed'
                                             : ''
                                     }`}
                                 >
-                                    Next
+                                    {t('calibrationModal.buttons.next')}
                                 </button>
                             </div>
                         </>
@@ -275,22 +277,22 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                     {step === 'jog' && (
                         <>
                             <div className="bg-gray-700/50 p-3 rounded-lg mb-2">
-                                <h3 className="text-white font-medium mb-1 text-sm">Instructions:</h3>
+                                <h3 className="text-white font-medium mb-1 text-sm">{t('calibrationModal.instructions.title')}</h3>
                                 <ol className="list-decimal list-inside text-gray-300 space-y-1 text-xs">
-                                    <li>Use the jog controls to move the machine to a new position</li>
-                                    <li>Make sure to move at least 1mm from the starting position</li>
-                                    <li>Click Next when you've reached the desired position</li>
+                                    <li>{t('calibrationModal.instructions.jog.step1')}</li>
+                                    <li>{t('calibrationModal.instructions.jog.step2')}</li>
+                                    <li>{t('calibrationModal.instructions.jog.step3')}</li>
                                 </ol>
                             </div>
                             <div className="space-y-3">
                                 <div className="grid grid-cols-2 gap-2 text-xs">
                                     <div className="bg-gray-700/50 p-2 rounded-lg">
-                                        <div className="text-gray-400">First Measurement:</div>
+                                        <div className="text-gray-400">{t('calibrationModal.firstMeasurement')}:</div>
                                         <div className="text-white font-medium">{firstMeasurement.toFixed(3)}
                                             <UnitDisplay/></div>
                                     </div>
                                     <div className="bg-gray-700/50 p-2 rounded-lg">
-                                        <div className="text-gray-400">Current Position:</div>
+                                        <div className="text-gray-400">{t('calibrationModal.currentPosition')}:</div>
                                         <div
                                             className="text-white font-medium">{machineCoordinate?.[axis.toLowerCase() as 'x' | 'y' | 'z' | 'a' | 'b' | 'c']?.toFixed(3)}
                                             <UnitDisplay/></div>
@@ -301,7 +303,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                     <div className="flex space-x-4">
                                         <div className="flex-1">
                                             <label className="block text-sm font-medium mb-1 text-white"
-                                                   htmlFor="jog-feedrate">Feedrate
+                                                   htmlFor="jog-feedrate">{t('calibrationModal.feedrate')}
                                                 (<FeedrateUnitDisplay/>)</label>
                                             <input
                                                 id="jog-feedrate"
@@ -318,7 +320,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                             {!continuousMode && (
                                                 <>
                                                     <label className="block text-sm font-medium mb-1 text-white"
-                                                           htmlFor="jog-distance">Distance (<UnitDisplay/>)</label>
+                                                           htmlFor="jog-distance">{t('calibrationModal.distance')} (<UnitDisplay/>)</label>
                                                     <input
                                                         type="number"
                                                         id="jog-distance"
@@ -332,10 +334,8 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                                 </>
                                             )}
                                             {continuousMode && (
-                                                <label className="block text-sm font-medium mt-6 text-white">Hold
-                                                    button to
-                                                    jog,
-                                                    release to stop</label>
+                                                <label
+                                                    className="block text-sm font-medium mt-6 text-white">{t('calibrationModal.holdButtonToJog')}</label>
                                             )}
                                         </div>
                                     </div>
@@ -348,11 +348,11 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                             className="rounded bg-gray-700"
                                             id="continuous-mode"
                                             disabled={isSending || status !== 'Idle'}
-                                            title="Toggle between step-by-step and continuous jogging modes"
+                                            title={t('calibrationModal.continuousModeTooltip')}
                                         />
                                         <label htmlFor="continuous-mode"
                                                className="text-sm font-medium cursor-pointer text-white">
-                                            Continuous Mode
+                                            {t('calibrationModal.continuousMode')}
                                         </label>
                                     </div>
 
@@ -360,7 +360,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                         <div className="grid grid-cols-1 gap-2 w-full max-w-[180px]">
                                             {renderJogButton(1, `${axis}+`)}
                                             <button
-                                                className={`p-3 rounded disabled:opacity-50 text-white disabled:cursor-not-allowed ${
+                                                className={`p-3 cursor-pointer rounded disabled:opacity-50 text-white disabled:cursor-not-allowed ${
                                                     status === "Jog"
                                                         ? "bg-red-500 hover:bg-red-400 active:bg-red-300"
                                                         : "bg-gray-700 hover:bg-gray-600 active:bg-gray-400"
@@ -384,9 +384,9 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                             <div className="flex justify-end space-x-2 mt-4">
                                 <button
                                     onClick={() => setStep('first')}
-                                    className="px-3 py-1.5 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                                    className="px-3 cursor-pointer py-1.5 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
                                 >
-                                    Back
+                                    {t('calibrationModal.buttons.back')}
                                 </button>
                                 <button
                                     onClick={() => setStep('second')}
@@ -399,7 +399,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                             : ''
                                     }`}
                                 >
-                                    Next
+                                    {t('calibrationModal.buttons.next')}
                                 </button>
                             </div>
                         </>
@@ -408,18 +408,18 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                     {step === 'second' && (
                         <>
                             <div className="bg-gray-700/50 p-3 rounded-lg mb-2">
-                                <h3 className="text-white font-medium mb-1 text-sm">Instructions:</h3>
+                                <h3 className="text-white font-medium mb-1 text-sm">{t('calibrationModal.instructions.title')}</h3>
                                 <ol className="list-decimal list-inside text-gray-300 space-y-1 text-xs">
-                                    <li>Place your measurement tool at the current position</li>
-                                    <li>Enter the new measurement value</li>
-                                    <li>Review the calibration information</li>
-                                    <li>Click Complete Calibration to save the new steps/mm value</li>
+                                    <li>{t('calibrationModal.instructions.second.step1')}</li>
+                                    <li>{t('calibrationModal.instructions.second.step2')}</li>
+                                    <li>{t('calibrationModal.instructions.second.step3')}</li>
+                                    <li>{t('calibrationModal.instructions.second.step4')}</li>
                                 </ol>
                             </div>
                             <div className="space-y-3">
                                 <div>
                                     <label className="block text-xs font-medium text-gray-300 mb-1">
-                                        Second Measurement (<UnitDisplay/>)
+                                        {t('calibrationModal.secondMeasurement')} (<UnitDisplay/>)
                                     </label>
                                     <input
                                         type="number"
@@ -430,31 +430,36 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                             handleSecondMeasurementSubmit(false, value);
                                         }}
                                         className="w-full px-2 py-1.5 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
-                                        placeholder="Enter second measurement"
+                                        placeholder={t('calibrationModal.secondMeasurementPlaceholder')}
                                     />
                                 </div>
 
                                 <div className="bg-gray-700/50 rounded-lg p-3 space-y-2">
-                                    <h3 className="text-base font-medium text-white">Calibration Information</h3>
+                                    <h3 className="text-base font-medium text-white">{t('calibrationModal.calibrationInformation')}</h3>
 
                                     <div className="grid grid-cols-2 gap-2 text-xs">
                                         <div className="bg-gray-800/50 p-2 rounded-lg">
-                                            <div className="text-gray-400">First Measurement:</div>
+                                            <div className="text-gray-400">{t('calibrationModal.firstMeasurement')}:
+                                            </div>
                                             <div className="text-white font-medium">{firstMeasurement}
                                                 <UnitDisplay/></div>
                                         </div>
                                         <div className="bg-gray-800/50 p-2 rounded-lg">
-                                            <div className="text-gray-400">Current Steps/mm:</div>
+                                            <div className="text-gray-400">{t('calibrationModal.currentStepsMm')}:</div>
                                             <div className="text-white font-medium">{currentSteps}</div>
                                         </div>
                                         <div className="bg-gray-800/50 p-2 rounded-lg">
-                                            <div className="text-gray-400">First {axis} Position:</div>
+                                            <div
+                                                className="text-gray-400">{t('calibrationModal.firstPosition', {axis})}:
+                                            </div>
                                             <div className="text-white font-medium">{startMachineCoordinate}
                                                 <UnitDisplay/></div>
                                         </div>
 
                                         <div className="bg-gray-800/50 p-2 rounded-lg">
-                                            <div className="text-gray-400">Current {axis} Position:</div>
+                                            <div
+                                                className="text-gray-400">{t('calibrationModal.currentAxisPosition', {axis})}:
+                                            </div>
                                             <div
                                                 className="text-white font-medium">{machineCoordinate?.[axis.toLowerCase() as 'x' | 'y' | 'z' | 'a' | 'b' | 'c']}
                                                 <UnitDisplay/></div>
@@ -464,14 +469,18 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                     <div className="border-t border-gray-700 pt-2 mt-2">
                                         <div className="grid grid-cols-2 gap-2 text-xs">
                                             <div className="bg-gray-800/50 p-2 rounded-lg">
-                                                <div className="text-gray-400">Measured Distance:</div>
+                                                <div
+                                                    className="text-gray-400">{t('calibrationModal.measuredDistance')}:
+                                                </div>
                                                 <div
                                                     className="text-white font-medium">{Math.abs(secondMeasurement - firstMeasurement)}
                                                     <UnitDisplay/></div>
                                             </div>
 
                                             <div className="bg-gray-800/50 p-2 rounded-lg">
-                                                <div className="text-gray-400">Machine Distance:</div>
+                                                <div
+                                                    className="text-gray-400">{t('calibrationModal.machineDistance')}:
+                                                </div>
                                                 <div
                                                     className="text-white font-medium">{Math.abs((machineCoordinate?.[axis.toLowerCase() as 'x' | 'y' | 'z' | 'a' | 'b' | 'c'] ?? 0) - (startMachineCoordinate ?? 0))}
                                                     <UnitDisplay/></div>
@@ -482,7 +491,7 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                     {error && (
                                         <div
                                             className="mt-2 p-2 bg-red-900/50 border border-red-500 rounded text-red-200 text-xs">
-                                            <div className="font-medium mb-0.5">Error:</div>
+                                            <div className="font-medium mb-0.5">{t('calibrationModal.error')}:</div>
                                             {error}
                                         </div>
                                     )}
@@ -490,7 +499,8 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                                     {newSteps > 0 && !error && (
                                         <div
                                             className="mt-2 p-2 bg-green-900/50 border border-green-500 rounded text-green-200 text-xs">
-                                            <div className="font-medium mb-0.5">New Steps/mm:</div>
+                                            <div className="font-medium mb-0.5">{t('calibrationModal.newStepsMm')}:
+                                            </div>
                                             {newSteps.toFixed(3)}
                                         </div>
                                     )}
@@ -500,22 +510,22 @@ const CalibrationModal: React.FC<CalibrationModalProps> = ({isOpen, onClose, axi
                             <div className="flex justify-end space-x-2 mt-4">
                                 <button
                                     onClick={() => setStep('jog')}
-                                    className="px-3 py-1.5 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                                    className="px-3 cursor-pointer py-1.5 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
                                 >
-                                    Back
+                                    {t('calibrationModal.buttons.back')}
                                 </button>
                                 <button
                                     onClick={() => handleSecondMeasurementSubmit(true, secondMeasurement)}
                                     disabled={!isConnected || isSending || status !== 'Idle' || secondMeasurement <= 0 || !!error ||
                                         Math.abs((machineCoordinate?.[axis.toLowerCase() as 'x' | 'y' | 'z' | 'a' | 'b' | 'c'] ?? 0) - (startMachineCoordinate ?? 0)) < 0.001}
-                                    className={`px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm ${
+                                    className={`px-3 cursor-pointer py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm ${
                                         (!isConnected || isSending || status !== 'Idle' || secondMeasurement <= 0 || !!error ||
                                             Math.abs((machineCoordinate?.[axis.toLowerCase() as 'x' | 'y' | 'z' | 'a' | 'b' | 'c'] ?? 0) - (startMachineCoordinate ?? 0)) < 0.001)
                                             ? 'opacity-50 cursor-not-allowed'
                                             : ''
                                     }`}
                                 >
-                                    Complete Calibration
+                                    {t('calibrationModal.buttons.completeCalibration')}
                                 </button>
                             </div>
                         </>

@@ -1,4 +1,5 @@
 import {useState, useEffect, useCallback} from "react";
+import {useTranslation} from 'react-i18next';
 import { useGRBL } from "../../app/useGRBL.ts";
 import { UnitDisplay } from "../UnitDisplay/UnitDisplay";
 import { FeedrateUnitDisplay } from "../UnitDisplay/FeedrateUnitDisplay";
@@ -6,6 +7,7 @@ import { useStore } from "../../app/store.ts";
 import {useShallow} from "zustand/react/shallow";
 
 export const JogControls = () => {
+    const {t} = useTranslation();
     const [feedrate, setFeedrate] = useState(1000);
     const [stepSize, setStepSize] = useState(20);
     const [continuousMode, setContinuousMode] = useState(false);
@@ -196,7 +198,10 @@ export const JogControls = () => {
                 onMouseUp={handleJogEnd}
                 onMouseLeave={handleJogEnd}
                 disabled={isDisabled}
-                title={`Jog ${axis} axis ${direction > 0 ? 'positive' : 'negative'} direction`}
+                title={t('jog.jogAxisTooltip', {
+                    axis,
+                    direction: direction > 0 ? 'positive' : 'negative'
+                })}
             >
                 <div className="flex flex-col items-center">
                     <span className="text-lg font-bold">{label}</span>
@@ -276,10 +281,10 @@ export const JogControls = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                               d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                     </svg>
-                    <h2 className="text-xl font-bold">Jog Controls</h2>
+                    <h2 className="text-xl font-bold">{t('jog.title')}</h2>
                     {isMachineRunning && (
                         <span className="px-2 py-1 bg-red-600 rounded-md text-xs font-sm">
-                            Can't open while running
+                            {t('jog.cantOpenWhileRunning')}
                         </span>
                     )}
                 </div>
@@ -296,7 +301,7 @@ export const JogControls = () => {
                     }`}
                     disabled={isMachineRunning}
                 >
-                    <span className="text-sm font-medium">{isExpanded ? 'Close' : 'Open Details'}</span>
+                    <span className="text-sm font-medium">{isExpanded ? t('jog.close') : t('jog.openDetails')}</span>
                     {isExpanded ? (
                         <svg
                             className="w-5 h-5"
@@ -324,7 +329,8 @@ export const JogControls = () => {
                     <div className="space-y-1">
                         <div className="flex space-x-4">
                             <div className="flex-1">
-                                <label className="block text-sm font-medium mb-1" htmlFor={"Feedrate"}>Feedrate (<FeedrateUnitDisplay/>)</label>
+                                <label className="block text-sm font-medium mb-1"
+                                       htmlFor={"Feedrate"}>{t('jog.feedrate')} (<FeedrateUnitDisplay/>)</label>
                                 <input
                                     id={"Feedrate"}
                                     type="number"
@@ -337,7 +343,8 @@ export const JogControls = () => {
                                 />
                             </div>
                             <div className="flex-1">
-                                {!continuousMode &&(<><label className="block text-sm font-medium mb-1" htmlFor={"Distance"}>Distance (<UnitDisplay/>)</label><input
+                                {!continuousMode && (<><label className="block text-sm font-medium mb-1"
+                                                              htmlFor={"Distance"}>{t('jog.distance')} (<UnitDisplay/>)</label><input
                                     type="number"
                                     id={"Distance"}
                                     defaultValue={stepSize}
@@ -347,7 +354,8 @@ export const JogControls = () => {
                                     min={0.001}
                                     max={1000}/></>)
                                 }
-                                {continuousMode && (<label className="block text-sm font-medium mt-6">Hold button to jog, release to stop</label>)}
+                                {continuousMode && (
+                                    <label className="block text-sm font-medium mt-6">{t('jog.holdToJog')}</label>)}
                             </div>
                         </div>
 
@@ -364,11 +372,11 @@ export const JogControls = () => {
                                     className="rounded bg-gray-700"
                                     id="continuous-mode"
                                     disabled={isMachineRunning}
-                                    title="Toggle between step-by-step and continuous jogging modes"
+                                    title={t('jog.continuousModeTooltip')}
                                     data-tour="continuous-mode"
                                 />
                                 <label htmlFor="continuous-mode" className="text-sm font-medium cursor-pointer">
-                                    Continuous Mode
+                                    {t('jog.continuousMode')}
                                 </label>
                             </div>
 
@@ -384,11 +392,11 @@ export const JogControls = () => {
                                     className="rounded bg-gray-700"
                                     id="keyboard-mode"
                                     disabled={isMachineRunning}
-                                    title="Enable keyboard controls (Arrow keys for X/Y, Page Up/Down for Z, Shift + arrows for diagonal)"
+                                    title={t('jog.keyboardModeTooltip')}
                                     data-tour="keyboard-mode"
                                 />
                                 <label htmlFor="keyboard-mode" className="text-sm font-medium cursor-pointer">
-                                    Keyboard Mode
+                                    {t('jog.keyboardMode')}
                                 </label>
                             </div>
                         </div>
@@ -396,13 +404,15 @@ export const JogControls = () => {
                         {keyboardMode && (
                             <div
                                 className={`mb-4 p-3 bg-gray-700 rounded text-sm ${keyboardMode ? 'ring-2 ring-yellow-500 ring-opacity-50' : ''}`}>
-                                <h3 className="font-medium mb-2">Keyboard Controls:</h3>
+                                <h3 className="font-medium mb-2">{t('jog.keyboardControls')}</h3>
                                 <ul className="list-disc list-inside space-y-1">
-                                    {(machineConfig.activeAxes.x || machineConfig.activeAxes.y) && <li>Arrow Keys:
-                                        Move {machineConfig.activeAxes.x && machineConfig.activeAxes.y ? 'X/Y' : machineConfig.activeAxes.x ? 'X' : 'Y'} axis</li>}
-                                    {machineConfig.activeAxes.z && <li>Page Up/Down: Move Z axis</li>}
+                                    {(machineConfig.activeAxes.x || machineConfig.activeAxes.y) &&
+                                        <li>{t('jog.arrowKeys', {
+                                            axes: machineConfig.activeAxes.x && machineConfig.activeAxes.y ? 'X/Y' : machineConfig.activeAxes.x ? 'X' : 'Y'
+                                        })}</li>}
+                                    {machineConfig.activeAxes.z && <li>{t('jog.pageUpDown')}</li>}
                                     {machineConfig.activeAxes.x && machineConfig.activeAxes.y &&
-                                        <li>Shift + Arrows: Diagonal movement</li>}
+                                        <li>{t('jog.shiftArrows')}</li>}
                                 </ul>
                             </div>
                         )}

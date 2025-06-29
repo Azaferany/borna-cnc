@@ -13,8 +13,10 @@ import {useShallow} from "zustand/react/shallow";
 import {OffsetMarkers} from "./OffsetMarkers.tsx";
 import {CameraController} from "./CameraController.tsx";
 import {GridLabels} from "./GridLabels.tsx";
+import {useTranslation} from 'react-i18next';
 
 export const Scene3D = () => {
+    const {t} = useTranslation();
     const toolPathGCodes = useStore(useShallow(x => x.toolPathGCodes));
     const selectedGCodeLine = useStore(x => x.selectedGCodeLine);
     const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
@@ -74,7 +76,7 @@ export const Scene3D = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7"/>
                         </svg>
                     </span>
-                    Legend
+                    {t('scene3d.legend')}
                 </button>
 
                 {legendOpen && (
@@ -86,9 +88,10 @@ export const Scene3D = () => {
                                 className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
                                 value={rapidMoveColor}
                                 onChange={(e) => setRapidMoveColor(e.target.value)}
-                                title="Choose rapid move color"
+                                title={t('scene3d.chooseRapidMoveColor')}
                             />
-                            <label htmlFor="rapid-move-color" className="cursor-pointer">Rapid moves (G0)</label>
+                            <label htmlFor="rapid-move-color"
+                                   className="cursor-pointer">{t('scene3d.rapidMoves')}</label>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
                             <input
@@ -97,9 +100,9 @@ export const Scene3D = () => {
                                 className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
                                 value={feedMoveColor}
                                 onChange={(e) => setFeedMoveColor(e.target.value)}
-                                title="Choose feed move color"
+                                title={t('scene3d.chooseFeedMoveColor')}
                             />
-                            <label htmlFor="feed-move-color" className="cursor-pointer">Feed moves (G1)</label>
+                            <label htmlFor="feed-move-color" className="cursor-pointer">{t('scene3d.feedMoves')}</label>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
                             <input
@@ -108,9 +111,9 @@ export const Scene3D = () => {
                                 className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
                                 value={arcMoveColor}
                                 onChange={(e) => setArcMoveColor(e.target.value)}
-                                title="Choose arc move color"
+                                title={t('scene3d.chooseArcMoveColor')}
                             />
-                            <label htmlFor="arc-move-color" className="cursor-pointer">Arc moves (G2/G3)</label>
+                            <label htmlFor="arc-move-color" className="cursor-pointer">{t('scene3d.arcMoves')}</label>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
                             <input
@@ -119,9 +122,9 @@ export const Scene3D = () => {
                                 className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
                                 value={runningColor}
                                 onChange={(e) => setRunningColor(e.target.value)}
-                                title="Choose running color"
+                                title={t('scene3d.chooseRunningColor')}
                             />
-                            <label htmlFor="running-color" className="cursor-pointer">Running</label>
+                            <label htmlFor="running-color" className="cursor-pointer">{t('scene3d.running')}</label>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
                             <input
@@ -130,9 +133,9 @@ export const Scene3D = () => {
                                 className="p-0 h-6 w-8 block bg-white border border-gray-200 cursor-pointer rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
                                 value={doneColor}
                                 onChange={(e) => setDoneColor(e.target.value)}
-                                title="Choose done color"
+                                title={t('scene3d.chooseDoneColor')}
                             />
-                            <label htmlFor="done-color" className="cursor-pointer">Done</label>
+                            <label htmlFor="done-color" className="cursor-pointer">{t('scene3d.done')}</label>
                         </div>
                     </div>
                 )}
@@ -154,7 +157,7 @@ export const Scene3D = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
             </svg>
                     </span>
-                    Camera Controls
+                    {t('scene3d.cameraControls')}
 
                 </button>
 
@@ -165,42 +168,42 @@ export const Scene3D = () => {
                                 onClick={() => setCameraPreset("center")}
                                 className={`px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm cursor-pointer`}
                             >
-                                Go to Start
+                                {t('scene3d.goToStart')}
                             </button>
                             <button
                                 onClick={() => setCameraPreset("toolhead")}
                                 disabled={!machineCoordinate}
                                 className={`px-3 py-1 bg-orange-600 hover:bg-orange-700 rounded text-sm ${!machineCoordinate ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
-                                Go to Toolhead
+                                {t('scene3d.goToToolhead')}
                             </button>
                             <button
                                 onClick={() => setCameraPreset('top')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
                                 className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
-                                Top View
+                                {t('scene3d.topView')}
                             </button>
                             <button
                                 onClick={() => setCameraPreset('front')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
                                 className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
-                                Front View
+                                {t('scene3d.frontView')}
                             </button>
                             <button
                                 onClick={() => setCameraPreset('side')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
                                 className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
-                                Side View
+                                {t('scene3d.sideView')}
                             </button>
                             <button
                                 onClick={() => setCameraPreset('iso')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
                                 className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
-                                Isometric View
+                                {t('scene3d.isometricView')}
                             </button>
                         </div>
 
@@ -215,8 +218,9 @@ export const Scene3D = () => {
                                     className={`w-4 h-4 ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 />
                                 <label htmlFor="show-bounding-box"
-                                       className={`cursor-pointer text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}>Show
-                                    Bounding Box</label>
+                                       className={`cursor-pointer text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                    {t('scene3d.showBoundingBox')}
+                                </label>
                             </div>
                             <div className="flex items-center gap-2">
                                 <input
@@ -228,8 +232,9 @@ export const Scene3D = () => {
                                     className={`w-4 h-4 ${!machineCoordinate ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 />
                                 <label htmlFor="follow-toolhead"
-                                       className={`cursor-pointer text-sm ${!machineCoordinate ? 'opacity-50 cursor-not-allowed' : ''}`}>Follow
-                                    Toolhead (Every 5s)</label>
+                                       className={`cursor-pointer text-sm ${!machineCoordinate ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                    {t('scene3d.followToolhead')}
+                                </label>
                             </div>
                         </div>
                     </div>

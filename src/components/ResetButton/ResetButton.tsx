@@ -1,8 +1,10 @@
 import {StopIcon, LockOpenIcon} from '@heroicons/react/24/solid';
 import { useGRBL } from "../../app/useGRBL.ts";
 import { useStore } from "../../app/store.ts";
+import {useTranslation} from 'react-i18next';
 
 export const ResetButton = () => {
+    const {t} = useTranslation();
     const { sendCommand, isConnected } = useGRBL();
     const status = useStore(s => s.status);
     const setIsSending = useStore(s => s.setIsSending);
@@ -36,7 +38,7 @@ export const ResetButton = () => {
                     onClick={() => handleUnlock()}
                 >
                     <LockOpenIcon className="h-6 w-6"/>
-                    <span className="text-sm mt-1">Unlock (Active Modes Will Reset)</span>
+                    <span className="text-sm mt-1">{t('resetButton.unlockActiveModesReset')}</span>
                 </button>
             </div>
         );
@@ -56,8 +58,8 @@ export const ResetButton = () => {
                 disabled={!isConnected}
             >
                 <StopIcon className="h-6 w-6"/>
-                <span className="text-sm mt-1">Stop!</span>
-                <span className="text-xs"> (Active Modes Will Reset)</span>
+                <span className="text-sm mt-1">{t('resetButton.stop')}</span>
+                <span className="text-xs">{t('resetButton.activeModesWillReset')}</span>
             </button>
         </div>
     );

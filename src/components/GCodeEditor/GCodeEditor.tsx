@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState} from "react";
 import AceEditor from 'react-ace';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import {useTranslation} from 'react-i18next';
 
 import 'ace-builds/src-noconflict/mode-gcode';
 import 'ace-builds/src-noconflict/theme-monokai';
@@ -125,6 +126,7 @@ const spindleCompletions = [
 ];
 
 export const GCodeEditor = () => {
+  const {t} = useTranslation();
   const editorRef = useRef<AceEditor>(null);
   const [isHovered, setIsHovered] = useState(false);
   const loadToolPathGCodes = useStore(x => x.loadToolPathGCodes);
@@ -270,14 +272,14 @@ export const GCodeEditor = () => {
   return (
       <div className="bg-gray-800 p-4 rounded-lg h-full w-full flex flex-col">
         <div className="flex justify-between items-center mb-4 flex-shrink-0">
-          <h2 className="text-xl font-bold">G-code Editor</h2>
+          <h2 className="text-xl font-bold">{t('gcode.editor')}</h2>
           <div className="flex flex-col sm:flex-row gap-2">
             <OpenFileButton />
             <button
                 onClick={handleSave}
                 className="bg-green-600 hover:bg-green-700 active:bg-green-900 px-4 py-1.5 cursor-pointer rounded"
             >
-              Save File
+              {t('gcode.saveFile')}
             </button>
           </div>
         </div>
@@ -286,7 +288,7 @@ export const GCodeEditor = () => {
               onClick={handleFind}
               className="absolute top-2 cursor-pointer right-4 z-20 bg-gray-700 hover:bg-gray-600 active:bg-gray-800 px-1.5 py-1.5 rounded"
               disabled={isSending}
-              title="Find (Ctrl+F)"
+              title={t('gcode.findTooltip')}
           >
             <MagnifyingGlassIcon className="h-4 w-4" />
           </button>
@@ -347,7 +349,7 @@ export const GCodeEditor = () => {
               >
                 {isHovered && (
                     <div className="bg-gray-900 text-white px-4 py-2 rounded shadow-lg">
-                      G-codes are locked while sending
+                      {t('gcode.lockedMessage')}
                     </div>
                 )}
               </div>

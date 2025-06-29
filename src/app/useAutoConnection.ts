@@ -3,10 +3,12 @@ import {useStore} from './store';
 import {useGRBL} from './useGRBL';
 import {toast} from 'react-toastify';
 import GRBLWebSocket from "./GRBLWebSocket.ts";
+import {useTranslation} from 'react-i18next';
 
 const RETRY_INTERVAL = 5000; // 3 seconds
 
 export const useAutoConnection = () => {
+    const {t} = useTranslation();
     const {connect, isConnected} = useGRBL();
     const eventSource = useStore(x => x.eventSource);
     const connectionType = useStore(x => x.connectionType);
@@ -25,7 +27,7 @@ export const useAutoConnection = () => {
 
     const showConnectingToast = useCallback(() => {
         if (!connectingToastRef.current) {
-            connectingToastRef.current = toast.loading('Connecting to machine...', {
+            connectingToastRef.current = toast.loading(t('autoConnection.connecting'), {
                 position: 'top-right',
                 autoClose: false,
                 hideProgressBar: false,
@@ -35,7 +37,7 @@ export const useAutoConnection = () => {
                 closeButton: false,
             });
         }
-    }, []);
+    }, [t]);
 
     const hideConnectingToast = useCallback(() => {
         if (connectingToastRef.current) {
@@ -46,17 +48,17 @@ export const useAutoConnection = () => {
     }, []);
 
     const showConnectedToast = useCallback(() => {
-        toast.success('Connected to machine!', {
+        toast.success(t('autoConnection.connected'), {
             autoClose: 3000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
             draggable: true,
         });
-    }, []);
+    }, [t]);
 
     const showDisconnectedToast = useCallback(() => {
-        toast.error('Disconnected from machine', {
+        toast.error(t('autoConnection.disconnected'), {
             position: 'top-right',
             autoClose: 3000,
             hideProgressBar: false,
@@ -64,7 +66,7 @@ export const useAutoConnection = () => {
             pauseOnHover: true,
             draggable: true,
         });
-    }, []);
+    }, [t]);
 
     const attemptConnection = useCallback(async () => {
         if (isConnectedRef.current || isConnectingRef.current) {

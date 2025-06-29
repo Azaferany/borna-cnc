@@ -1,7 +1,9 @@
 import {useStore} from "../../app/store";
 import {WifiIcon, ExclamationTriangleIcon} from '@heroicons/react/24/solid';
+import {useTranslation} from 'react-i18next';
 
 export const ConnectionStatus = ({className = ''}: { className?: string }) => {
+    const {t} = useTranslation();
     const isConnected = useStore(x => x.isConnected);
 
     return (
@@ -13,12 +15,12 @@ export const ConnectionStatus = ({className = ''}: { className?: string }) => {
             {isConnected ? (
                 <>
                     <WifiIcon className="h-4 w-4"/>
-                    <span className="text-sm font-medium">Connected</span>
+                    <span className="text-sm font-medium">{t('connectionStatus.connected')}</span>
                 </>
             ) : (
                 <>
                     <ExclamationTriangleIcon className="h-4 w-4"/>
-                    <span className="text-sm font-medium">Connecting...</span>
+                    <span className="text-sm font-medium">{t('connectionStatus.connecting')}</span>
                 </>
             )}
         </div>

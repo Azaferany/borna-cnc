@@ -1,8 +1,10 @@
 import { PlayIcon, StopIcon } from '@heroicons/react/24/solid';
 import { useGRBL } from "../../app/useGRBL.ts";
 import { useStore } from "../../app/store.ts";
+import {useTranslation} from 'react-i18next';
 
 export const StopButton = () => {
+    const {t} = useTranslation();
     const { sendCommand, isConnected } = useGRBL();
     const status = useStore(s => s.status);
 
@@ -16,7 +18,7 @@ export const StopButton = () => {
     };
 
     const handleContinue = async () => {
-        if (window.confirm('Are you sure you want to continue? Make sure the door is closed.')) {
+        if (window.confirm(t('stopButton.confirmContinue'))) {
             await handleCommand('~');
         }
     };
@@ -28,7 +30,7 @@ export const StopButton = () => {
             disabled={!isConnected}
         >
             {status === "Hold" ? <PlayIcon className="h-6 w-6" /> : <StopIcon className="h-6 w-6" />}
-            <span className="text-sm mt-1">{status === "Door" ? 'Continue' : 'Stop'}</span>
+            <span className="text-sm mt-1">{status === "Door" ? t('stopButton.continue') : t('stopButton.stop')}</span>
         </button>
     );
 }; 

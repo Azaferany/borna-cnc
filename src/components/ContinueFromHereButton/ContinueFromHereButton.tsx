@@ -1,4 +1,5 @@
 import {PlayIcon} from '@heroicons/react/24/solid';
+import {useTranslation} from 'react-i18next';
 import {useStore} from "../../app/store.ts";
 import {useGCodeBufferContext} from "../../app/GCodeBufferContext.ts";
 import {useGRBL} from "../../app/useGRBL.ts";
@@ -10,6 +11,7 @@ import {determineHelixPointOrder, intersectSphereHelix} from "../../app/intersec
 import {useShallow} from "zustand/react/shallow";
 
 export const ContinueFromHereButton = () => {
+    const {t} = useTranslation();
     const { isSending, bufferType, startSending, stopSending } = useGCodeBufferContext();
     const { sendCommand } = useGRBL();
     const allGCodes = useStore(useShallow(s => s.allGCodes));
@@ -28,7 +30,7 @@ export const ContinueFromHereButton = () => {
         } catch (error) {
             console.error('Error sending command:', error);
             stopSending();
-            setError('Failed to send command to machine');
+            setError(t('continueFromHere.commandError'));
         }
     };
 
@@ -174,7 +176,7 @@ export const ContinueFromHereButton = () => {
 
 
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'Failed to start sending reversed G-code');
+                setError(err instanceof Error ? err.message : t('continueFromHere.startError'));
                 console.error('Error starting reversed G-code send:', err);
                 stopSending();
             }
@@ -188,10 +190,10 @@ export const ContinueFromHereButton = () => {
                 p-3 rounded flex flex-col items-center justify-center
                 transition-all duration-150"
                 onClick={handleContinueFromHere}
-                aria-label="Continue from here"
+                aria-label={t('continueFromHere.ariaLabel')}
             >
                 <PlayIcon className="h-6 w-6" />
-                <span className="text-sm mt-1">Continue from here</span>
+                <span className="text-sm mt-1">{t('continueFromHere.buttonText')}</span>
             </button>
 
             {error && (

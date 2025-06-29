@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import {useTranslation} from 'react-i18next';
 import {useGRBL} from "../../app/useGRBL.ts";
 import {useGRBLListener} from "../../app/useGRBLListener.ts";
 import {useStore} from "../../app/store.ts";
@@ -89,6 +90,7 @@ const GRBL_ERROR_CODES: Record<number, string> = {
 };
 
 export const Console = () => {
+    const {t} = useTranslation();
     const [command, setCommand] = useState('');
     const historyEndRef = useRef<HTMLDivElement>(null);
     const status = useStore(x=>x.status);
@@ -221,7 +223,7 @@ export const Console = () => {
             {
                 setHistory(prev => [...prev, `> ${command}`]);
 
-                setHistory(prev => [...prev, "$ Only Work In Idle State"]);
+                setHistory(prev => [...prev, t('console.idleOnly')]);
                 return;
             }
             if(c == "?")
@@ -260,13 +262,13 @@ export const Console = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                               d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                     </svg>
-                    Console
+                    {t('console.title')}
                 </h2>
                 <button
                     onClick={clearHistory}
                     className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 rounded active:bg-red-800 cursor-pointer"
                 >
-                    Clear
+                    {t('console.clear')}
                 </button>
             </div>
             <div
@@ -304,7 +306,7 @@ export const Console = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    Console disabled when GCode file is running
+                    {t('console.disabled')}
                 </div>
             ) : (
                 <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
@@ -319,7 +321,7 @@ export const Console = () => {
                             setHistoryIndex(-1); // Reset history index when typing
                         }}
                         onKeyDown={handleKeyDown}
-                        placeholder="Enter command... (Use ↑↓ for history)"
+                        placeholder={t('console.placeholder')}
                         className={`w-full bg-gray-700 rounded px-3 py-2 text-white ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
                         disabled={!isConnected}
                     />
@@ -328,7 +330,7 @@ export const Console = () => {
                         className={`w-full sm:w-auto px-4 py-2 active:bg-blue-900 rounded ${isConnected ? 'bg-blue-600 hover:bg-blue-700 cursor-pointer' : 'bg-blue-600/50 cursor-not-allowed'}`}
                         disabled={!isConnected}
                     >
-                        Send
+                        {t('console.send')}
                     </button>
                 </form>
             )}

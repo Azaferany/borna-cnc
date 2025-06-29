@@ -8,8 +8,10 @@ import {useShallow} from "zustand/react/shallow";
 import {
     useResetGRBLWithoutResettingActiveGModes,
 } from "../../app/useResetGRBLWithoutResettingActiveModes.ts";
+import {useTranslation} from 'react-i18next';
 
 export const PreviousButton = () => {
+    const {t} = useTranslation();
     const { resetGRBLWithoutResettingActiveGModes } = useResetGRBLWithoutResettingActiveGModes()
     const status = useStore(s => s.status);
     const machineCoordinate = useStore(useShallow(s => s.machineCoordinate));
@@ -26,7 +28,7 @@ export const PreviousButton = () => {
         (selectedGCodeLine <= toolPathGCodes[0]?.lineNumber);
     const isSendingRunning = isSending && bufferType === "GCodeFileInReverse";
 
-    const buttonText = isSendingRunning ? (status == "Hold" ? "Sending Paused" : 'Sending...') : 'Previous';
+    const buttonText = isSendingRunning ? (status == "Hold" ? t('previousButton.sendingPaused') : t('previousButton.sending')) : t('previousButton.previous');
 
     const handlePrevious = async () => {
         if (isDisabled) return;
@@ -41,7 +43,7 @@ export const PreviousButton = () => {
             stopSending();
             startSending(reversedCommands,"GCodeFileInReverse")
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to start sending reversed G-code');
+            setError(err instanceof Error ? err.message : t('previousButton.failedToStartReverse'));
             console.error('Error starting reversed G-code send:', err);
             stopSending();
         }
@@ -65,8 +67,8 @@ export const PreviousButton = () => {
                 title={
                     isDisabled
                         ? !toolPathGCodes || !selectedGCodeLine
-                            ? 'No G-code line selected'
-                            : `Machine must be in Hold state (current: ${status})`
+                            ? t('previousButton.noGCodeLineSelected')
+                            : t('previousButton.machineHoldRequired', {status})
                         : buttonText
                 }
             >
@@ -89,8 +91,8 @@ export const PreviousButton = () => {
             {isDisabled && (
                 <div className="absolute bottom-full mb-2 p-2 bg-gray-100 text-gray-700 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity">
                     {!toolPathGCodes || !selectedGCodeLine
-                        ? 'No G-code line selected or exist'
-                        : `Machine must be in Hold state (current: ${status})`}
+                        ? t('previousButton.noGCodeLineSelectedOrExist')
+                        : t('previousButton.machineHoldRequired', {status})}
                 </div>
             )}
         </div>

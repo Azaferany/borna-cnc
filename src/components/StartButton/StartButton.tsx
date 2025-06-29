@@ -6,8 +6,10 @@ import {useShallow} from "zustand/react/shallow";
 import {ContinueFromHereButton} from "../ContinueFromHereButton/ContinueFromHereButton";
 import {StartOptionsModal} from "../StartOptionsModal/StartOptionsModal";
 import {Plane} from "../../types/GCodeTypes.ts";
+import {useTranslation} from 'react-i18next';
 
 export const StartButton = () => {
+    const {t} = useTranslation();
     const { isSending, bufferType, startSending, stopSending } = useGCodeBufferContext();
     const allGCodes = useStore(useShallow(s => s.allGCodes));
     const toolPathGCodes = useStore(useShallow(s => s.toolPathGCodes));
@@ -17,7 +19,7 @@ export const StartButton = () => {
 
     const isDisabled = (allGCodes?.length ?? 0) <= 0 || status !== "Idle";
     const isSendingRunning = isSending && bufferType === "GCodeFile";
-    const buttonText = isSendingRunning ? (status == "Hold" ? "Sending Paused" : 'Sending...') : 'Start';
+    const buttonText = isSendingRunning ? (status == "Hold" ? t('startButton.sendingPaused') : t('startButton.sending')) : t('startButton.start');
 
     const handleStart = async (startFromLine: number) => {
         if (isDisabled) return;
@@ -70,7 +72,7 @@ export const StartButton = () => {
             await startSending(gCodesToSend, "GCodeFile");
             setIsModalOpen(false);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to start sending G-code');
+            setError(err instanceof Error ? err.message : t('startButton.failedToStartSending'));
             console.error('Error starting G-code send:', err);
             stopSending();
         }
@@ -98,8 +100,8 @@ export const StartButton = () => {
                 title={
                     isDisabled
                         ? (allGCodes?.length === 0
-                            ? 'No G-code available to send'
-                            : `Machine must be in Idle state (current: ${status})`)
+                            ? t('startButton.noGCodeAvailable')
+                            : t('startButton.machineIdleRequired', {status}))
                         : buttonText
                 }
             >
@@ -122,8 +124,8 @@ export const StartButton = () => {
             {isDisabled && (
                 <div className="absolute bottom-full mb-2 p-2 bg-gray-100 text-gray-700 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity">
                     {allGCodes?.length === 0
-                        ? 'No G-code available to send'
-                        : `Machine must be in Idle state (current: ${status})`}
+                        ? t('startButton.noGCodeAvailable')
+                        : t('startButton.machineIdleRequired', {status})}
                 </div>
             )}
 

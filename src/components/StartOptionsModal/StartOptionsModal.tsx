@@ -3,6 +3,7 @@ import {useStore} from '../../app/store';
 import {useShallow} from 'zustand/react/shallow';
 import {PlayIcon} from '@heroicons/react/24/solid';
 import Modal from 'react-modal';
+import {useTranslation} from 'react-i18next';
 
 // Set the app element for accessibility
 Modal.setAppElement('#root');
@@ -14,6 +15,7 @@ interface StartOptionsModalProps {
 }
 
 export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onClose, onStart}) => {
+    const {t} = useTranslation();
     const selectedGCodeLine = useStore(s => s.selectedGCodeLine);
     const allGCodes = useStore(useShallow(s => s.allGCodes));
     const [startFromLine, setStartFromLine] = useState(selectedGCodeLine ?? 1);
@@ -72,7 +74,7 @@ export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onC
             <div className="bg-gray-800 rounded-lg shadow-xl w-full max-h-[90vh] overflow-y-auto">
                 <div className="sticky top-0 bg-gray-800 p-4 border-b border-gray-700">
                     <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-bold text-white">Start Options</h2>
+                        <h2 className="text-xl font-bold text-white">{t('startOptionsModal.title')}</h2>
                         <button
                             onClick={onClose}
                             className="text-gray-400 hover:text-white transition-colors p-1"
@@ -107,9 +109,9 @@ export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onC
                                 </div>
                             </div>
                             <div className="flex-grow">
-                                <h3 className="text-white font-medium">Start from beginning</h3>
+                                <h3 className="text-white font-medium">{t('startOptionsModal.startFromBeginning')}</h3>
                                 <p className="text-sm text-gray-400 mt-1">
-                                    Execute all G-code commands from the first line
+                                    {t('startOptionsModal.executeAllFromFirst')}
                                 </p>
                             </div>
                         </div>
@@ -135,7 +137,7 @@ export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onC
                                 </div>
                             </div>
                             <div className="flex-grow">
-                                <h3 className="text-white font-medium">Start from specific line</h3>
+                                <h3 className="text-white font-medium">{t('startOptionsModal.startFromSpecificLine')}</h3>
                                 <div className="mt-2 flex items-center space-x-2">
                                     <input
                                         type="number"
@@ -147,7 +149,7 @@ export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onC
                                         disabled={isStartFromBeginning}
                                     />
                                     <span className="text-sm text-gray-400">
-                                        of {totalLines} lines
+                                        {t('startOptionsModal.ofLines', {totalLines})}
                                     </span>
                                 </div>
                             </div>
@@ -157,7 +159,7 @@ export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onC
                     {/* Preview section */}
                     {!isStartFromBeginning && previewLine && (
                         <div className="mt-4 p-3 bg-gray-700/50 rounded-lg">
-                            <h4 className="text-sm font-medium text-gray-300 mb-2">Line Preview:</h4>
+                            <h4 className="text-sm font-medium text-gray-300 mb-2">{t('startOptionsModal.linePreview')}</h4>
                             <div className="font-mono text-sm text-white bg-gray-800 p-2 rounded overflow-x-auto">
                                 {previewLine}
                             </div>
@@ -172,14 +174,14 @@ export const StartOptionsModal: React.FC<StartOptionsModalProps> = ({isOpen, onC
                             onClick={onClose}
                             className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors cursor-pointer"
                         >
-                            Cancel
+                            {t('startOptionsModal.cancel')}
                         </button>
                         <button
                             onClick={() => onStart(startFromLine)}
                             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center space-x-2 cursor-pointer"
                         >
                             <PlayIcon className="h-5 w-5"/>
-                            <span>Start</span>
+                            <span>{t('startOptionsModal.start')}</span>
                         </button>
                     </div>
                 </div>

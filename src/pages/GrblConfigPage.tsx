@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import {Link} from 'react-router';
+import {useTranslation} from 'react-i18next';
 import {ROUTES} from '../app/routes';
 import {useGRBL} from '../app/useGRBL';
 import {useGRBLListener} from '../app/useGRBLListener';
@@ -422,6 +423,7 @@ const PARAMETER_DESCRIPTIONS: Record<number, {
 };
 
 function GrblConfigPage() {
+    const {t} = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [parameters, setParameters] = useState<Record<number, string>>({});
     const [editedValues, setEditedValues] = useState<Record<number, string>>({});
@@ -432,19 +434,19 @@ function GrblConfigPage() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const {sendCommand, isConnected} = useGRBL();
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
-        // Initialize all groups as expanded
-        const groups = [
-            'Basic Settings',
-            'Motion Settings',
-            'Spindle Settings',
-            'PID Settings',
-            'Jogging Settings',
-            'Network Settings',
-            'Tool Change Settings',
-            'Other Settings',
-            'Axis Settings'
+        // Initialize all groups as expanded - using keys instead of translated names
+        const groupKeys = [
+            'basicSettings',
+            'motionSettings',
+            'spindleSettings',
+            'pidSettings',
+            'joggingSettings',
+            'networkSettings',
+            'toolChangeSettings',
+            'otherSettings',
+            'axisSettings'
         ];
-        return groups.reduce((acc, group) => {
+        return groupKeys.reduce((acc, group) => {
             acc[group] = true;
             return acc;
         }, {} as Record<string, boolean>);
@@ -504,7 +506,7 @@ function GrblConfigPage() {
             }, 500);
         } catch (error) {
             console.error('Failed to update parameter:', error);
-            setError(`Failed to update parameter ${id}. Please try again.`);
+            setError(t('config.updateFailed', {id}));
             setSavingParams(prev => {
                 const newValues = {...prev};
                 delete newValues[id];
@@ -546,8 +548,8 @@ function GrblConfigPage() {
                         disabled={isDisabled}
                         title={param.description}
                     >
-                        <option value="0">False (0)</option>
-                        <option value="1">True (1)</option>
+                        <option value="0">{t('config.booleanOptions.false')}</option>
+                        <option value="1">{t('config.booleanOptions.true')}</option>
                     </select>
                 );
 
@@ -876,17 +878,17 @@ function GrblConfigPage() {
 
     // Helper function to determine parameter group
     function getParameterGroup(id: number): string {
-        if (id >= 0 && id <= 19) return 'Basic Settings';
-        if (id >= 20 && id <= 49) return 'Motion Settings';
-        if ((id >= 30 && id <= 38) || id === 340) return 'Spindle Settings';
-        if ((id >= 80 && id <= 85) || (id >= 90 && id <= 92)) return 'PID Settings';
-        if (id >= 50 && id <= 55) return 'Jogging Settings';
-        if (id >= 70 && id <= 79) return 'Network Settings';
-        if (id >= 341 && id <= 344) return 'Tool Change Settings';
-        if (id >= 100 && id <= 132) return 'Axis Settings';
-        if (id === 39 || (id >= 60 && id <= 65)) return 'Other Settings';
+        if (id >= 0 && id <= 19) return 'basicSettings';
+        if (id >= 20 && id <= 49) return 'motionSettings';
+        if ((id >= 30 && id <= 38) || id === 340) return 'spindleSettings';
+        if ((id >= 80 && id <= 85) || (id >= 90 && id <= 92)) return 'pidSettings';
+        if (id >= 50 && id <= 55) return 'joggingSettings';
+        if (id >= 70 && id <= 79) return 'networkSettings';
+        if (id >= 341 && id <= 344) return 'toolChangeSettings';
+        if (id >= 100 && id <= 132) return 'axisSettings';
+        if (id === 39 || (id >= 60 && id <= 65)) return 'otherSettings';
 
-        return 'Other Settings';
+        return 'otherSettings';
     }
 
     const toggleGroup = (group: string) => {
@@ -908,8 +910,8 @@ function GrblConfigPage() {
 
     // Sort groups to ensure Other Settings is last
     const sortedGroups = Object.entries(groupedParameters).sort(([groupA], [groupB]) => {
-        if (groupA === 'Other Settings') return 1;
-        if (groupB === 'Other Settings') return -1;
+        if (groupA === 'otherSettings') return 1;
+        if (groupB === 'otherSettings') return -1;
         return groupA.localeCompare(groupB);
     });
 
@@ -971,7 +973,7 @@ function GrblConfigPage() {
             URL.revokeObjectURL(url);
         } catch (error) {
             console.error('Failed to export config:', error);
-            setError('Failed to export configuration. Please try again.');
+            setError(t('config.exportFailed'));
         }
     };
 
@@ -1023,7 +1025,7 @@ function GrblConfigPage() {
                 setError(null);
             } catch (error) {
                 console.error('Failed to import config:', error);
-                setError('Failed to import configuration. Please check the file format.');
+                setError(t('config.importFailed'));
             }
         };
         reader.readAsText(file);
@@ -1053,7 +1055,7 @@ function GrblConfigPage() {
                 } lg:translate-x-0 z-40`}>
                 <div className="p-6">
                     <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent mb-8">
-                        Borna CNC
+                        {t('config.bornaCnc')}
                     </h2>
                     <div className="space-y-4">
                         <Link
@@ -1062,12 +1064,12 @@ function GrblConfigPage() {
                             onClick={() => setIsSidebarOpen(false)}
                         >
                             <HomeIcon className="w-5 h-5 mr-3"/>
-                            Home
+                            {t('config.home')}
                         </Link>
 
                         <div className="pt-4 border-t border-gray-700/50">
                             <h3 className="px-4 text-sm font-medium text-gray-400 uppercase tracking-wider mb-2">
-                                Parameter Groups
+                                {t('config.groups.parameterGroups')}
                             </h3>
                             <nav className="space-y-1">
                                 {sortedGroups.filter(([_, params]) => params.length > 0)
@@ -1080,7 +1082,7 @@ function GrblConfigPage() {
                                             }}
                                             className="w-full flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 hover:text-white rounded-lg transition-all duration-200 cursor-pointer"
                                         >
-                                            {group}
+                                            {t(`config.groups.${group}`)}
                                         </button>
                                     ))}
                             </nav>
@@ -1103,10 +1105,10 @@ function GrblConfigPage() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                               d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                                     </svg>
-                                    <span className="hidden sm:inline">Back</span>
+                                    <span className="hidden sm:inline">{t('config.back')}</span>
                                 </Link>
                                 <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                                    Machine Config
+                                    {t('config.title')}
                                 </h1>
                             </div>
 
@@ -1120,16 +1122,16 @@ function GrblConfigPage() {
                                     onClick={handleExportConfig}
                                     disabled={!isConnected || isLoading || Object.keys(parameters).length === 0}
                                     className="bg-green-600/50 hover:bg-green-500/50 disabled:bg-gray-600/30 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-green-500/10 disabled:hover:shadow-none cursor-pointer"
-                                    title="Export configuration"
+                                    title={t('config.exportTooltip')}
                                 >
                                     <ArrowDownTrayIcon className="w-5 h-5 mr-2"/>
-                                    <span className="hidden sm:inline">Export</span>
+                                    <span className="hidden sm:inline">{t('config.export')}</span>
                                 </button>
 
                                 <label
                                     className="bg-blue-600/50 hover:bg-blue-500/50 disabled:bg-gray-600/30 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10 disabled:hover:shadow-none cursor-pointer">
                                     <ArrowUpTrayIcon className="w-5 h-5 mr-2"/>
-                                    <span className="hidden sm:inline">Import</span>
+                                    <span className="hidden sm:inline">{t('config.import')}</span>
                                     <input
                                         type="file"
                                         accept=".json"
@@ -1149,13 +1151,13 @@ function GrblConfigPage() {
                         <div
                             className="text-center text-red-400 p-4 sm:p-6 bg-red-900/20 rounded-xl backdrop-blur-sm border border-red-500/20 shadow-lg shadow-red-500/10">
                             <ExclamationTriangleIcon className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 text-red-400"/>
-                            <p className="text-base sm:text-lg">Please connect to the machine first</p>
+                            <p className="text-base sm:text-lg">{t('config.connectionRequired')}</p>
                         </div>
                     ) : isLoading ? (
                         <div className="text-center p-6 sm:p-8">
                             <div
                                 className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-                            <p className="text-base sm:text-lg text-gray-300">Loading machine parameters...</p>
+                            <p className="text-base sm:text-lg text-gray-300">{t('config.loading')}</p>
                         </div>
                     ) : (
                         <div className="space-y-4 sm:space-y-6">
@@ -1163,7 +1165,7 @@ function GrblConfigPage() {
                             <div className="relative group">
                                 <input
                                     type="text"
-                                    placeholder="Search parameters..."
+                                    placeholder={t('config.searchPlaceholder')}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full bg-gray-800/50 text-white px-4 py-3 pl-12 rounded-xl border border-gray-700/50 focus:border-blue-500/50 focus:outline-none transition-all duration-200 backdrop-blur-sm shadow-lg shadow-gray-900/20 group-hover:shadow-blue-500/10"
@@ -1200,7 +1202,8 @@ function GrblConfigPage() {
                                                         onClick={() => toggleGroup(group)}
                                                         className="w-full px-4 py-3 flex items-center justify-between bg-gray-700/30 hover:bg-gray-700/50 transition-colors duration-200 cursor-pointer"
                                                     >
-                                                        <span className="text-blue-400 font-medium">{group}</span>
+                                                        <span
+                                                            className="text-blue-400 font-medium">{t(`config.groups.${group}`)}</span>
                                                         <svg
                                                             className={`w-5 h-5 transform transition-transform duration-200 ${
                                                                 expandedGroups[group] ? 'rotate-180' : ''
@@ -1236,17 +1239,17 @@ function GrblConfigPage() {
                                                                                                     param.datatype === 'string' ? 'bg-yellow-600/20 text-yellow-400' :
                                                                                                         'bg-orange-600/20 text-orange-400'
                                                                                     }`}>
-                                                                                    {param.datatype.replace('_', ' ')}
+                                                                                    {t(`config.datatypes.${param.datatype.replace('_', ' ')}`)}
                                                                                 </span>
                                                                             </div>
                                                                             <div
-                                                                                className="text-sm text-gray-400">ID: {param.id}</div>
+                                                                                className="text-sm text-gray-400">{t('config.table.id')}: {param.id}</div>
                                                                         </div>
                                                                         {param.id >= 100 && param.id <= 105 && (
                                                                             <button
                                                                                 onClick={() => setCalibrationAxis(getAxisFromParamId(param.id))}
                                                                                 className="p-2 rounded-lg bg-blue-600/50 hover:bg-blue-500/50 text-white transition-all duration-200 cursor-pointer"
-                                                                                title="Calibrate steps/mm"
+                                                                                title={t('config.calibrateTooltip')}
                                                                             >
                                                                                 <Cog6ToothIcon className="w-5 h-5"/>
                                                                             </button>
@@ -1256,7 +1259,10 @@ function GrblConfigPage() {
                                                                         {param.description}
                                                                         {(param.datatype === 'integer' || param.datatype === 'float') && (param.min !== undefined || param.max !== undefined) && (
                                                                             <div className="text-xs text-gray-400 mt-1">
-                                                                                Range: {param.min !== undefined ? param.min : '∞'} to {param.max !== undefined ? param.max : '∞'}
+                                                                                {t('config.range', {
+                                                                                    min: param.min !== undefined ? param.min : '∞',
+                                                                                    max: param.max !== undefined ? param.max : '∞'
+                                                                                })}
                                                                             </div>
                                                                         )}
                                                                     </div>
@@ -1280,13 +1286,13 @@ function GrblConfigPage() {
                                                                             } text-white`}
                                                                             disabled={!editedValues[param.id] || savingParams[param.id]}
                                                                         >
-                                                                            {savingParams[param.id] ? 'Saving...' : 'Save'}
+                                                                            {savingParams[param.id] ? t('config.saving') : t('config.save')}
                                                                         </button>
                                                                         {editedValues[param.id] && (
                                                                             <button
                                                                                 onClick={() => handleResetValue(param.id)}
                                                                                 className="px-3 py-2 rounded-lg bg-gray-600/50 hover:bg-gray-500/50 text-white transition-all duration-200"
-                                                                                title="Reset to saved value"
+                                                                                title={t('config.resetTooltip')}
                                                                             >
                                                                                 ↺
                                                                             </button>
@@ -1306,11 +1312,11 @@ function GrblConfigPage() {
                                         <table className="w-full divide-y divide-gray-700/50">
                                             <thead className="bg-gray-700/30">
                                             <tr>
-                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">ID</th>
-                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">Parameter</th>
-                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">Value</th>
-                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">Description</th>
-                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">{t('config.table.id')}</th>
+                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">{t('config.table.parameter')}</th>
+                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">{t('config.table.value')}</th>
+                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">{t('config.table.description')}</th>
+                                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider whitespace-nowrap">{t('config.table.actions')}</th>
                                             </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-700/50">
@@ -1328,7 +1334,8 @@ function GrblConfigPage() {
                                                                 <button
                                                                     className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-200 hover:text-white focus:outline-none transition-colors duration-200 cursor-pointer"
                                                                 >
-                                                                    <span className="text-blue-400">{group}</span>
+                                                                    <span
+                                                                        className="text-blue-400">{t(`config.groups.${group}`)}</span>
                                                                     <svg
                                                                         className={`w-5 h-5 transform transition-transform duration-200 ${
                                                                             expandedGroups[group] ? 'rotate-180' : ''
@@ -1363,11 +1370,11 @@ function GrblConfigPage() {
                                                                                             param.datatype === 'string' ? 'bg-yellow-600/20 text-yellow-400' :
                                                                                                 'bg-orange-600/20 text-orange-400'
                                                                             }`}>
-                                                                            {param.datatype.replace('_', ' ')}
+                                                                            {t(`config.datatypes.${param.datatype.replace('_', ' ')}`)}
                                                                         </span>
                                                                         {!param.hasDescription && (
                                                                             <span
-                                                                                className="ml-2 text-xs text-gray-400">(Undocumented)</span>
+                                                                                className="ml-2 text-xs text-gray-400">{t('config.undocumented')}</span>
                                                                         )}
                                                                     </div>
                                                                 </td>
@@ -1387,7 +1394,10 @@ function GrblConfigPage() {
                                                                     {param.description}
                                                                     {(param.datatype === 'integer' || param.datatype === 'float') && (param.min !== undefined || param.max !== undefined) && (
                                                                         <div className="text-xs text-gray-400 mt-1">
-                                                                            Range: {param.min !== undefined ? param.min : '∞'} to {param.max !== undefined ? param.max : '∞'}
+                                                                            {t('config.range', {
+                                                                                min: param.min !== undefined ? param.min : '∞',
+                                                                                max: param.max !== undefined ? param.max : '∞'
+                                                                            })}
                                                                         </div>
                                                                     )}
                                                                 </td>
@@ -1402,13 +1412,13 @@ function GrblConfigPage() {
                                                                             } text-white`}
                                                                             disabled={!editedValues[param.id] || savingParams[param.id]}
                                                                         >
-                                                                            {savingParams[param.id] ? 'Saving...' : 'Save'}
+                                                                            {savingParams[param.id] ? t('config.saving') : t('config.save')}
                                                                         </button>
                                                                         {editedValues[param.id] && (
                                                                             <button
                                                                                 onClick={() => handleResetValue(param.id)}
                                                                                 className="px-3 py-2 rounded-lg bg-gray-600/50 hover:bg-gray-500/50 text-white transition-all duration-200 cursor-pointer"
-                                                                                title="Reset to saved value"
+                                                                                title={t('config.resetTooltip')}
                                                                             >
                                                                                 ↺
                                                                             </button>
@@ -1417,10 +1427,10 @@ function GrblConfigPage() {
                                                                             <button
                                                                                 onClick={() => setCalibrationAxis(getAxisFromParamId(param.id))}
                                                                                 className="px-4 py-2 rounded-lg bg-blue-600/50 hover:bg-blue-500/50 text-white transition-all duration-200 flex items-center space-x-2 cursor-pointer"
-                                                                                title="Calibrate steps/mm"
+                                                                                title={t('config.calibrateTooltip')}
                                                                             >
                                                                                 <Cog6ToothIcon className="w-5 h-5"/>
-                                                                                <span>Calibrate</span>
+                                                                                <span>{t('config.calibrate')}</span>
                                                                             </button>
                                                                         )}
                                                                     </div>

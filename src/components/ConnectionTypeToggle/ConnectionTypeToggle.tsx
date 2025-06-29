@@ -1,13 +1,19 @@
 import React, {useState} from 'react';
 import {useStore} from '../../app/store';
+import {useTranslation} from 'react-i18next';
 
 export const ConnectionTypeToggle: React.FC = () => {
+    const {t} = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const connectionType = useStore(x => x.connectionType);
     const setConnectionType = useStore(x => x.setConnectionType);
     const isConnected = useStore(x => x.isConnected);
 
     const connectionTypes = ['websocket', 'serial'] as const;
+
+    const getConnectionTypeLabel = (type: typeof connectionTypes[number]) => {
+        return t(`connectionTypeToggle.${type}`);
+    };
 
     const handleTypeSelect = (type: typeof connectionTypes[number]) => {
         setConnectionType(type);
@@ -32,7 +38,7 @@ export const ConnectionTypeToggle: React.FC = () => {
                         : 'bg-gray-700 hover:bg-gray-600'
                 }`}
             >
-                <span className="capitalize">{connectionType}</span>
+                <span>{getConnectionTypeLabel(connectionType)}</span>
                 <svg
                     className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
                     fill="none"
@@ -49,9 +55,9 @@ export const ConnectionTypeToggle: React.FC = () => {
                         <button
                             key={type}
                             onClick={() => handleTypeSelect(type)}
-                            className="block w-full px-4 py-2 text-left hover:bg-gray-700 rounded-md capitalize"
+                            className="block w-full px-4 py-2 text-left hover:bg-gray-700 rounded-md"
                         >
-                            {type}
+                            {getConnectionTypeLabel(type)}
                         </button>
                     ))}
                 </div>

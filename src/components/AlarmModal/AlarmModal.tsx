@@ -6,6 +6,7 @@ import {useGRBLListener} from '../../app/useGRBLListener';
 import {LockOpenIcon, XMarkIcon, ExclamationTriangleIcon} from '@heroicons/react/24/solid';
 import Modal from 'react-modal';
 import {Plane} from '../../types/GCodeTypes';
+import {useTranslation} from 'react-i18next';
 
 // Set the app element for accessibility
 Modal.setAppElement('#root');
@@ -60,6 +61,7 @@ const GRBLHAL_ALARM_CODES: Record<number, string> = {
 };
 
 export const AlarmModal: React.FC<AlarmModalProps> = ({isOpen, onClose}) => {
+    const {t} = useTranslation();
     const {sendCommand, isConnected} = useGRBL();
     const status = useStore(x => x.status);
     const machineCoordinate = useStore(useShallow(x => x.machineCoordinate));
@@ -74,6 +76,14 @@ export const AlarmModal: React.FC<AlarmModalProps> = ({isOpen, onClose}) => {
     const [alarmCode, setAlarmCode] = useState<number | undefined>(undefined);
     const [alarmMessage, setAlarmMessage] = useState<string | undefined>(undefined);
 
+    // Helper function to get translated alarm message
+    const getAlarmMessage = (code: number): string => {
+        if (GRBLHAL_ALARM_CODES[code]) {
+            return t(`alarmModal.alarmCodes.${code}`);
+        }
+        return t('alarmModal.unknownAlarmCode');
+    };
+
     // Parse alarm data from status response
     const parseAlarmFromStatus = (statusLine: string) => {
         if (statusLine.startsWith('<') && statusLine.endsWith('>')) {
@@ -86,10 +96,10 @@ export const AlarmModal: React.FC<AlarmModalProps> = ({isOpen, onClose}) => {
                 if (match) {
                     const code = parseInt(match[1]);
                     setAlarmCode(code);
-                    setAlarmMessage(GRBLHAL_ALARM_CODES[code] || 'Unknown alarm code');
+                    setAlarmMessage(getAlarmMessage(code));
                 } else {
                     setAlarmCode(undefined);
-                    setAlarmMessage('Alarm state without specific code');
+                    setAlarmMessage(t('alarmModal.alarmStateWithoutCode'));
                 }
             } else {
                 setAlarmCode(undefined);
@@ -168,12 +178,12 @@ export const AlarmModal: React.FC<AlarmModalProps> = ({isOpen, onClose}) => {
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <ExclamationTriangleIcon className="h-6 w-6 text-red-500"/>
-                            <h2 className="text-xl font-bold text-white">Machine Alarm</h2>
+                            <h2 className="text-xl font-bold text-white">{t('alarmModal.title')}</h2>
                         </div>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-white transition-colors p-1"
-                            aria-label="Close alarm modal"
+                            className="text-gray-400 hover:text-white transition-colors p-1  cursor-pointer"
+                            aria-label={t('alarmModal.closeModalAriaLabel')}
                         >
                             <XMarkIcon className="h-5 w-5"/>
                         </button>
@@ -185,16 +195,16 @@ export const AlarmModal: React.FC<AlarmModalProps> = ({isOpen, onClose}) => {
                     <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
                         <div className="flex items-center gap-2 mb-2">
                             <ExclamationTriangleIcon className="h-5 w-5 text-red-400"/>
-                            <h3 className="text-lg font-semibold text-red-400">Alarm State Active</h3>
+                            <h3 className="text-lg font-semibold text-red-400">{t('alarmModal.alarmStateActive')}</h3>
                         </div>
                         <p className="text-gray-300 text-sm console-text-selectable">
-                            The machine is currently in an alarm state and requires attention before operation can
-                            continue.
+                            {t('alarmModal.alarmStateDescription')}
                         </p>
                         {typeof alarmCode === 'number' && (
                             <div className="mt-3 p-3 bg-gray-800/50 rounded-lg">
-                                <div className="text-white font-bold text-lg mb-1 console-text-selectable">Alarm
-                                    Code: {alarmCode}</div>
+                                <div className="text-white font-bold text-lg mb-1 console-text-selectable">
+                                    {t('alarmModal.alarmCode')}: {alarmCode}
+                                </div>
                                 <div className="text-gray-300 text-sm mb-1 console-text-selectable">
                                     {alarmMessage}
                                 </div>
@@ -204,10 +214,12 @@ export const AlarmModal: React.FC<AlarmModalProps> = ({isOpen, onClose}) => {
 
                     {/* Machine State Information */}
                     <div className="bg-gray-700/50 rounded-lg p-4">
-                        <h3 className="text-white font-medium mb-3 console-text-selectable">Current Machine State:</h3>
+                        <h3 className="text-white font-medium mb-3 console-text-selectable">{t('alarmModal.currentMachineState')}:</h3>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
-                                <div className="text-gray-400 mb-1 console-text-selectable">Machine Coordinates:</div>
+                                <div
+                                    className="text-gray-400 mb-1 console-text-selectable">{t('alarmModal.machineCoordinates')}:
+                                </div>
                                 <div className="text-white font-mono console-text-selectable">
                                     X: {machineCoordinate.x.toFixed(3)}<br/>
                                     Y: {machineCoordinate.y.toFixed(3)}<br/>
@@ -215,7 +227,9 @@ export const AlarmModal: React.FC<AlarmModalProps> = ({isOpen, onClose}) => {
                                 </div>
                             </div>
                             <div>
-                                <div className="text-gray-400 mb-1 console-text-selectable">Work Offset:</div>
+                                <div
+                                    className="text-gray-400 mb-1 console-text-selectable">{t('alarmModal.workOffset')}:
+                                </div>
                                 <div className="text-white font-mono console-text-selectable">
                                     X: {workPlaceCoordinateOffset.x.toFixed(3)}<br/>
                                     Y: {workPlaceCoordinateOffset.y.toFixed(3)}<br/>
@@ -227,11 +241,13 @@ export const AlarmModal: React.FC<AlarmModalProps> = ({isOpen, onClose}) => {
                         {/* Last G-Code Information */}
                         {selectedGCodeLine && allGCodes && allGCodes.length > 0 && (
                             <div className="mt-3 pt-3 border-t border-gray-600">
-                                <div className="text-gray-400 mb-1 console-text-selectable">Last G-Code Line:</div>
+                                <div
+                                    className="text-gray-400 mb-1 console-text-selectable">{t('alarmModal.lastGCodeLine')}:
+                                </div>
                                 <div className="bg-gray-800/50 p-2 rounded">
                                     <div className="text-white font-mono text-sm console-text-selectable">
                                         <span
-                                            className="text-blue-400">Line {selectedGCodeLine}:</span> {allGCodes[selectedGCodeLine - 1]}
+                                            className="text-blue-400">{t('alarmModal.line')} {selectedGCodeLine}:</span> {allGCodes[selectedGCodeLine - 1]}
                                     </div>
                                 </div>
                             </div>
@@ -239,7 +255,9 @@ export const AlarmModal: React.FC<AlarmModalProps> = ({isOpen, onClose}) => {
 
                         {activeModes && (
                             <div className="mt-3 pt-3 border-t border-gray-600">
-                                <div className="text-gray-400 mb-1 console-text-selectable">Active Modes:</div>
+                                <div
+                                    className="text-gray-400 mb-1 console-text-selectable">{t('alarmModal.activeModes')}:
+                                </div>
                                 <div className="text-white text-sm console-text-selectable">
                                     {activeModes.WorkCoordinateSystem} |
                                     {activeModes.Plane === Plane.XY ? ' G17' : activeModes.Plane === Plane.XZ ? ' G18' : ' G19'} |
@@ -257,7 +275,7 @@ export const AlarmModal: React.FC<AlarmModalProps> = ({isOpen, onClose}) => {
                             onClick={onClose}
                             className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors cursor-pointer"
                         >
-                            Close
+                            {t('alarmModal.close')}
                         </button>
                         <button
                             onClick={handleUnlock}
@@ -265,11 +283,11 @@ export const AlarmModal: React.FC<AlarmModalProps> = ({isOpen, onClose}) => {
                             className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors flex items-center gap-2 cursor-pointer"
                         >
                             <LockOpenIcon className="h-5 w-5"/>
-                            <span>{isUnlocking ? 'Unlocking...' : 'Unlock Machine'}</span>
+                            <span>{isUnlocking ? t('alarmModal.unlocking') : t('alarmModal.unlockMachine')}</span>
                         </button>
                     </div>
                     <div className="mt-2 text-xs text-gray-400 console-text-selectable">
-                        Note: Unlocking will reset active modes and clear the alarm state.
+                        {t('alarmModal.unlockNote')}
                     </div>
                 </div>
             </div>

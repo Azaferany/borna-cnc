@@ -1,8 +1,10 @@
 import { PlayIcon, PauseIcon } from '@heroicons/react/24/solid';
 import { useGRBL } from "../../app/useGRBL.ts";
 import { useStore } from "../../app/store.ts";
+import {useTranslation} from 'react-i18next';
 
 export const PauseButton = () => {
+    const {t} = useTranslation();
     const { sendCommand, isConnected } = useGRBL();
     const status = useStore(s => s.status);
 
@@ -32,7 +34,8 @@ export const PauseButton = () => {
                 disabled={!isConnected || status === "Door"}
             >
                 {status === "Hold" ? <PlayIcon className="h-6 w-6"/> : <PauseIcon className="h-6 w-6"/>}
-                <span className="text-sm mt-1">{status === "Hold" ? 'Continue' : 'Pause'}</span>
+                <span
+                    className="text-sm mt-1">{status === "Hold" ? t('pauseButton.continue') : t('pauseButton.pause')}</span>
             </button>
         </div>
     );

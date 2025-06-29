@@ -4,5 +4,536 @@
     "connectionStatus": "Connection Status",
     "loadGcodeFile": "Load G-code File",
     "messageHistory": "Message History"
+  },
+  "config": {
+    "title": "Machine Config",
+    "bornaCnc": "Borna CNC",
+    "home": "Home",
+    "back": "Back",
+    "export": "Export",
+    "import": "Import",
+    "exportTooltip": "Export configuration",
+    "searchPlaceholder": "Search parameters...",
+    "loading": "Loading machine parameters...",
+    "connectionRequired": "Please connect to the machine first",
+    "save": "Save",
+    "saving": "Saving...",
+    "calibrate": "Calibrate",
+    "calibrateTooltip": "Calibrate steps/mm",
+    "resetTooltip": "Reset to saved value",
+    "exportFailed": "Failed to export configuration. Please try again.",
+    "importFailed": "Failed to import configuration. Please check the file format.",
+    "updateFailed": "Failed to update parameter {{id}}. Please try again.",
+    "undocumented": "(Undocumented)",
+    "range": "Range: {{min}} to {{max}}",
+    "groups": {
+      "parameterGroups": "Parameter Groups",
+      "basicSettings": "Basic Settings",
+      "motionSettings": "Motion Settings",
+      "spindleSettings": "Spindle Settings",
+      "pidSettings": "PID Settings",
+      "joggingSettings": "Jogging Settings",
+      "networkSettings": "Network Settings",
+      "toolChangeSettings": "Tool Change Settings",
+      "otherSettings": "Other Settings",
+      "axisSettings": "Axis Settings"
+    },
+    "table": {
+      "id": "ID",
+      "parameter": "Parameter",
+      "value": "Value",
+      "description": "Description",
+      "actions": "Actions"
+    },
+    "datatypes": {
+      "boolean": "boolean",
+      "integer": "integer",
+      "float": "float",
+      "string": "string",
+      "axis mask": "axis mask",
+      "coolant mask": "coolant mask",
+      "spindle mask": "spindle mask",
+      "control mask": "control mask",
+      "report mask": "report mask",
+      "network mask": "network mask"
+    },
+    "booleanOptions": {
+      "false": "False (0)",
+      "true": "True (1)"
+    }
+  },
+  "gcode": {
+    "editor": "G-code Editor",
+    "saveFile": "Save File",
+    "openFile": "Open File",
+    "findTooltip": "Find (Ctrl+F)",
+    "lockedMessage": "G-codes are locked while sending"
+  },
+  "console": {
+    "title": "Console",
+    "clear": "Clear",
+    "disabled": "Console disabled when GCode file is running",
+    "placeholder": "Enter command... (Use ↑↓ for history)",
+    "send": "Send",
+    "idleOnly": "$ Only Work In Idle State"
+  },
+  "jog": {
+    "title": "Jog Controls",
+    "cantOpenWhileRunning": "Can't open while running",
+    "close": "Close",
+    "openDetails": "Open Details",
+    "feedrate": "Feedrate",
+    "distance": "Distance",
+    "holdToJog": "Hold button to jog, release to stop",
+    "continuousMode": "Continuous Mode",
+    "keyboardMode": "Keyboard Mode",
+    "keyboardControls": "Keyboard Controls:",
+    "arrowKeys": "Arrow Keys: Move {{axes}} axis",
+    "pageUpDown": "Page Up/Down: Move Z axis",
+    "shiftArrows": "Shift + Arrows: Diagonal movement",
+    "continuousModeTooltip": "Toggle between step-by-step and continuous jogging modes",
+    "keyboardModeTooltip": "Enable keyboard controls (Arrow keys for X/Y, Page Up/Down for Z, Shift + arrows for diagonal)",
+    "jogAxisTooltip": "Jog {{axis}} axis {{direction}} direction"
+  },
+  "override": {
+    "title": "Override Controls",
+    "rapidSpeed": "Rapid Speed Override",
+    "feedRate": "Feed Rate Override",
+    "spindleSpeed": "Spindle Speed Override",
+    "quickMovements": "Quick movements",
+    "currentFeedRate": "Current feed rate",
+    "currentSpindleSpeed": "Current spindle speed",
+    "rapidSpeedTooltip": "Adjust how fast the machine moves during rapid movements"
+  },
+  "status": {
+    "position": "Position",
+    "axis": "Axis",
+    "relative": "Relative",
+    "absolute": "Absolute",
+    "zero": "Zero",
+    "reset": "Reset",
+    "all": "all",
+    "details": "Details",
+    "activeModes": "Active Modes",
+    "lastSentLine": "Last Sent Line",
+    "bufferSlots": "Buffer Slots",
+    "selectedLine": "Selected Line",
+    "notSending": "Not Sending",
+    "workCoordinateSystem": "Work Coordinate System",
+    "arcPlane": "Arc Plane",
+    "unitsType": "Units Type",
+    "positioningMode": "Positioning Mode",
+    "xyPlane": "XY Plane",
+    "xzPlane": "XZ Plane",
+    "yzPlane": "YZ Plane",
+    "homeAxisTooltip": "Home {{axis}} axis",
+    "homeAllTooltip": "Home all active axes",
+    "setZeroTooltip": "Set {{axis}} to zero",
+    "resetOffsetTooltip": "Reset {{axis}} offset",
+    "setZeroAllTooltip": "Set zero for all active axes",
+    "resetAllTooltip": "Reset all temporary work offsets for active axes",
+    "statusValues": {
+      "Run": "Run",
+      "Idle": "Idle",
+      "Alarm": "Alarm",
+      "Hold": "Hold",
+      "Door": "Door",
+      "Jog": "Jog",
+      "Unknown": "Unknown",
+      "NotConnected": "Not Connected"
+    },
+    "unitsTypes": {
+      "Inches": "Inches",
+      "Millimeters": "Millimeters"
+    },
+    "positioningModes": {
+      "Absolute": "Absolute",
+      "Relative": "Relative"
+    }
+  },
+  "workOffset": {
+    "title": "Work Offsets",
+    "pleaseConnectFirst": "Please connect first",
+    "cantOpenWhileRunning": "Can't open while running",
+    "active": "Active",
+    "close": "Close",
+    "openDetails": "Open Details",
+    "connectionMessage": "Please connect to the machine first to view and edit work offsets",
+    "cancel": "Cancel",
+    "save": "Save",
+    "reset": "Reset",
+    "edit": "Edit",
+    "activate": "Activate"
+  },
+  "control": {
+    "machineControl": "Machine Control"
+  },
+  "continueFromHere": {
+    "buttonText": "Continue from here",
+    "ariaLabel": "Continue from here",
+    "commandError": "Failed to send command to machine",
+    "startError": "Failed to start sending reversed G-code"
+  },
+  "dwell": {
+    "title": "Dwell",
+    "skip": "Skip",
+    "seconds": "s"
+  },
+  "errorModal": {
+    "title": "G-Code Error",
+    "executionStopped": "G-Code Execution Stopped",
+    "executionStoppedDescription": "encountered an error while processing G-code and has stopped execution.",
+    "errorDetails": "Error Details",
+    "errorCode": "Error Code:",
+    "problematicGCode": "Problematic G-Code:",
+    "stoppedDuringLine": "Stopped During G-Code Line:",
+    "line": "Line",
+    "noContentAvailable": "No content available",
+    "currentCoordinates": "Current Coordinates",
+    "machineCoordinates": "Machine Coordinates",
+    "workCoordinates": "Work Coordinates",
+    "close": "Close",
+    "closeAriaLabel": "Close error modal",
+    "grblErrors": {
+      "1": "Expected command letter - A command letter was expected but not found",
+      "2": "Bad number format - A number was expected but not found or has an invalid format",
+      "3": "Invalid statement - A statement was not recognized or supported",
+      "4": "Negative value - A negative value was provided where a positive value is required",
+      "5": "Setting disabled - Homing cycle failure. Homing is not enabled via settings",
+      "6": "Setting step pulse min - Minimum step pulse time must be greater than 3μsec",
+      "7": "Setting read fail - An EEPROM read failed. Auto-restoring affected EEPROM to default values",
+      "8": "Idle error - '$' command cannot be used unless is IDLE",
+      "9": "System GC lock - G-code commands are locked out during alarm or jog state",
+      "10": "Soft limit error - Soft limits cannot be enabled without homing also enabled",
+      "11": "Overflow - Max characters per line exceeded. Received command line was not executed",
+      "12": "Max step rate exceeded - '$' setting value cause the step rate to exceed the maximum supported",
+      "13": "Check door - Safety door detected as opened and door state initiated",
+      "14": "Line length exceeded - Build info or startup line exceeded EEPROM line length limit",
+      "15": "Travel exceeded - Jog target exceeds machine travel. Jog command has been ignored",
+      "16": "Invalid jog command - Jog command has no '=' or contains prohibited g-code",
+      "17": "Setting disabled laser - Laser mode requires PWM output",
+      "18": "Reset - System reset detected",
+      "19": "Non positive value - Non-positive value received for an expected positive value",
+      "20": "Unsupported command - Unsupported or invalid g-code command found in block",
+      "21": "Modal group violation - More than one g-code command from same modal group found in block",
+      "22": "Undefined feed rate - Feed rate has not yet been set or is undefined",
+      "23": "Command value not integer - G-code command in block requires an integer value",
+      "24": "Axis command conflict - More than one g-code command that requires axis words found in block",
+      "25": "Word repeated - Repeated g-code word found in block",
+      "26": "No axis words - No axis words found in block for g-code command or current modal state which requires them",
+      "27": "Invalid line number - Line number value is invalid",
+      "28": "Value word missing - G-code command is missing a required value word",
+      "29": "Unsupported coord sys - G59.x work coordinate systems are not supported",
+      "30": "G53 invalid motion mode - G53 only allowed with G0 and G1 motion modes",
+      "31": "Axis words exist - Axis words found in block when no command or current modal state uses them",
+      "32": "No axis words in plane - G2 and G3 arcs require at least one in-plane axis word",
+      "33": "Invalid target - Motion command target is invalid",
+      "34": "Arc radius error - Arc radius value is invalid",
+      "35": "No offsets in plane - G2 and G3 arcs require at least one in-plane offset word",
+      "36": "Unused words - Unused value words found in block",
+      "37": "G43 dynamic axis error - G43.1 dynamic tool length offset is not assigned to configured tool length axis",
+      "38": "Illegal tool table entry - Tool number greater than max supported value",
+      "39": "Value out of range - G-code value is out of valid range",
+      "40": "Tool change pending - Tool change is pending and must be completed before continuing",
+      "41": "Spindle not running - Spindle must be running for this operation",
+      "42": "Illegal plane - Selected plane is not valid for this operation",
+      "43": "Max feed rate exceeded - Commanded feed rate exceeds maximum allowed",
+      "44": "RPM out of range - Spindle RPM value is outside valid range",
+      "45": "Limits engaged - Limit switches are currently engaged",
+      "46": "Homing required - Homing cycle must be performed before operation",
+      "47": "Tool error - Tool-related error occurred",
+      "48": "Value word conflict - Conflicting value words found in block",
+      "49": "Self test failed - System self-test has failed",
+      "50": "EStop - Emergency stop has been triggered",
+      "51": "Motor fault - Motor driver fault detected",
+      "52": "Setting value out of range - Setting value is outside valid range",
+      "53": "Setting disabled - Requested setting is disabled",
+      "54": "Invalid retract position - Tool retract position is invalid",
+      "55": "Illegal homing configuration - Homing configuration is invalid",
+      "56": "Coord system locked - Coordinate system is locked and cannot be modified",
+      "57": "Unexpected demarcation - Unexpected character or demarcation found",
+      "60": "SD mount error - SD card mounting failed",
+      "61": "File read error - Error reading from file",
+      "62": "Failed open dir - Failed to open directory",
+      "63": "Dir not found - Directory not found",
+      "64": "SD not mounted - SD card is not mounted",
+      "65": "FS not mounted - File system is not mounted",
+      "66": "FS read only - File system is read-only",
+      "70": "BT init error - Bluetooth initialization failed",
+      "71": "Expression unknown op - Unknown operator in expression",
+      "72": "Expression divide by zero - Division by zero in expression",
+      "73": "Expression argument out of range - Expression argument is out of range",
+      "74": "Expression invalid argument - Invalid argument in expression",
+      "75": "Expression syntax error - Syntax error in expression",
+      "76": "Expression invalid result - Expression result is invalid",
+      "77": "Authentication required - Authentication is required for this operation",
+      "78": "Access denied - Access to resource is denied",
+      "79": "Not allowed critical event - Operation not allowed during critical event",
+      "80": "Flow control not executing macro - Flow control command not executing in macro",
+      "81": "Flow control syntax error - Syntax error in flow control command",
+      "82": "Flow control stack overflow - Flow control stack overflow",
+      "83": "Flow control out of memory - Flow control ran out of memory",
+      "84": "File open failed - Failed to open file"
+    }
+  },
+  "scene3d": {
+    "legend": "Legend",
+    "rapidMoves": "Rapid moves (G0)",
+    "feedMoves": "Feed moves (G1)",
+    "arcMoves": "Arc moves (G2/G3)",
+    "running": "Running",
+    "done": "Done",
+    "chooseRapidMoveColor": "Choose rapid move color",
+    "chooseFeedMoveColor": "Choose feed move color",
+    "chooseArcMoveColor": "Choose arc move color",
+    "chooseRunningColor": "Choose running color",
+    "chooseDoneColor": "Choose done color",
+    "cameraControls": "Camera Controls",
+    "goToStart": "Go to Start",
+    "goToToolhead": "Go to Toolhead",
+    "topView": "Top View",
+    "frontView": "Front View",
+    "sideView": "Side View",
+    "isometricView": "Isometric View",
+    "showBoundingBox": "Show Bounding Box",
+    "followToolhead": "Follow Toolhead (Every 5s)"
+  },
+  "pauseButton": {
+    "pause": "Pause",
+    "continue": "Continue"
+  },
+  "previousButton": {
+    "previous": "Previous",
+    "sending": "Sending...",
+    "sendingPaused": "Sending Paused",
+    "failedToStartReverse": "Failed to start sending reversed G-code",
+    "noGCodeLineSelected": "No G-code line selected",
+    "noGCodeLineSelectedOrExist": "No G-code line selected or exist",
+    "machineHoldRequired": "Machine must be in Hold state (current: {{status}})"
+  },
+  "resetButton": {
+    "stop": "Stop!",
+    "activeModesWillReset": "(Active Modes Will Reset)",
+    "unlockActiveModesReset": "Unlock (Active Modes Will Reset)"
+  },
+  "spindleControl": {
+    "startSpindle": "START SPINDLE",
+    "stopSpindle": "STOP SPINDLE",
+    "rpm": "RPM"
+  },
+  "startButton": {
+    "start": "Start",
+    "sending": "Sending...",
+    "sendingPaused": "Sending Paused",
+    "failedToStartSending": "Failed to start sending G-code",
+    "noGCodeAvailable": "No G-code available to send",
+    "machineIdleRequired": "Machine must be in Idle state (current: {{status}})"
+  },
+  "startOptionsModal": {
+    "title": "Start Options",
+    "startFromBeginning": "Start from beginning",
+    "executeAllFromFirst": "Execute all G-code commands from the first line",
+    "startFromSpecificLine": "Start from specific line",
+    "ofLines": "of {{totalLines}} lines",
+    "linePreview": "Line Preview:",
+    "cancel": "Cancel",
+    "start": "Start"
+  },
+  "stopButton": {
+    "stop": "Stop",
+    "continue": "Continue",
+    "confirmContinue": "Are you sure you want to continue? Make sure the door is closed."
+  },
+  "startTourButton": {
+    "tour": "Tour",
+    "startGuidedTour": "Start guided tour"
+  },
+  "tour": {
+    "connectionStatus": {
+      "title": "Connection Status",
+      "description": "This shows your current connection status to the CNC machine. You can connect via USB or Network."
+    },
+    "scene3d": {
+      "title": "3D Scene",
+      "description": "This is your main workspace where you can visualize your G-code toolpaths in 3D. Use mouse to rotate, zoom, and pan the view."
+    },
+    "gcodeEditor": {
+      "title": "G-Code Editor",
+      "description": "View and edit your G-code here. You can load files and see the current line being executed highlighted."
+    },
+    "controlButtons": {
+      "title": "Control Buttons",
+      "description": "These are your main machine control buttons: Start, Pause, Stop, and Reset your CNC operations."
+    },
+    "jogControls": {
+      "title": "Jog Controls",
+      "description": "Use these controls to manually move your CNC machine axes. Adjust step size and move in precise increments."
+    },
+    "continuousMode": {
+      "title": "Continuous Mode",
+      "description": "When enabled, hold down jog buttons to move continuously. Release to stop. Perfect for fine positioning and manual control."
+    },
+    "keyboardMode": {
+      "title": "Keyboard Mode",
+      "description": "Use arrow keys for X/Y movement, Page Up/Down for Z axis. Hold Shift + arrows for diagonal movement. The yellow ring indicates keyboard mode is active."
+    },
+    "console": {
+      "title": "Console",
+      "description": "Monitor machine responses and send manual G-code commands directly to your CNC machine."
+    },
+    "statusDisplay": {
+      "title": "Status Display",
+      "description": "View real-time machine coordinates, work coordinates, and current machine state information."
+    },
+    "relativeCoordinates": {
+      "title": "Relative Coordinates",
+      "description": "These blue values show your position relative to the current work coordinate system (G54-G59). This is your \"working zero\" - the reference point for your current job."
+    },
+    "absoluteCoordinates": {
+      "title": "Absolute Coordinates",
+      "description": "These green values show your position in absolute machine coordinates. This is the true position relative to the machine's home position, regardless of work offsets."
+    },
+    "homeButtons": {
+      "title": "Home Buttons",
+      "description": "Use these green home buttons to return each axis to its home position. This is essential for machine calibration and safety."
+    },
+    "zeroButtons": {
+      "title": "Zero Buttons",
+      "description": "Set the current position as zero for each axis. This establishes your work coordinate system for accurate positioning."
+    },
+    "resetButtons": {
+      "title": "Reset Buttons",
+      "description": "Reset temporary work offsets (G92) for each axis. Use this to clear any temporary coordinate adjustments."
+    },
+    "finishTour": "🎉 Finish Tour"
+  },
+  "connectionTypeToggle": {
+    "websocket": "WebSocket",
+    "serial": "Serial"
+  },
+  "connectionStatus": {
+    "connected": "Connected",
+    "connecting": "Connecting..."
+  },
+  "calibrationModal": {
+    "title": "Calibrate {{axis}} Axis",
+    "stepDescriptions": {
+      "first": "Enter the first measurement to start calibration",
+      "jog": "Move the machine to a new position",
+      "second": "Enter the second measurement to complete calibration"
+    },
+    "instructions": {
+      "title": "Instructions:",
+      "first": {
+        "step1": "Place your measurement tool at the starting position",
+        "step2": "Enter the current measurement value",
+        "step3": "Click Next to proceed to jogging"
+      },
+      "jog": {
+        "step1": "Use the jog controls to move the machine to a new position",
+        "step2": "Make sure to move at least 1mm from the starting position",
+        "step3": "Click Next when you've reached the desired position"
+      },
+      "second": {
+        "step1": "Place your measurement tool at the current position",
+        "step2": "Enter the new measurement value",
+        "step3": "Review the calibration information",
+        "step4": "Click Complete Calibration to save the new steps/mm value"
+      }
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "next": "Next",
+      "back": "Back",
+      "completeCalibration": "Complete Calibration"
+    },
+    "firstMeasurement": "First Measurement",
+    "firstMeasurementPlaceholder": "Enter first measurement",
+    "secondMeasurement": "Second Measurement",
+    "secondMeasurementPlaceholder": "Enter second measurement",
+    "currentPosition": "Current Position",
+    "feedrate": "Feedrate",
+    "distance": "Distance",
+    "holdButtonToJog": "Hold button to jog, release to stop",
+    "continuousMode": "Continuous Mode",
+    "continuousModeTooltip": "Toggle between step-by-step and continuous jogging modes",
+    "calibrationInformation": "Calibration Information",
+    "currentStepsMm": "Current Steps/mm",
+    "firstPosition": "First {{axis}} Position",
+    "currentAxisPosition": "Current {{axis}} Position",
+    "measuredDistance": "Measured Distance",
+    "machineDistance": "Machine Distance",
+    "error": "Error",
+    "newStepsMm": "New Steps/mm",
+    "errors": {
+      "measuredDistanceTooSmall": "Measured distance too small: {{distance}}",
+      "invalidStepsCalculation": "Invalid steps calculation. Please check your measurements."
+    }
+  },
+  "autoConnection": {
+    "connecting": "Connecting to machine...",
+    "connected": "Connected to machine!",
+    "disconnected": "Disconnected from machine"
+  },
+  "alarmModal": {
+    "title": "Machine Alarm",
+    "closeModalAriaLabel": "Close alarm modal",
+    "alarmStateActive": "Alarm State Active",
+    "alarmStateDescription": "The machine is currently in an alarm state and requires attention before operation can continue.",
+    "alarmCode": "Alarm Code",
+    "unknownAlarmCode": "Unknown alarm code",
+    "alarmStateWithoutCode": "Alarm state without specific code",
+    "currentMachineState": "Current Machine State",
+    "machineCoordinates": "Machine Coordinates",
+    "workOffset": "Work Offset",
+    "lastGCodeLine": "Last G-Code Line",
+    "line": "Line",
+    "activeModes": "Active Modes",
+    "close": "Close",
+    "unlockMachine": "Unlock Machine",
+    "unlocking": "Unlocking...",
+    "unlockNote": "Note: Unlocking will reset active modes and clear the alarm state.",
+    "alarmCodes": {
+      "1": "Hard limit triggered. Machine position is likely lost due to sudden and immediate halt. Re-homing is highly recommended.",
+      "2": "Soft limit alarm. G-code motion target exceeds machine travel. Machine position retained. Alarm may be unlocked.",
+      "3": "Reset while in motion. Machine position is likely lost due to sudden and immediate halt. Re-homing is highly recommended.",
+      "4": "Probe fail. Probe is not in the expected initial state before starting probe cycle when G38.2 and G38.3 is not triggered and G38.4 and G38.5 is triggered.",
+      "5": "Probe fail. Probe did not contact the workpiece within the programmed travel for G38.2 and G38.4.",
+      "6": "Homing fail. The active homing cycle was reset.",
+      "7": "Homing fail. Safety door was opened during homing cycle.",
+      "8": "Homing fail. Pull off travel failed to clear limit switch. Try increasing pull-off setting or check wiring.",
+      "9": "Homing fail. Could not find limit switch within search distances. Try increasing max travel, decreasing pull-off distance, or check wiring.",
+      "10": "Homing fail. Could not find limit switch within search distances. Try increasing max travel, decreasing pull-off distance, or check wiring.",
+      "11": "Homing fail. Homing not enabled in settings.",
+      "12": "Homing fail. Second dual axis limit switch failed to trigger within configured search distance after first.",
+      "13": "Homing fail. Homing cycle not enabled in settings.",
+      "14": "Spindle at speed timeout. Either the spindle hasnt gotten up to speed in the timeframe set for spindle at speed or spindle has been wired incorrectly to your controller.",
+      "15": "Homing fail. Could not find second limit switch for auto squared axis within search distances. Try increasing max travel, decreasing pull-off distance, or check wiring.",
+      "16": "Homing fail. Homing cycle not enabled in settings.",
+      "17": "Motor fault. Issue encountered with closed loop motor tracking. Position likely lost.",
+      "18": "Homing fail. Homing cycle not enabled in settings.",
+      "19": "Homing fail. Homing cycle not enabled in settings.",
+      "20": "Homing fail. Homing cycle not enabled in settings.",
+      "21": "Homing fail. Homing cycle not enabled in settings.",
+      "22": "Homing fail. Homing cycle not enabled in settings.",
+      "23": "Homing fail. Homing cycle not enabled in settings.",
+      "24": "Homing fail. Homing cycle not enabled in settings.",
+      "25": "Homing fail. Homing cycle not enabled in settings.",
+      "26": "Homing fail. Homing cycle not enabled in settings.",
+      "27": "Homing fail. Homing cycle not enabled in settings.",
+      "28": "Homing fail. Homing cycle not enabled in settings.",
+      "29": "Homing fail. Homing cycle not enabled in settings.",
+      "30": "Homing fail. Homing cycle not enabled in settings.",
+      "31": "Homing fail. Homing cycle not enabled in settings.",
+      "32": "Homing fail. Homing cycle not enabled in settings.",
+      "33": "Homing fail. Homing cycle not enabled in settings.",
+      "34": "Homing fail. Homing cycle not enabled in settings.",
+      "35": "Homing fail. Homing cycle not enabled in settings.",
+      "36": "Homing fail. Homing cycle not enabled in settings.",
+      "37": "Homing fail. Homing cycle not enabled in settings.",
+      "38": "Homing fail. Homing cycle not enabled in settings.",
+      "39": "Homing fail. Homing cycle not enabled in settings.",
+      "40": "Homing fail. Homing cycle not enabled in settings."
+    }
   }
 }

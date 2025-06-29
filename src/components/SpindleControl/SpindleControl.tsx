@@ -3,8 +3,10 @@ import {CogIcon, StopIcon} from '@heroicons/react/24/solid';
 import {useGRBL} from "../../app/useGRBL.ts";
 import {useStore} from "../../app/store.ts";
 import {useShallow} from "zustand/react/shallow";
+import {useTranslation} from 'react-i18next';
 
 export const SpindleControl = () => {
+    const {t} = useTranslation();
     const {sendCommand, isConnected} = useGRBL();
     const status = useStore(s => s.status);
     const isSending = useStore(s => s.isSending);
@@ -176,12 +178,12 @@ export const SpindleControl = () => {
                 {isSpindleOn ? (
                     <>
                         <StopIcon className="h-4 w-4"/>
-                        STOP SPINDLE
+                        {t('spindleControl.stopSpindle')}
                     </>
                 ) : (
                     <>
                         <CogIcon className="h-4 w-4"/>
-                        START SPINDLE
+                        {t('spindleControl.startSpindle')}
                         {/* ({spindleDirection}) */}
                     </>
                 )}
@@ -190,9 +192,9 @@ export const SpindleControl = () => {
             {/* Speed display */}
             <div className="mb-2">
                 <div className="flex justify-between items-center mb-1">
-                    <span className="text-gray-300 text-xs">RPM</span>
+                    <span className="text-gray-300 text-xs">{t('spindleControl.rpm')}</span>
                     <span className="text-white font-mono text-sm">
-                        {targetSpeed.toLocaleString()} RPM
+                        {targetSpeed.toLocaleString()} {t('spindleControl.rpm')}
                     </span>
                 </div>
             </div>

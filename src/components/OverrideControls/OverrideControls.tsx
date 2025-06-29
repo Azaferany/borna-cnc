@@ -1,6 +1,7 @@
 import {useGRBL} from "../../app/useGRBL.ts";
 import {useStore} from "../../app/store.ts";
 import {useEffect, useState} from "react";
+import {useTranslation} from 'react-i18next';
 import { FeedrateUnitDisplay } from "../UnitDisplay/FeedrateUnitDisplay";
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -116,6 +117,7 @@ const SliderControl = ({
     );
 }
 export const OverrideControls = () => {
+    const {t} = useTranslation();
     const spindleSpeedOverridePercent = useStore(state => state.spindleSpeedOverridePercent);
     const feedrateOverridePercent = useStore(state => state.feedrateOverridePercent);
     const rapidSpeedOverridePercent = useStore(state => state.rapidSpeedOverridePercent);
@@ -224,12 +226,12 @@ export const OverrideControls = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                           d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
                 </svg>
-                Override Controls
+                {t('override.title')}
             </h2>
             <div className="grid grid-cols-1 gap-2">
                 <div className="col-span-1">
                     <SliderControl
-                        label="Rapid Speed Override"
+                        label={t('override.rapidSpeed')}
                         value={rapidSpeedOverridePercent}
                         onCommit={handleRapidOverride}
                         min={0}
@@ -238,31 +240,33 @@ export const OverrideControls = () => {
                         allowedValues={[25, 50, 100]}
                     >
                         <span className="text-xs text-gray-400"
-                              title="Adjust how fast the machine moves during rapid movements">Quick movements</span>
+                              title={t('override.rapidSpeedTooltip')}>{t('override.quickMovements')}</span>
                     </SliderControl>
                 </div>
                 <div className="col-span-1">
                     <SliderControl
-                        label="Feed Rate Override"
+                        label={t('override.feedRate')}
                         value={feedrateOverridePercent}
                         onCommit={handleFeedOverride}
                         min={10}
                         max={200}
                     >
-                        <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700" title="Current feed rate">
+                        <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700"
+                              title={t('override.currentFeedRate')}>
                             {feedrate.toFixed(0)} <FeedrateUnitDisplay/>
                         </span>
                     </SliderControl>
                 </div>
                 <div className="col-span-1">
                     <SliderControl
-                        label="Spindle Speed Override"
+                        label={t('override.spindleSpeed')}
                         value={spindleSpeedOverridePercent}
                         onCommit={handleSpindleOverride}
                         min={10}
                         max={200}
                     >
-                        <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700" title="Current spindle speed">
+                        <span className="text-sm font-mono px-2 py-1 rounded bg-blue-700"
+                              title={t('override.currentSpindleSpeed')}>
                             {spindleSpeed.toFixed(0)} RPM
                         </span>
                     </SliderControl>

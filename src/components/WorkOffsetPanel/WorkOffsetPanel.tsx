@@ -1,10 +1,12 @@
 import React, {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import { useGRBL } from "../../app/useGRBL.ts";
 import { useStore } from "../../app/store.ts";
 import type {Point3D6Axis} from "../../types/GCodeTypes.ts";
 import {useShallow} from "zustand/react/shallow";
 
 const WorkOffsetPanel: React.FC = () => {
+    const {t} = useTranslation();
   const {sendCommand, isConnected} = useGRBL();
   const gCodeOffsets = useStore(useShallow(state => state.gCodeOffsets));
   const updateGCodeOffsets = useStore(state => state.updateGCodeOffsets);
@@ -58,22 +60,22 @@ const WorkOffsetPanel: React.FC = () => {
           }`}
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-          <h2 className="text-xl font-bold">Work Offsets</h2>
+            <h2 className="text-xl font-bold">{t('workOffset.title')}</h2>
           {!isConnected ? (
               <span className="px-2 py-1 bg-red-600 rounded-md text-sm font-medium">
-              Please connect first
+              {t('workOffset.pleaseConnectFirst')}
             </span>
           ) : (
               <div className="flex flex-col sm:flex-row gap-2">
                   {isMachineBusy && (
                       <span className="px-2 py-1 bg-orange-600 rounded-md text-sm font-medium">
-                  Can't open while running
+                  {t('workOffset.cantOpenWhileRunning')}
                 </span>
                   )}
                   {activeModes?.WorkCoordinateSystem && (
                       <span
                           className="px-2 py-1 bg-blue-600 rounded-md text-sm font-medium whitespace-normal break-words">
-                  Active : {activeModes.WorkCoordinateSystem}
+                  {t('workOffset.active')} : {activeModes.WorkCoordinateSystem}
                           {machineConfig.activeAxes.x && ` X:${gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].x.toFixed(3)}`}
                           {machineConfig.activeAxes.y && ` Y:${gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].y.toFixed(3)}`}
                           {machineConfig.activeAxes.z && ` Z:${gCodeOffsets[activeModes.WorkCoordinateSystem as keyof typeof gCodeOffsets].z.toFixed(3)}`}
@@ -94,7 +96,8 @@ const WorkOffsetPanel: React.FC = () => {
                   : 'cursor-pointer hover:bg-gray-600'
           }`}
         >
-          <span className="text-sm font-medium">{isExpanded ? 'Close' : 'Open Details'}</span>
+            <span
+                className="text-sm font-medium">{isExpanded ? t('workOffset.close') : t('workOffset.openDetails')}</span>
           {isExpanded ? (
             <svg 
               className="w-5 h-5" 
@@ -121,7 +124,7 @@ const WorkOffsetPanel: React.FC = () => {
         <div className="p-4 pt-2 transform transition-transform duration-200 ease-out" style={{ transform: `translateY(${isExpanded ? '0' : '-100%'})` }}>
           {!isConnected ? (
               <div className="text-center text-gray-400 py-4">
-                Please connect to the machine first to view and edit work offsets
+                  {t('workOffset.connectionMessage')}
               </div>
           ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
@@ -156,7 +159,7 @@ const WorkOffsetPanel: React.FC = () => {
                                 {activeModes?.WorkCoordinateSystem === offset && (
                                     <span
                                         className="px-2 py-0.5 text-xs font-medium bg-green-500 text-white rounded-full">
-                            Active
+                            {t('workOffset.active')}
                           </span>
                                 )}
                               </div>
@@ -171,13 +174,13 @@ const WorkOffsetPanel: React.FC = () => {
                                         }}
                                         className="flex-1 px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 active:bg-red-900 transition-colors duration-200 cursor-pointer"
                                     >
-                                      Cancel
+                                        {t('workOffset.cancel')}
                                     </button>
                                     <button
                                         type="submit"
                                         className="flex-1 px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 active:bg-green-900 transition-colors duration-200 cursor-pointer"
                                     >
-                                      Save
+                                        {t('workOffset.save')}
                                     </button>
 
                                   </>
@@ -193,7 +196,7 @@ const WorkOffsetPanel: React.FC = () => {
                                             isMachineBusy ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                                         }`}
                                     >
-                                      Reset
+                                        {t('workOffset.reset')}
                                     </button>
                                     <button
                                         type="button"
@@ -207,7 +210,7 @@ const WorkOffsetPanel: React.FC = () => {
                                             isMachineBusy ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                                         }`}
                                     >
-                                      Edit
+                                        {t('workOffset.edit')}
                                     </button>
 
                                   </>
@@ -220,7 +223,7 @@ const WorkOffsetPanel: React.FC = () => {
                                       isMachineBusy ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                                   }`}
                               >
-                                Activate
+                                  {t('workOffset.activate')}
                               </button>)}
                             </div>
                           </div>

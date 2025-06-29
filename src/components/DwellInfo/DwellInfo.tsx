@@ -1,9 +1,11 @@
+import {useTranslation} from 'react-i18next';
 import {useStore} from "../../app/store.ts";
 import {useShallow} from "zustand/react/shallow";
 import {useGRBL} from "../../app/useGRBL";
 import {useEffect} from "react";
 
 export const DwellInfo = () => {
+    const {t} = useTranslation();
     const dwell = useStore(useShallow(x => x.dwell));
     const status = useStore(x => x.status);
     const { sendCommand } = useGRBL();
@@ -43,7 +45,7 @@ export const DwellInfo = () => {
         <div className="flex items-center gap-2 bg-gray-700 px-3 py-4 rounded">
             <div className="flex items-center gap-2">
                 <div className="animate-spin h-5 w-5 border-4 border-blue-500 border-t-transparent rounded-full" />
-                <div className="text-md font-medium text-gray-200">Dwell</div>
+                <div className="text-md font-medium text-gray-200">{t('dwell.title')}</div>
             </div>
             <div className="w-full h-4 bg-gray-600 rounded-full overflow-hidden">
                 <div
@@ -52,13 +54,13 @@ export const DwellInfo = () => {
                 />
             </div>
             <div className="text-sm font-medium text-gray-200">
-                {dwell.RemainingSeconds.toFixed(1)}s
+                {dwell.RemainingSeconds.toFixed(1)}{t('dwell.seconds')}
             </div>
             <button
                 onClick={handleSkip}
                 className="px-2 py-2 mx-1 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded transition-colors"
             >
-                Skip
+                {t('dwell.skip')}
             </button>
         </div>
     );
