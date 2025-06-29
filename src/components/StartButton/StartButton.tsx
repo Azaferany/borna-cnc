@@ -34,7 +34,7 @@ export const StartButton = () => {
                     ...[
                         ...toolPathGCodes?.map(x => x.startPoint.z) ?? [10],
                         ...toolPathGCodes?.map(x => x.endPoint?.z ?? 10) ?? [10]
-                    ]) + 50;
+                    ]) - 50;
 
             gCodesToSend = gCodesToSend.slice(startFromLine - 1)
             gCodesToSend.unshift(`N${startFromLine} G53 G1 Z${selectedGcodeCommand.startPoint.z} f${selectedGcodeCommand.feedRate}`);
@@ -56,6 +56,7 @@ export const StartButton = () => {
             for (let i = 0; i < selectedGcodeCommand.activeMCodes.length; i++) {
                 const mCode = selectedGcodeCommand.activeMCodes.slice().reverse()[i];
                 if (i === 0 && (mCode.includes("M3") || mCode.includes("M4"))) {
+
                     if (/s\d+/i.test(mCode)) {
                         gCodesToSend.unshift(mCode.replace(/s\d+/i, `s${selectedGcodeCommand.spindleSpeed}`));
                     } else {
