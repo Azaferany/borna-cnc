@@ -12,6 +12,7 @@ import TourWrapper from "./components/Tour/Tour.tsx";
 import {AlarmModalProvider} from "./components/AlarmModal/AlarmModalProvider.tsx";
 import FontController from "./components/FontController/FontController.tsx";
 import {useLanguagePersistence} from "./app/useLanguagePersistence.ts";
+import "./app/electronStorageInfo.ts"; // Auto-runs storage debugging in development
 
 function App() {
     const Router = isElectron() ? HashRouter : BrowserRouter;
