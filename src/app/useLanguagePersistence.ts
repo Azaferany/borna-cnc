@@ -35,35 +35,16 @@ export const useLanguagePersistence = () => {
             }
         }
 
-        const handleLanguageChange = (lng: string) => {
-            try {
-                // Save to localStorage whenever language changes
-                localStorage.setItem(STORAGE_KEY, lng)
-
-                // Also save to sessionStorage as backup
-                sessionStorage.setItem(STORAGE_KEY, lng)
-
-                console.log(`Language changed and saved: ${lng}`)
-            } catch (error) {
-                console.warn('Failed to save language to storage:', error)
-            }
-        }
-
         // Initialize language on mount
         initializeLanguage()
 
-        // Listen for language changes
-        i18n.on('languageChanged', handleLanguageChange)
-
-        // Cleanup
-        return () => {
-            i18n.off('languageChanged', handleLanguageChange)
-        }
     }, [i18n])
 
     const changeLanguage = (language: string) => {
         if (SUPPORTED_LANGUAGES.includes(language as any)) {
             i18n.changeLanguage(language)
+            localStorage.setItem(STORAGE_KEY, language)
+
         } else {
             console.warn(`Unsupported language: ${language}`)
         }
