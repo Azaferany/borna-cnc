@@ -15,8 +15,6 @@ import {
     ArrowUpTrayIcon
 } from '@heroicons/react/24/outline';
 import CalibrationModal from '../components/CalibrationModal/CalibrationModal';
-import StartTourButton from '../components/StartTourButton/StartTourButton';
-import LanguageSwitcher from "../components/LanguageSwitcher/LanguageSwitcher.tsx";
 
 interface GrblParameter {
     id: number;
@@ -1437,12 +1435,8 @@ function GrblConfigPage() {
                                 </h1>
                             </div>
 
-                            {/* Export/Import/Tour Buttons */}
+                            {/* Export/Import Buttons */}
                             <div className="flex items-center space-x-2">
-                                <LanguageSwitcher/>
-
-                                <StartTourButton/>
-                                
                                 <button
                                     onClick={handleExportConfig}
                                     disabled={!isConnected || isLoading || Object.keys(parameters).length === 0}

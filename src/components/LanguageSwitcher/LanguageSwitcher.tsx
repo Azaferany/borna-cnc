@@ -38,11 +38,11 @@ const LanguageSwitcher = () => {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg z-50">
+                <div className="absolute left-0 bottom-12 mt-2 w-48 bg-gray-700 rounded-lg shadow-lg z-50">
                     <div className="py-1">
                         <button
                             onClick={() => handleLanguageChange('en')}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-700 focus:outline-none focus:bg-gray-700 ${
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-600 focus:outline-none focus:bg-gray-500 ${
                                 currentLanguage === 'en' ? 'text-blue-400 bg-gray-700' : 'text-white'
                             }`}
                             tabIndex={0}
@@ -57,7 +57,7 @@ const LanguageSwitcher = () => {
                         </button>
                         <button
                             onClick={() => handleLanguageChange('fa')}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-700 focus:outline-none focus:bg-gray-700 ${
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-600 focus:outline-none focus:bg-gray-500 ${
                                 currentLanguage === 'fa' ? 'text-blue-400 bg-gray-700' : 'text-white'
                             }`}
                             tabIndex={0}

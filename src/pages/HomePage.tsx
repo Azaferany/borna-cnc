@@ -12,12 +12,15 @@ import WorkOffsetPanel from "../components/WorkOffsetPanel/WorkOffsetPanel.tsx";
 import {MessageHistoryButton} from "../components/MessageHistoryButton/MessageHistoryButton.tsx";
 import {ConnectionTypeToggle} from "../components/ConnectionTypeToggle/ConnectionTypeToggle.tsx";
 import {MachineConfigButton} from "../components/MachineConfigButton/MachineConfigButton.tsx";
+import StartTourButton from "../components/StartTourButton/StartTourButton.tsx";
+import LanguageSwitcher from "../components/LanguageSwitcher/LanguageSwitcher.tsx";
 import {useState} from "react";
 import {useTranslation} from 'react-i18next';
 
 function HomePage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const {t} = useTranslation();
+    const [version] = useState(import.meta.env.PACKAGE_VERSION);
 
     return (
         <div className="min-h-screen h-fill bg-gray-900 text-white">
@@ -121,8 +124,21 @@ function HomePage() {
                         <div data-tour="console">
                             <Console/>
                         </div>
+                        {/* Footer with Tour and Language Switcher */}
+                        <footer className="pb-4 mt-2">
+                            <div className="flex justify-center items-center space-x-4">
+                                <LanguageSwitcher/>
+                                <StartTourButton/>
+                                <MachineConfigButton/>
+
+                                <p className="text-md pt-1 text-gray-400">V {version}</p>
+
+                            </div>
+                        </footer>
                     </div>
                 </div>
+
+
             </div>
         </div>
     );

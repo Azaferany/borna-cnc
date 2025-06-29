@@ -50,9 +50,6 @@ function App() {
                         newestOnTop={false}
                         closeOnClick
                         rtl={false}
-                        pauseOnFocusLoss
-                        draggable
-                        pauseOnHover
                         theme="dark"
                         toastClassName="!top-8 opacity-85"
                     />

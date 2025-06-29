@@ -49,10 +49,9 @@ export const useAutoConnection = () => {
 
     const showConnectedToast = useCallback(() => {
         toast.success(t('autoConnection.connected'), {
-            autoClose: 3000,
+            autoClose: 1000,
             hideProgressBar: false,
             closeOnClick: true,
-            pauseOnHover: true,
             draggable: true,
         });
     }, [t]);
@@ -63,7 +62,6 @@ export const useAutoConnection = () => {
             autoClose: 3000,
             hideProgressBar: false,
             closeOnClick: true,
-            pauseOnHover: true,
             draggable: true,
         });
     }, [t]);

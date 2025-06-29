@@ -1,6 +1,5 @@
 import {useLocation, Link} from 'react-router';
 import {ROUTES} from '../../app/routes';
-import {MachineConfigButton} from '../MachineConfigButton/MachineConfigButton';
 import {HomeIcon} from '@heroicons/react/24/outline';
 
 export const WindowControls = () => {
@@ -22,9 +21,7 @@ export const WindowControls = () => {
     return (
         <div
             className="fixed top-0 right-0 z-50 flex items-center bg-gradient-to-l from-slate-200/95 via-slate-300/90 to-slate-400/85 backdrop-blur-xl border border-slate-400/60 rounded-bl-lg shadow-2xl no-drag z-[9999999999]">
-            {isHomePage ? (
-                <MachineConfigButton/>
-            ) : (
+            {!isHomePage && (
                 <Link
                     to={ROUTES.HOME}
                     className="p-3 hover:bg-gradient-to-br hover:from-indigo-400/30 hover:to-indigo-600/20 active:bg-gradient-to-br active:from-indigo-500/40 active:to-indigo-700/30 transition-all duration-200 group relative rounded-sm border border-transparent hover:border-indigo-400/30 active:border-indigo-500/40 shadow-sm hover:shadow-md active:shadow-lg cursor-pointer"
