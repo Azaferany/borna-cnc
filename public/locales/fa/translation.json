@@ -35,8 +35,14 @@
       "joggingSettings": "تنظیمات جاگینگ",
       "networkSettings": "تنظیمات شبکه",
       "toolChangeSettings": "تنظیمات تعویض ابزار",
-      "otherSettings": "سایر تنظیمات",
-      "axisSettings": "تنظیمات محورها"
+      "axisSettings": "تنظیمات محورها",
+      "rotarySettings": "تنظیمات محور چرخشی",
+      "plasmaLaserSettings": "تنظیمات پلاسما/لیزر",
+      "safetySettings": "تنظیمات ایمنی",
+      "pluginSettings": "تنظیمات افزونه",
+      "modbusSettings": "تنظیمات Modbus/VFD",
+      "errorSettings": "مدیریت خطا",
+      "otherSettings": "سایر تنظیمات"
     },
     "table": {
       "id": "شماره",

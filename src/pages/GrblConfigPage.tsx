@@ -414,6 +414,269 @@ const PARAMETER_DESCRIPTIONS: Record<number, {
     133: {name: 'A max travel', description: 'A axis maximum travel in mm', datatype: 'float', min: 0.0, max: 10000.0},
     134: {name: 'B max travel', description: 'B axis maximum travel in mm', datatype: 'float', min: 0.0, max: 10000.0},
     135: {name: 'C max travel', description: 'C axis maximum travel in mm', datatype: 'float', min: 0.0, max: 10000.0},
+
+    // Additional grblHAL Settings
+    66: {
+        name: 'Laser cool delay',
+        description: 'Laser coolant delay in seconds',
+        datatype: 'float',
+        min: 0.0,
+        max: 30.0
+    },
+    67: {
+        name: 'Step pulse delay',
+        description: 'Step pulse delay in microseconds',
+        datatype: 'integer',
+        min: 0,
+        max: 10
+    },
+    68: {
+        name: 'Spindle sync tolerance',
+        description: 'Spindle sync tolerance in percent',
+        datatype: 'float',
+        min: 0.0,
+        max: 10.0
+    },
+    69: {
+        name: 'Safety door delay',
+        description: 'Safety door delay in milliseconds',
+        datatype: 'integer',
+        min: 0,
+        max: 10000
+    },
+
+    // Extended Spindle Settings (for multi-spindle support)
+    350: {
+        name: 'Spindle 1 at speed tolerance',
+        description: 'Spindle 1 at speed tolerance in percent',
+        datatype: 'float',
+        min: 0.0,
+        max: 100.0
+    },
+    351: {
+        name: 'Spindle 1 at speed delay',
+        description: 'Spindle 1 at speed delay in milliseconds',
+        datatype: 'integer',
+        min: 0,
+        max: 5000
+    },
+    352: {name: 'Spindle 1 sync mode', description: 'Spindle 1 sync mode', datatype: 'integer', min: 0, max: 3},
+    360: {
+        name: 'Spindle 2 max speed',
+        description: 'Spindle 2 maximum speed in RPM',
+        datatype: 'integer',
+        min: 1,
+        max: 100000
+    },
+    361: {
+        name: 'Spindle 2 min speed',
+        description: 'Spindle 2 minimum speed in RPM',
+        datatype: 'integer',
+        min: 0,
+        max: 100000
+    },
+    362: {
+        name: 'Spindle 2 PWM freq',
+        description: 'Spindle 2 PWM frequency in Hz',
+        datatype: 'float',
+        min: 5.0,
+        max: 50000.0
+    },
+    363: {
+        name: 'Spindle 2 PWM off',
+        description: 'Spindle 2 off PWM duty cycle in percent',
+        datatype: 'float',
+        min: 0.0,
+        max: 100.0
+    },
+    364: {
+        name: 'Spindle 2 PWM min',
+        description: 'Spindle 2 minimum PWM duty cycle in percent',
+        datatype: 'float',
+        min: 0.0,
+        max: 100.0
+    },
+    365: {
+        name: 'Spindle 2 PWM max',
+        description: 'Spindle 2 maximum PWM duty cycle in percent',
+        datatype: 'float',
+        min: 0.0,
+        max: 100.0
+    },
+
+    // Rotary Axis Settings - Critical for 4th axis support
+    370: {name: 'Rotary axes', description: 'Rotary axes mask (which axes are rotary)', datatype: 'axis_mask'},
+    371: {
+        name: 'Rotary wrap A',
+        description: 'Rotary A axis wrap around at degrees',
+        datatype: 'float',
+        min: 0.0,
+        max: 360.0
+    },
+    372: {
+        name: 'Rotary wrap B',
+        description: 'Rotary B axis wrap around at degrees',
+        datatype: 'float',
+        min: 0.0,
+        max: 360.0
+    },
+    373: {
+        name: 'Rotary wrap C',
+        description: 'Rotary C axis wrap around at degrees',
+        datatype: 'float',
+        min: 0.0,
+        max: 360.0
+    },
+    374: {name: 'Rotary A axis type', description: 'A axis rotary type (0=linear, 1=rotary)', datatype: 'boolean'},
+    375: {name: 'Rotary B axis type', description: 'B axis rotary type (0=linear, 1=rotary)', datatype: 'boolean'},
+    376: {name: 'Rotary C axis type', description: 'C axis rotary type (0=linear, 1=rotary)', datatype: 'boolean'},
+
+    // Plasma/Laser Settings
+    380: {name: 'Plasma THC enable', description: 'Torch height control enable', datatype: 'boolean'},
+    381: {name: 'Plasma THC delay', description: 'THC delay in milliseconds', datatype: 'integer', min: 0, max: 10000},
+    382: {
+        name: 'Plasma piercing delay',
+        description: 'Plasma piercing delay in milliseconds',
+        datatype: 'integer',
+        min: 0,
+        max: 30000
+    },
+    383: {
+        name: 'Plasma piercing height',
+        description: 'Plasma piercing height in mm',
+        datatype: 'float',
+        min: 0.0,
+        max: 100.0
+    },
+    384: {name: 'Plasma cut height', description: 'Plasma cut height in mm', datatype: 'float', min: 0.0, max: 100.0},
+    385: {
+        name: 'Plasma pause at end',
+        description: 'Plasma pause at end delay in milliseconds',
+        datatype: 'integer',
+        min: 0,
+        max: 10000
+    },
+
+    // Advanced Motion Settings
+    390: {
+        name: 'Backlash comp X',
+        description: 'X axis backlash compensation in mm',
+        datatype: 'float',
+        min: 0.0,
+        max: 2.0
+    },
+    391: {
+        name: 'Backlash comp Y',
+        description: 'Y axis backlash compensation in mm',
+        datatype: 'float',
+        min: 0.0,
+        max: 2.0
+    },
+    392: {
+        name: 'Backlash comp Z',
+        description: 'Z axis backlash compensation in mm',
+        datatype: 'float',
+        min: 0.0,
+        max: 2.0
+    },
+    393: {
+        name: 'Backlash comp A',
+        description: 'A axis backlash compensation in degrees',
+        datatype: 'float',
+        min: 0.0,
+        max: 5.0
+    },
+    394: {
+        name: 'Backlash comp B',
+        description: 'B axis backlash compensation in degrees',
+        datatype: 'float',
+        min: 0.0,
+        max: 5.0
+    },
+    395: {
+        name: 'Backlash comp C',
+        description: 'C axis backlash compensation in degrees',
+        datatype: 'float',
+        min: 0.0,
+        max: 5.0
+    },
+
+    // Additional Safety Settings
+    400: {name: 'Safety door ignore', description: 'Safety door ignore when idle', datatype: 'boolean'},
+    401: {name: 'E-stop override', description: 'Allow E-stop override', datatype: 'boolean'},
+    402: {name: 'Limits invert mask', description: 'Invert individual limit switches', datatype: 'axis_mask'},
+    403: {name: 'Probe invert mask', description: 'Invert individual probe inputs', datatype: 'axis_mask'},
+
+    // Plugin Settings Range (440-480 commonly used for plugins)
+    440: {name: 'Plugin setting 1', description: 'Plugin specific setting 1', datatype: 'integer', min: 0, max: 65535},
+    441: {name: 'Plugin setting 2', description: 'Plugin specific setting 2', datatype: 'float', min: 0.0, max: 1000.0},
+    442: {name: 'Plugin setting 3', description: 'Plugin specific setting 3', datatype: 'boolean'},
+    443: {name: 'Plugin setting 4', description: 'Plugin specific setting 4', datatype: 'string'},
+
+    // Modbus/VFD Settings (if Modbus plugin is loaded)
+    450: {
+        name: 'Modbus baud rate', description: 'Modbus communication baud rate', datatype: 'integer', options: [
+            {value: '9600', label: '9600'}, {value: '19200', label: '19200'},
+            {value: '38400', label: '38400'}, {value: '57600', label: '57600'},
+            {value: '115200', label: '115200'}
+        ]
+    },
+    451: {
+        name: 'Modbus timeout',
+        description: 'Modbus timeout in milliseconds',
+        datatype: 'integer',
+        min: 100,
+        max: 5000
+    },
+    452: {name: 'VFD address', description: 'VFD Modbus slave address', datatype: 'integer', min: 1, max: 247},
+    453: {name: 'VFD RPM max', description: 'VFD maximum RPM', datatype: 'integer', min: 1, max: 100000},
+    454: {
+        name: 'VFD set frequency',
+        description: 'VFD set frequency register',
+        datatype: 'integer',
+        min: 0,
+        max: 65535
+    },
+    455: {
+        name: 'VFD get frequency',
+        description: 'VFD get frequency register',
+        datatype: 'integer',
+        min: 0,
+        max: 65535
+    },
+
+    // Extended axis settings for 4+ axis machines
+    140: {name: 'D steps/mm', description: 'D axis steps per mm', datatype: 'float', min: 0.001, max: 50000.0},
+    141: {name: 'E steps/mm', description: 'E axis steps per mm', datatype: 'float', min: 0.001, max: 50000.0},
+    150: {name: 'D max rate', description: 'D axis maximum rate in mm/min', datatype: 'float', min: 1.0, max: 200000.0},
+    151: {name: 'E max rate', description: 'E axis maximum rate in mm/min', datatype: 'float', min: 1.0, max: 200000.0},
+    160: {
+        name: 'D acceleration',
+        description: 'D axis acceleration in mm/sec^2',
+        datatype: 'float',
+        min: 1.0,
+        max: 50000.0
+    },
+    161: {
+        name: 'E acceleration',
+        description: 'E axis acceleration in mm/sec^2',
+        datatype: 'float',
+        min: 1.0,
+        max: 50000.0
+    },
+    170: {name: 'D max travel', description: 'D axis maximum travel in mm', datatype: 'float', min: 0.0, max: 10000.0},
+    171: {name: 'E max travel', description: 'E axis maximum travel in mm', datatype: 'float', min: 0.0, max: 10000.0},
+
+    // Error handling settings
+    500: {
+        name: 'Error reporting',
+        description: 'Error reporting level (0=min, 2=max)',
+        datatype: 'integer',
+        min: 0,
+        max: 2
+    },
+    501: {name: 'Position lost alarm', description: 'Enable position lost alarm', datatype: 'boolean'},
+    502: {name: 'Servo fault alarm', description: 'Enable servo fault alarm', datatype: 'boolean'},
 };
 
 function GrblConfigPage() {
@@ -437,8 +700,14 @@ function GrblConfigPage() {
             'joggingSettings',
             'networkSettings',
             'toolChangeSettings',
-            'otherSettings',
-            'axisSettings'
+            'axisSettings',
+            'rotarySettings',
+            'plasmaLaserSettings',
+            'safetySettings',
+            'pluginSettings',
+            'modbusSettings',
+            'errorSettings',
+            'otherSettings'
         ];
         return groupKeys.reduce((acc, group) => {
             acc[group] = true;
@@ -914,13 +1183,35 @@ function GrblConfigPage() {
     function getParameterGroup(id: number): string {
         if (id >= 0 && id <= 19) return 'basicSettings';
         if (id >= 20 && id <= 49) return 'motionSettings';
-        if ((id >= 30 && id <= 38) || id === 340) return 'spindleSettings';
+
+        // Extended spindle settings (including multi-spindle support)
+        if ((id >= 30 && id <= 38) || id === 340 || (id >= 350 && id <= 365)) return 'spindleSettings';
+        
         if ((id >= 80 && id <= 85) || (id >= 90 && id <= 92)) return 'pidSettings';
         if (id >= 50 && id <= 55) return 'joggingSettings';
         if (id >= 70 && id <= 79) return 'networkSettings';
         if (id >= 341 && id <= 344) return 'toolChangeSettings';
-        if (id >= 100 && id <= 132) return 'axisSettings';
-        if (id === 39 || (id >= 60 && id <= 65)) return 'otherSettings';
+
+        // Extended axis settings (including D,E axes and backlash compensation)
+        if ((id >= 100 && id <= 171) || (id >= 390 && id <= 395)) return 'axisSettings';
+
+        // Rotary axis specific settings
+        if (id >= 370 && id <= 376) return 'rotarySettings';
+
+        // Plasma/Laser settings
+        if (id >= 380 && id <= 385) return 'plasmaLaserSettings';
+
+        // Safety settings
+        if ((id >= 400 && id <= 403) || id === 39 || (id >= 60 && id <= 69)) return 'safetySettings';
+
+        // Plugin settings
+        if (id >= 440 && id <= 443) return 'pluginSettings';
+
+        // Modbus/VFD settings
+        if (id >= 450 && id <= 455) return 'modbusSettings';
+
+        // Error handling settings
+        if (id >= 500 && id <= 502) return 'errorSettings';
 
         return 'otherSettings';
     }

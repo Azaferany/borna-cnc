@@ -35,8 +35,14 @@
       "joggingSettings": "Jogging Settings",
       "networkSettings": "Network Settings",
       "toolChangeSettings": "Tool Change Settings",
-      "otherSettings": "Other Settings",
-      "axisSettings": "Axis Settings"
+      "axisSettings": "Axis Settings",
+      "rotarySettings": "Rotary Axis Settings",
+      "plasmaLaserSettings": "Plasma/Laser Settings",
+      "safetySettings": "Safety Settings",
+      "pluginSettings": "Plugin Settings",
+      "modbusSettings": "Modbus/VFD Settings",
+      "errorSettings": "Error Handling",
+      "otherSettings": "Other Settings"
     },
     "table": {
       "id": "ID",
