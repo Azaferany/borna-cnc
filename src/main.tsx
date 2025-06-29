@@ -24,13 +24,6 @@ const initI18n = async () => {
             interpolation: {
                 escapeValue: false,
             },
-            detection: {
-                order: ['localStorage', 'sessionStorage', 'navigator', 'htmlTag'],
-                caches: ['localStorage', 'sessionStorage'],
-                lookupLocalStorage: 'i18nextLng',
-                lookupSessionStorage: 'i18nextLng',
-                excludeCacheFor: ['dev'], // Don't cache in development
-            },
 
             supportedLngs: ['en', 'fa'],
             cleanCode: true,
