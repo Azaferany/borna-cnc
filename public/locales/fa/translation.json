@@ -39,9 +39,12 @@
       "rotarySettings": "تنظیمات محور چرخشی",
       "plasmaLaserSettings": "تنظیمات پلاسما/لیزر",
       "safetySettings": "تنظیمات ایمنی",
+      "trinamicSettings": "تنظیمات درایور ترینامیک",
       "pluginSettings": "تنظیمات افزونه",
       "modbusSettings": "تنظیمات Modbus/VFD",
       "errorSettings": "مدیریت خطا",
+      "encoderSettings": "تنظیمات انکودر",
+      "ioSettings": "تنظیمات ورودی/خروجی",
       "otherSettings": "سایر تنظیمات"
     },
     "table": {

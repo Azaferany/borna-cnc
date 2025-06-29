@@ -675,6 +675,464 @@ const PARAMETER_DESCRIPTIONS: Record<number, {
     },
     501: {name: 'Position lost alarm', description: 'Enable position lost alarm', datatype: 'boolean'},
     502: {name: 'Servo fault alarm', description: 'Enable servo fault alarm', datatype: 'boolean'},
+
+    // Trinamic Stepper Driver Settings (Motor Plugin)
+    // Stepper current settings (X=410, Y=411, Z=412, A=413, B=414, C=415)
+    410: {
+        name: 'X stepper current',
+        description: 'X axis stepper current in mA RMS',
+        datatype: 'integer',
+        min: 100,
+        max: 3000
+    },
+    411: {
+        name: 'Y stepper current',
+        description: 'Y axis stepper current in mA RMS',
+        datatype: 'integer',
+        min: 100,
+        max: 3000
+    },
+    412: {
+        name: 'Z stepper current',
+        description: 'Z axis stepper current in mA RMS',
+        datatype: 'integer',
+        min: 100,
+        max: 3000
+    },
+    413: {
+        name: 'A stepper current',
+        description: 'A axis stepper current in mA RMS',
+        datatype: 'integer',
+        min: 100,
+        max: 3000
+    },
+    414: {
+        name: 'B stepper current',
+        description: 'B axis stepper current in mA RMS',
+        datatype: 'integer',
+        min: 100,
+        max: 3000
+    },
+    415: {
+        name: 'C stepper current',
+        description: 'C axis stepper current in mA RMS',
+        datatype: 'integer',
+        min: 100,
+        max: 3000
+    },
+
+    // Motor microsteps settings (X=420, Y=421, Z=422, A=423, B=424, C=425)
+    420: {
+        name: 'X motor microsteps',
+        description: 'X axis motor microsteps (1, 2, 4, 8, 16, 32, 64, 128, 256)',
+        datatype: 'integer',
+        options: [
+            {value: '1', label: '1'}, {value: '2', label: '2'}, {value: '4', label: '4'},
+            {value: '8', label: '8'}, {value: '16', label: '16'}, {value: '32', label: '32'},
+            {value: '64', label: '64'}, {value: '128', label: '128'}, {value: '256', label: '256'}
+        ]
+    },
+    421: {
+        name: 'Y motor microsteps',
+        description: 'Y axis motor microsteps (1, 2, 4, 8, 16, 32, 64, 128, 256)',
+        datatype: 'integer',
+        options: [
+            {value: '1', label: '1'}, {value: '2', label: '2'}, {value: '4', label: '4'},
+            {value: '8', label: '8'}, {value: '16', label: '16'}, {value: '32', label: '32'},
+            {value: '64', label: '64'}, {value: '128', label: '128'}, {value: '256', label: '256'}
+        ]
+    },
+    422: {
+        name: 'Z motor microsteps',
+        description: 'Z axis motor microsteps (1, 2, 4, 8, 16, 32, 64, 128, 256)',
+        datatype: 'integer',
+        options: [
+            {value: '1', label: '1'}, {value: '2', label: '2'}, {value: '4', label: '4'},
+            {value: '8', label: '8'}, {value: '16', label: '16'}, {value: '32', label: '32'},
+            {value: '64', label: '64'}, {value: '128', label: '128'}, {value: '256', label: '256'}
+        ]
+    },
+    423: {
+        name: 'A motor microsteps',
+        description: 'A axis motor microsteps (1, 2, 4, 8, 16, 32, 64, 128, 256)',
+        datatype: 'integer',
+        options: [
+            {value: '1', label: '1'}, {value: '2', label: '2'}, {value: '4', label: '4'},
+            {value: '8', label: '8'}, {value: '16', label: '16'}, {value: '32', label: '32'},
+            {value: '64', label: '64'}, {value: '128', label: '128'}, {value: '256', label: '256'}
+        ]
+    },
+    424: {
+        name: 'B motor microsteps',
+        description: 'B axis motor microsteps (1, 2, 4, 8, 16, 32, 64, 128, 256)',
+        datatype: 'integer',
+        options: [
+            {value: '1', label: '1'}, {value: '2', label: '2'}, {value: '4', label: '4'},
+            {value: '8', label: '8'}, {value: '16', label: '16'}, {value: '32', label: '32'},
+            {value: '64', label: '64'}, {value: '128', label: '128'}, {value: '256', label: '256'}
+        ]
+    },
+    425: {
+        name: 'C motor microsteps',
+        description: 'C axis motor microsteps (1, 2, 4, 8, 16, 32, 64, 128, 256)',
+        datatype: 'integer',
+        options: [
+            {value: '1', label: '1'}, {value: '2', label: '2'}, {value: '4', label: '4'},
+            {value: '8', label: '8'}, {value: '16', label: '16'}, {value: '32', label: '32'},
+            {value: '64', label: '64'}, {value: '128', label: '128'}, {value: '256', label: '256'}
+        ]
+    },
+
+    // StallGuard sensitivity settings - fast (locate) threshold (X=430, Y=431, Z=432, A=433, B=434, C=435)
+    430: {
+        name: 'X StallGuard fast',
+        description: 'X axis StallGuard sensitivity, fast (locate) threshold',
+        datatype: 'integer',
+        min: -64,
+        max: 255
+    },
+    431: {
+        name: 'Y StallGuard fast',
+        description: 'Y axis StallGuard sensitivity, fast (locate) threshold',
+        datatype: 'integer',
+        min: -64,
+        max: 255
+    },
+    432: {
+        name: 'Z StallGuard fast',
+        description: 'Z axis StallGuard sensitivity, fast (locate) threshold',
+        datatype: 'integer',
+        min: -64,
+        max: 255
+    },
+    433: {
+        name: 'A StallGuard fast',
+        description: 'A axis StallGuard sensitivity, fast (locate) threshold',
+        datatype: 'integer',
+        min: -64,
+        max: 255
+    },
+    434: {
+        name: 'B StallGuard fast',
+        description: 'B axis StallGuard sensitivity, fast (locate) threshold',
+        datatype: 'integer',
+        min: -64,
+        max: 255
+    },
+    435: {
+        name: 'C StallGuard fast',
+        description: 'C axis StallGuard sensitivity, fast (locate) threshold',
+        datatype: 'integer',
+        min: -64,
+        max: 255
+    },
+
+    // Hold current percentage settings (X=470, Y=471, Z=472, A=473, B=474, C=475)
+    470: {
+        name: 'X hold current',
+        description: 'X axis hold current as percentage of stepper current',
+        datatype: 'integer',
+        min: 0,
+        max: 100
+    },
+    471: {
+        name: 'Y hold current',
+        description: 'Y axis hold current as percentage of stepper current',
+        datatype: 'integer',
+        min: 0,
+        max: 100
+    },
+    472: {
+        name: 'Z hold current',
+        description: 'Z axis hold current as percentage of stepper current',
+        datatype: 'integer',
+        min: 0,
+        max: 100
+    },
+    473: {
+        name: 'A hold current',
+        description: 'A axis hold current as percentage of stepper current',
+        datatype: 'integer',
+        min: 0,
+        max: 100
+    },
+    474: {
+        name: 'B hold current',
+        description: 'B axis hold current as percentage of stepper current',
+        datatype: 'integer',
+        min: 0,
+        max: 100
+    },
+    475: {
+        name: 'C hold current',
+        description: 'C axis hold current as percentage of stepper current',
+        datatype: 'integer',
+        min: 0,
+        max: 100
+    },
+
+    // StallGuard sensitivity settings - slow (seek) threshold (X=480, Y=481, Z=482, A=483, B=484, C=485)
+    480: {
+        name: 'X StallGuard slow',
+        description: 'X axis StallGuard sensitivity, slow (seek) threshold',
+        datatype: 'integer',
+        min: -64,
+        max: 255
+    },
+    481: {
+        name: 'Y StallGuard slow',
+        description: 'Y axis StallGuard sensitivity, slow (seek) threshold',
+        datatype: 'integer',
+        min: -64,
+        max: 255
+    },
+    482: {
+        name: 'Z StallGuard slow',
+        description: 'Z axis StallGuard sensitivity, slow (seek) threshold',
+        datatype: 'integer',
+        min: -64,
+        max: 255
+    },
+    483: {
+        name: 'A StallGuard slow',
+        description: 'A axis StallGuard sensitivity, slow (seek) threshold',
+        datatype: 'integer',
+        min: -64,
+        max: 255
+    },
+    484: {
+        name: 'B StallGuard slow',
+        description: 'B axis StallGuard sensitivity, slow (seek) threshold',
+        datatype: 'integer',
+        min: -64,
+        max: 255
+    },
+    485: {
+        name: 'C StallGuard slow',
+        description: 'C axis StallGuard sensitivity, slow (seek) threshold',
+        datatype: 'integer',
+        min: -64,
+        max: 255
+    },
+
+    // Trinamic driver control settings
+    338: {
+        name: 'Trinamic driver enable',
+        description: 'Driver enable (axis mask: X=1, Y=2, Z=4, A=8, B=16, C=32)',
+        datatype: 'axis_mask'
+    },
+    339: {
+        name: 'Sensorless homing enable',
+        description: 'Sensorless homing enable (axis mask: X=1, Y=2, Z=4, A=8, B=16, C=32)',
+        datatype: 'axis_mask'
+    },
+
+    // Encoder settings
+    580: {
+        name: 'Encoder 0 sensitivity',
+        description: 'Encoder 0 sensitivity (movement per encoder pulse)',
+        datatype: 'float',
+        min: 0.001,
+        max: 100.0
+    },
+    581: {
+        name: 'Encoder 1 sensitivity',
+        description: 'Encoder 1 sensitivity (movement per encoder pulse)',
+        datatype: 'float',
+        min: 0.001,
+        max: 100.0
+    },
+    582: {
+        name: 'Encoder 2 sensitivity',
+        description: 'Encoder 2 sensitivity (movement per encoder pulse)',
+        datatype: 'float',
+        min: 0.001,
+        max: 100.0
+    },
+    583: {
+        name: 'Encoder 3 sensitivity',
+        description: 'Encoder 3 sensitivity (movement per encoder pulse)',
+        datatype: 'float',
+        min: 0.001,
+        max: 100.0
+    },
+    584: {
+        name: 'Encoder 4 sensitivity',
+        description: 'Encoder 4 sensitivity (movement per encoder pulse)',
+        datatype: 'float',
+        min: 0.001,
+        max: 100.0
+    },
+
+    // WebUI and network advanced settings
+    600: {
+        name: 'WebUI auth enable',
+        description: 'Enable WebUI authentication',
+        datatype: 'boolean'
+    },
+    601: {
+        name: 'WebUI auth timeout',
+        description: 'WebUI authentication timeout in minutes',
+        datatype: 'integer',
+        min: 1,
+        max: 1440
+    },
+    602: {
+        name: 'MQTT broker IP',
+        description: 'MQTT broker IP address',
+        datatype: 'string'
+    },
+    603: {
+        name: 'MQTT broker port',
+        description: 'MQTT broker port number',
+        datatype: 'integer',
+        min: 1,
+        max: 65535
+    },
+    604: {
+        name: 'MQTT client ID',
+        description: 'MQTT client ID',
+        datatype: 'string'
+    },
+
+    // Advanced Trinamic settings (Extended chopper and CoolStep parameters)
+    651: {
+        name: 'Chopper off time',
+        description: 'Chopper off time (toff) - range 1 to 15',
+        datatype: 'integer',
+        min: 1,
+        max: 15
+    },
+    652: {
+        name: 'Chopper blanking time',
+        description: 'Chopper blanking time (tbl) - range 0 to 3',
+        datatype: 'integer',
+        min: 0,
+        max: 3
+    },
+    653: {
+        name: 'Chopper mode',
+        description: 'Chopper mode (chm): 0=Spreadcycle, 1=Constant toff',
+        datatype: 'integer',
+        options: [
+            {value: '0', label: 'Spreadcycle'},
+            {value: '1', label: 'Constant toff'}
+        ]
+    },
+    654: {
+        name: 'Chopper hysteresis start',
+        description: 'Chopper hysteresis start (hstrt) - range 1 to 8',
+        datatype: 'integer',
+        min: 1,
+        max: 8
+    },
+    655: {
+        name: 'Chopper hysteresis end',
+        description: 'Chopper hysteresis end (hend) - range -3 to 12',
+        datatype: 'integer',
+        min: -3,
+        max: 12
+    },
+    656: {
+        name: 'Chopper hysteresis decrement',
+        description: 'Chopper hysteresis interval decrement (hdec) - range 0 to 3',
+        datatype: 'integer',
+        min: 0,
+        max: 3
+    },
+    657: {
+        name: 'Chopper random time',
+        description: 'Chopper random time off enable: 0=fixed, 1=random',
+        datatype: 'boolean'
+    },
+    659: {
+        name: 'CoolStep lower threshold',
+        description: 'Lower CoolStep threshold (semin): 0=CoolStep off, 1-15=threshold range',
+        datatype: 'integer',
+        min: 0,
+        max: 15
+    },
+    660: {
+        name: 'CoolStep current increment',
+        description: 'CoolStep current increment (seup) - range 0 to 3',
+        datatype: 'integer',
+        min: 0,
+        max: 3
+    },
+    661: {
+        name: 'CoolStep upper threshold',
+        description: 'Upper CoolStep threshold (semax) - range 0 to 15',
+        datatype: 'integer',
+        min: 0,
+        max: 15
+    },
+    662: {
+        name: 'CoolStep sample count',
+        description: 'CoolStep sample count (sedn) - range 0 to 3',
+        datatype: 'integer',
+        min: 0,
+        max: 3
+    },
+    663: {
+        name: 'CoolStep current factor',
+        description: 'CoolStep current factor (seimin): 0=½, 1=¼',
+        datatype: 'integer',
+        options: [
+            {value: '0', label: '½ (0.5)'},
+            {value: '1', label: '¼ (0.25)'}
+        ]
+    },
+
+    // Laser/Spindle advanced settings
+    700: {
+        name: 'Laser PPI mode',
+        description: 'Enable laser PPI (Pulses Per Inch) mode',
+        datatype: 'boolean'
+    },
+    701: {
+        name: 'Laser PPI rate',
+        description: 'Laser PPI rate (pulses per inch)',
+        datatype: 'float',
+        min: 0.1,
+        max: 10000.0
+    },
+    702: {
+        name: 'Laser pulse width',
+        description: 'Laser pulse width in microseconds',
+        datatype: 'integer',
+        min: 1,
+        max: 10000
+    },
+
+    // Additional I/O and GPIO settings
+    800: {
+        name: 'Aux output 0 mode',
+        description: 'Auxiliary output 0 mode configuration',
+        datatype: 'integer',
+        min: 0,
+        max: 7
+    },
+    801: {
+        name: 'Aux output 1 mode',
+        description: 'Auxiliary output 1 mode configuration',
+        datatype: 'integer',
+        min: 0,
+        max: 7
+    },
+    802: {
+        name: 'Aux output 2 mode',
+        description: 'Auxiliary output 2 mode configuration',
+        datatype: 'integer',
+        min: 0,
+        max: 7
+    },
+    803: {
+        name: 'Aux output 3 mode',
+        description: 'Auxiliary output 3 mode configuration',
+        datatype: 'integer',
+        min: 0,
+        max: 7
+    },
 };
 
 function GrblConfigPage() {
@@ -702,9 +1160,12 @@ function GrblConfigPage() {
             'rotarySettings',
             'plasmaLaserSettings',
             'safetySettings',
+            'trinamicSettings',
             'pluginSettings',
             'modbusSettings',
             'errorSettings',
+            'encoderSettings',
+            'ioSettings',
             'otherSettings'
         ];
         return groupKeys.reduce((acc, group) => {
@@ -1183,11 +1644,11 @@ function GrblConfigPage() {
         if (id >= 20 && id <= 49) return 'motionSettings';
 
         // Extended spindle settings (including multi-spindle support)
-        if ((id >= 30 && id <= 38) || id === 340 || (id >= 350 && id <= 365)) return 'spindleSettings';
+        if ((id >= 30 && id <= 38) || id === 340 || (id >= 350 && id <= 365) || (id >= 700 && id <= 702)) return 'spindleSettings';
         
         if ((id >= 80 && id <= 85) || (id >= 90 && id <= 92)) return 'pidSettings';
         if (id >= 50 && id <= 55) return 'joggingSettings';
-        if (id >= 70 && id <= 79) return 'networkSettings';
+        if (id >= 70 && id <= 79 || (id >= 600 && id <= 604)) return 'networkSettings';
         if (id >= 341 && id <= 344) return 'toolChangeSettings';
 
         // Extended axis settings (including D,E axes and backlash compensation)
@@ -1202,6 +1663,9 @@ function GrblConfigPage() {
         // Safety settings
         if ((id >= 400 && id <= 403) || id === 39 || (id >= 60 && id <= 69)) return 'safetySettings';
 
+        // Trinamic stepper driver settings
+        if ((id >= 410 && id <= 435) || (id >= 470 && id <= 485) || id === 338 || id === 339 || (id >= 651 && id <= 663)) return 'trinamicSettings';
+
         // Plugin settings
         if (id >= 440 && id <= 443) return 'pluginSettings';
 
@@ -1210,6 +1674,12 @@ function GrblConfigPage() {
 
         // Error handling settings
         if (id >= 500 && id <= 502) return 'errorSettings';
+
+        // Encoder settings
+        if (id >= 580 && id <= 584) return 'encoderSettings';
+
+        // I/O and GPIO settings
+        if (id >= 800 && id <= 803) return 'ioSettings';
 
         return 'otherSettings';
     }

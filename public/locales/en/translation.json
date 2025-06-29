@@ -39,9 +39,12 @@
       "rotarySettings": "Rotary Axis Settings",
       "plasmaLaserSettings": "Plasma/Laser Settings",
       "safetySettings": "Safety Settings",
+      "trinamicSettings": "Trinamic Driver Settings",
       "pluginSettings": "Plugin Settings",
       "modbusSettings": "Modbus/VFD Settings",
       "errorSettings": "Error Handling",
+      "encoderSettings": "Encoder Settings",
+      "ioSettings": "I/O & GPIO Settings",
       "otherSettings": "Other Settings"
     },
     "table": {
