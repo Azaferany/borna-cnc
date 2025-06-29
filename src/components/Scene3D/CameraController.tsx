@@ -9,7 +9,7 @@ import {TrackballControls as TrackballControlsImpl} from 'three-stdlib';
 export const CAMERA_PRESETS = {
     center: {offset: new Vector3(50, -50, 200)},
     top: { offset: new Vector3(0, 0, 1) },
-    front: { offset: new Vector3(0, 1, 0) },
+    front: {offset: new Vector3(0.1, 1, 0)},
     side: {offset: new Vector3(1, 0, 0)},
     iso: {offset: new Vector3(1, 1, 1)},
     toolhead: {offset: new Vector3(100, 100, 100)},

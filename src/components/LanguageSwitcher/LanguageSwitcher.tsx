@@ -1,17 +1,15 @@
-import {useTranslation} from 'react-i18next'
 import {useState} from 'react'
 import {GlobeAltIcon} from '@heroicons/react/24/outline'
+import {useLanguagePersistence} from '../../app/useLanguagePersistence'
 
 const LanguageSwitcher = () => {
-    const {i18n} = useTranslation()
     const [isOpen, setIsOpen] = useState(false)
+    const {currentLanguage, changeLanguage} = useLanguagePersistence()
 
     const handleLanguageChange = (language: string) => {
-        i18n.changeLanguage(language)
+        changeLanguage(language)
         setIsOpen(false)
     }
-
-    const currentLanguage = i18n.language
 
     return (
         <div className="relative">

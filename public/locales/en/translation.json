@@ -298,7 +298,11 @@
     "sideView": "Side View",
     "isometricView": "Isometric View",
     "showBoundingBox": "Show Bounding Box",
-    "followToolhead": "Follow Toolhead (Every 5s)"
+    "followToolhead": "Follow Toolhead (Every 5s)",
+    "canvasError": "Canvas Error",
+    "canvasErrorMessage": "The 3D canvas encountered an error and needs to be reloaded.",
+    "reloadCanvas": "Reload Canvas",
+    "reloadCanvasTooltip": "Reload the 3D canvas if it's not working properly"
   },
   "pauseButton": {
     "pause": "Pause",

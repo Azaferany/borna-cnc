@@ -2,7 +2,7 @@ import {Canvas} from '@react-three/fiber';
 import {GizmoHelper, GizmoViewport, Grid} from '@react-three/drei';
 import {CoordinateAxes} from "./CoordinateAxes.tsx";
 import {useStore} from "../../app/store.ts";
-import {useEffect, useState} from "react";
+import {useEffect, useState, useCallback} from "react";
 import type {GCodePointData} from "../../types/GCodeTypes.ts";
 import {Box3, Box3Helper, Color, Vector3} from "three";
 import {SpatialPartition} from "./SpatialPartition.tsx";
@@ -28,6 +28,10 @@ export const Scene3D = () => {
     const [legendOpen, setLegendOpen] = useState(false);
     const [followToolhead, setFollowToolhead] = useState(false);
 
+    // Error handling states
+    const [canvasError, setCanvasError] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
+
     // Color states
     const [rapidMoveColor, setRapidMoveColor] = useState("#ff0000");
     const [feedMoveColor, setFeedMoveColor] = useState("#ffa500");
@@ -35,29 +39,84 @@ export const Scene3D = () => {
     const [runningColor, setRunningColor] = useState("#0000ff");
     const [doneColor, setDoneColor] = useState("#008236");
 
-    useEffect(() => {
-        const completeData= processor.processCommands((toolPathGCodes ??[]).filter(x=>x.hasMove));
-        setCompleteData(completeData)
+    // Reload canvas function
+    const handleReloadCanvas = useCallback(() => {
+        setCanvasError(false);
+        setReloadKey(prev => prev + 1);
+        setCameraPreset(null);
+        setFollowToolhead(false);
+        console.log('Canvas reloaded');
+    }, []);
 
-        const allPoints = completeData ? [
-            ...completeData.feedMovePoints.flatMap(group =>
-                group.flatMap(point => point.points.map(p => new Vector3(p.x, p.y, p.z)))
-            ),
-            ...completeData.rapidMovePoints.flatMap(group =>
-                group.flatMap(point => point.points.map(p => new Vector3(p.x, p.y, p.z)))
-            ),
-            ...completeData.arkMovePoints.flatMap(group =>
-                group.flatMap(point => point.points.map(p => new Vector3(p.x, p.y, p.z)))
-            )
-        ] : [new Vector3(0, 0, 0)];
+    // Handle canvas errors
+    const handleCanvasError = useCallback(() => {
+        setCanvasError(true);
+        console.error('Canvas encountered an error and was reset');
+    }, []);
 
-        if (allPoints.length > 0) {
-            const box = new Box3().setFromPoints(allPoints);
-            box.expandByScalar(20);
-            setBoundingBox(box);
+    // Safe camera preset setter with error handling
+    const handleSetCameraPreset = useCallback((preset: "center" | "top" | "front" | "side" | "iso" | "toolhead") => {
+        try {
+            setCameraPreset(preset);
+        } catch (error) {
+            console.error('Error setting camera preset:', error);
+            handleCanvasError();
         }
+    }, [handleCanvasError]);
 
-    }, [toolPathGCodes]);
+    useEffect(() => {
+        try {
+            const completeData = processor.processCommands((toolPathGCodes ?? []).filter(x => x.hasMove));
+            setCompleteData(completeData);
+
+            const allPoints = completeData ? [
+                ...completeData.feedMovePoints.flatMap(group =>
+                    group.flatMap(point => point.points.map(p => new Vector3(p.x, p.y, p.z)))
+                ),
+                ...completeData.rapidMovePoints.flatMap(group =>
+                    group.flatMap(point => point.points.map(p => new Vector3(p.x, p.y, p.z)))
+                ),
+                ...completeData.arkMovePoints.flatMap(group =>
+                    group.flatMap(point => point.points.map(p => new Vector3(p.x, p.y, p.z)))
+                )
+            ] : [new Vector3(0, 0, 0)];
+
+            if (allPoints.length > 0) {
+                const box = new Box3().setFromPoints(allPoints);
+                box.expandByScalar(20);
+                setBoundingBox(box);
+            }
+        } catch (error) {
+            console.error('Error processing G-code data:', error);
+            handleCanvasError();
+        }
+    }, [toolPathGCodes, handleCanvasError]);
+
+    // Error fallback UI
+    const renderErrorFallback = () => (
+        <div className="w-full h-full min-h-[495px] flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+            <div className="text-center p-8">
+                <div className="text-6xl mb-4">⚠️</div>
+                <h3 className="text-xl font-bold mb-2 text-gray-700 dark:text-gray-300">
+                    {t('scene3d.canvasError', 'Canvas Error')}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    {t('scene3d.canvasErrorMessage', 'The 3D canvas encountered an error and needs to be reloaded.')}
+                </p>
+                <button
+                    onClick={handleReloadCanvas}
+                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                >
+                    {t('scene3d.reloadCanvas', 'Reload Canvas')}
+                </button>
+            </div>
+        </div>
+    );
+
+    // Show error fallback if canvas has error
+    if (canvasError) {
+        return renderErrorFallback();
+    }
 
     return (
         <div className="w-full h-full min-h-[495px] relative">
@@ -158,48 +217,47 @@ export const Scene3D = () => {
             </svg>
                     </span>
                     {t('scene3d.cameraControls')}
-
                 </button>
 
                 {cameraControlsOpen && (
                     <div className="p-4 pt-0">
                         <div className="flex flex-col gap-2 mb-3">
                             <button
-                                onClick={() => setCameraPreset("center")}
+                                onClick={() => handleSetCameraPreset("center")}
                                 className={`px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-sm cursor-pointer`}
                             >
                                 {t('scene3d.goToStart')}
                             </button>
                             <button
-                                onClick={() => setCameraPreset("toolhead")}
+                                onClick={() => handleSetCameraPreset("toolhead")}
                                 disabled={!machineCoordinate}
                                 className={`px-3 py-1 bg-orange-600 hover:bg-orange-700 rounded text-sm ${!machineCoordinate ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 {t('scene3d.goToToolhead')}
                             </button>
                             <button
-                                onClick={() => setCameraPreset('top')}
+                                onClick={() => handleSetCameraPreset('top')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
                                 className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 {t('scene3d.topView')}
                             </button>
                             <button
-                                onClick={() => setCameraPreset('front')}
+                                onClick={() => handleSetCameraPreset('front')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
                                 className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 {t('scene3d.frontView')}
                             </button>
                             <button
-                                onClick={() => setCameraPreset('side')}
+                                onClick={() => handleSetCameraPreset('side')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
                                 className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
                                 {t('scene3d.sideView')}
                             </button>
                             <button
-                                onClick={() => setCameraPreset('iso')}
+                                onClick={() => handleSetCameraPreset('iso')}
                                 disabled={!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)}
                                 className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm ${(!completeData || (!completeData.feedMovePoints.length && !completeData.rapidMovePoints.length && !completeData.arkMovePoints.length)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                             >
@@ -237,16 +295,33 @@ export const Scene3D = () => {
                                 </label>
                             </div>
                         </div>
+
+                        {/* Reload Canvas Button */}
+                        <div className="flex flex-col gap-2 pt-2 border-t border-gray-600">
+                            <button
+                                onClick={handleReloadCanvas}
+                                className="px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded text-sm cursor-pointer"
+                                title={t('scene3d.reloadCanvasTooltip', 'Reload the 3D canvas if it\'s not working properly')}
+                            >
+                                🔄 {t('scene3d.reloadCanvas', 'Reload Canvas')}
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
 
-            <Canvas shadows camera={{
-                fov: 60,
-                position: [50, -50, 200],
-                far: 100000,
-                near: 0.1,
-            }}>
+            <Canvas
+                onError={handleCanvasError}
+                key={reloadKey} // Force re-render when reloadKey changes
+                shadows
+                camera={{
+                    fov: 60,
+                    position: [50, -50, 200],
+                    far: 100000,
+                    near: 0.1,
+                }}
+
+            >
                 <CameraController
                     preset={cameraPreset}
                     boundingBox={boundingBox}
@@ -254,10 +329,10 @@ export const Scene3D = () => {
                     followToolhead={followToolhead}
                     onPresetComplete={() => setCameraPreset(null)}
                 />
-                <ambientLight intensity={0.5} />
-                <directionalLight position={[10, 10, 10]} intensity={1} castShadow />
-                <pointLight position={[10, 10, 10]} />
-                <CoordinateAxes />
+                <ambientLight intensity={0.5}/>
+                <directionalLight position={[10, 10, 10]} intensity={1} castShadow/>
+                <pointLight position={[10, 10, 10]}/>
+                <CoordinateAxes/>
 
                 <Grid
                     args={[5000, 5000]}
@@ -289,95 +364,95 @@ export const Scene3D = () => {
                 <GizmoHelper alignment={"bottom-left"}>
                     <GizmoViewport/>
                 </GizmoHelper>
-                <OffsetMarkers />
-                {machineCoordinate &&(
+                <OffsetMarkers/>
+                {machineCoordinate && (
                     <ToolHead position={machineCoordinate}
-                              gCodeCommand={selectedGCodeLine && toolPathGCodes ? findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes) : undefined}
+                              gCodeCommand={selectedGCodeLine && toolPathGCodes ? findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine, toolPathGCodes) : undefined}
                     />
 
                 )}
 
                 {showBoundingBox && boundingBox && (
-                    <primitive object={new Box3Helper(boundingBox, new Color(0x00ff00))} />
+                    <primitive object={new Box3Helper(boundingBox, new Color(0x00ff00))}/>
                 )}
 
-                {(completeData?.feedMovePoints  || completeData?.rapidMovePoints || completeData?.arkMovePoints) && (
+                {(completeData?.feedMovePoints || completeData?.rapidMovePoints || completeData?.arkMovePoints) && (
                     <>
 
-                        {completeData?.feedMovePoints.map((value,i) => (
+                        {completeData?.feedMovePoints.map((value, i) => (
 
                             <SpatialPartition
                                 key={`${i}feedMovePoints`}
 
                                 points={value
-                                    .filter(x=>x.gCodeLineNumber > (selectedGCodeLine ?? 0))
-                                    .flatMap(x=>x.points)}
+                                    .filter(x => x.gCodeLineNumber > (selectedGCodeLine ?? 0))
+                                    .flatMap(x => x.points)}
                                 color={new Color(feedMoveColor)}
                                 lineWidth={2}/>
 
                         ))}
-                        {completeData?.feedMovePoints.map((value,i) => (
+                        {completeData?.feedMovePoints.map((value, i) => (
 
                             <SpatialPartition
                                 key={`${i}feedMovePointsDone`}
 
                                 points={value
-                                    .filter(x=>x.gCodeLineNumber < (selectedGCodeLine ?? 0))
-                                    .flatMap(x=>x.points)}
+                                    .filter(x => x.gCodeLineNumber < (selectedGCodeLine ?? 0))
+                                    .flatMap(x => x.points)}
                                 color={new Color(doneColor)}
                                 lineWidth={3.5}/>
 
                         ))}
 
 
-                        {completeData?.rapidMovePoints.map((value,i) => (
+                        {completeData?.rapidMovePoints.map((value, i) => (
 
                             <SpatialPartition
                                 key={`${i}rapidMovePoints`}
                                 points={value
-                                    .filter(x=>x.gCodeLineNumber > (selectedGCodeLine ?? 0))
-                                    .flatMap(x=>x.points)}
+                                    .filter(x => x.gCodeLineNumber > (selectedGCodeLine ?? 0))
+                                    .flatMap(x => x.points)}
                                 color={new Color(rapidMoveColor)}
                                 lineWidth={1.5}/>
 
                         ))}
-                        {completeData?.rapidMovePoints.map((value,i) => (
+                        {completeData?.rapidMovePoints.map((value, i) => (
 
                             <SpatialPartition
                                 key={`${i}rapidMovePointsDone`}
                                 points={value
-                                    .filter(x=>x.gCodeLineNumber < (selectedGCodeLine ?? 0))
-                                    .flatMap(x=>x.points)}
+                                    .filter(x => x.gCodeLineNumber < (selectedGCodeLine ?? 0))
+                                    .flatMap(x => x.points)}
                                 color={new Color(doneColor)}
                                 lineWidth={3.5}/>
 
                         ))}
-                        {completeData?.arkMovePoints.map((value,i) => (
+                        {completeData?.arkMovePoints.map((value, i) => (
 
                             <SpatialPartition
                                 key={`${i}arkMovePoints`}
                                 points={value
-                                    .filter(x=>x.gCodeLineNumber > (selectedGCodeLine ?? 0))
-                                    .flatMap(x=>x.points)}
+                                    .filter(x => x.gCodeLineNumber > (selectedGCodeLine ?? 0))
+                                    .flatMap(x => x.points)}
                                 color={new Color(arcMoveColor)}
                                 lineWidth={2}/>
 
                         ))}
-                        {completeData?.arkMovePoints.map((value,i) => (
+                        {completeData?.arkMovePoints.map((value, i) => (
 
                             <SpatialPartition
                                 key={`${i}arkMovePointsDone`}
                                 points={value
-                                    .filter(x=>x.gCodeLineNumber < (selectedGCodeLine ?? 0))
-                                    .flatMap(x=>x.points)}
+                                    .filter(x => x.gCodeLineNumber < (selectedGCodeLine ?? 0))
+                                    .flatMap(x => x.points)}
                                 color={new Color(doneColor)}
                                 lineWidth={3.5}/>
 
                         ))}
 
-                        {selectedGCodeLine && selectedGCodeLine > 0 && toolPathGCodes && findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes.filter(x=>x.hasMove)) != null && (
+                        {selectedGCodeLine && selectedGCodeLine > 0 && toolPathGCodes && findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine, toolPathGCodes.filter(x => x.hasMove)) != null && (
                             <SpatialPartition
-                                points={processor.getGCodePoints(findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine,toolPathGCodes.filter(x=>x.hasMove))!).points}
+                                points={processor.getGCodePoints(findGCodeCommandOrLatestBaseOnLine(selectedGCodeLine, toolPathGCodes.filter(x => x.hasMove))!).points}
                                 color={new Color(runningColor)}
                                 lineWidth={7}/>
                         )}

@@ -298,7 +298,11 @@
     "sideView": "نمای کناری",
     "isometricView": "نمای ایزومتریک",
     "showBoundingBox": "نمایش جعبه محدود",
-    "followToolhead": "دنبال کردن سر ابزار (هر 5 ثانیه)"
+    "followToolhead": "دنبال کردن سر ابزار (هر 5 ثانیه)",
+    "canvasError": "خطای بوم",
+    "canvasErrorMessage": "بوم سه‌بعدی با خطا مواجه شده و نیاز به بارگذاری مجدد دارد.",
+    "reloadCanvas": "بارگذاری مجدد بوم",
+    "reloadCanvasTooltip": "در صورت عدم عملکرد صحیح، بوم سه‌بعدی را مجدداً بارگذاری کنید"
   },
   "pauseButton": {
     "pause": "مکث",

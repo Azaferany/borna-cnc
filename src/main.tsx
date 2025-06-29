@@ -25,11 +25,16 @@ const initI18n = async () => {
                 escapeValue: false,
             },
             detection: {
-                order: ['localStorage', 'navigator'],
-                caches: ['localStorage'],
+                order: ['localStorage', 'sessionStorage', 'navigator', 'htmlTag'],
+                caches: ['localStorage', 'sessionStorage'],
+                lookupLocalStorage: 'i18nextLng',
+                lookupSessionStorage: 'i18nextLng',
+                excludeCacheFor: ['dev'], // Don't cache in development
             },
 
             supportedLngs: ['en', 'fa'],
+            cleanCode: true,
+            load: 'languageOnly',
 
             resources: {
                 en: {

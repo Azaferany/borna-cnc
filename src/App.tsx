@@ -11,9 +11,13 @@ import {WindowControls} from "./components/WindowControls/WindowControls.tsx";
 import TourWrapper from "./components/Tour/Tour.tsx";
 import {AlarmModalProvider} from "./components/AlarmModal/AlarmModalProvider.tsx";
 import FontController from "./components/FontController/FontController.tsx";
+import {useLanguagePersistence} from "./app/useLanguagePersistence.ts";
 
 function App() {
     const Router = isElectron() ? HashRouter : BrowserRouter;
+
+    // Initialize language persistence
+    useLanguagePersistence();
 
     return (
         <TourWrapper>
