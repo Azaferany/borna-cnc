@@ -30,11 +30,11 @@ export const StartButton = () => {
         if (startFromLine != 1) {
             const selectedGcodeCommand = toolPathGCodes.find(x => x.lineNumber == startFromLine)!;
             const maxZPlusSafeguardValue =
-                Math.max(
+                Math.min(
                     ...[
                         ...toolPathGCodes?.map(x => x.startPoint.z) ?? [10],
                         ...toolPathGCodes?.map(x => x.endPoint?.z ?? 10) ?? [10]
-                    ]) + 100;
+                    ]) + 50;
 
             gCodesToSend = gCodesToSend.slice(startFromLine - 1)
             gCodesToSend.unshift(`N${startFromLine} G53 G1 Z${selectedGcodeCommand.startPoint.z} f${selectedGcodeCommand.feedRate}`);

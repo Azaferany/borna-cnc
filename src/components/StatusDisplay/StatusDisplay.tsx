@@ -1,12 +1,13 @@
 import { useStore } from '../../app/store';
-import {useState, memo} from 'react';
+import React, {useState, memo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     ChevronUpIcon,
     ChevronDownIcon,
     HomeIcon,
     ArrowUturnUpIcon,
-    MapPinIcon
+    MapPinIcon,
+    PencilIcon
 } from '@heroicons/react/24/solid';
 import { useGRBL } from '../../app/useGRBL';
 import { Plane } from '../../types/GCodeTypes';
@@ -24,7 +25,8 @@ const CoordRow = memo(({
                            isConnected,
                            g92Offset,
                            isSending,
-                           status
+                           status,
+                           onUpdateRelative
                        }: {
     axis: string;
     workOffset: number;
@@ -36,10 +38,43 @@ const CoordRow = memo(({
     g92Offset: number;
     isSending: boolean;
     status: string;
+    onUpdateRelative: (axis: string, newValue: number) => void;
 }) => {
     const {t} = useTranslation();
+    const currentRelative = -workOffset + machine;
+    const [inputValue, setInputValue] = useState(currentRelative.toFixed(3));
+    const [isEditing, setIsEditing] = useState(false);
+
+    const handleFocus = () => {
+        setIsEditing(true);
+        setInputValue(currentRelative.toFixed(3));
+    };
+
+    const handleBlur = () => {
+        setIsEditing(false);
+        const newValue = parseFloat(inputValue);
+        if (!isNaN(newValue) && newValue !== currentRelative) {
+            onUpdateRelative(axis, newValue);
+        } else {
+            setInputValue(currentRelative.toFixed(3));
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.currentTarget.blur();
+        }
+    };
+
+    // Update input value when relative position changes externally
+    React.useEffect(() => {
+        if (!isEditing) {
+            setInputValue(currentRelative.toFixed(3));
+        }
+    }, [currentRelative, isEditing]);
+
     return (
-    <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-1 py-1 border-b border-gray-700 items-center">
+        <div className="grid grid-cols-[auto_1.5fr_1fr_auto] gap-0.5 py-1 border-b border-gray-700 items-center">
         <div className="font-bold text-gray-300 flex items-center justify-center gap-1">
             <button
                 onClick={() => onHome(axis)}
@@ -52,7 +87,31 @@ const CoordRow = memo(({
             </button>
             {axis}
         </div>
-        <div className="text-blue-400 flex items-center justify-center">{(-workOffset + machine).toFixed(3)}</div>
+            <div className="text-blue-400 flex items-center justify-center relative">
+                <input
+                    type="number"
+                    step="0.001"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
+                    disabled={!isConnected || isSending || status !== 'Idle'}
+                    className={`w-full bg-transparent text-center border-0 outline-none text-blue-400 pr-3 ${
+                        (!isConnected || isSending || status !== 'Idle')
+                            ? 'cursor-not-allowed opacity-50'
+                            : 'hover:bg-gray-700 focus:bg-gray-700 focus:ring-2 focus:ring-blue-500 rounded px-1'
+                    }`}
+                    title={t('status.relativePositionTooltip', {axis})}
+                />
+                <PencilIcon
+                    className={`absolute right-0 w-3 h-3 pointer-events-none ${
+                        (!isConnected || isSending || status !== 'Idle')
+                            ? 'opacity-30'
+                            : 'opacity-60'
+                    }`}
+                />
+            </div>
         <div className="text-green-400 flex items-center justify-center">{machine.toFixed(3)}</div>
         <div className="font-bold text-gray-300 flex gap-1">
             <button
@@ -97,6 +156,16 @@ export const StatusDisplay = () => {
     const gCodeOffsets = useStore(useShallow(x => x.gCodeOffsets));
     const activeModes = useStore(useShallow(x => x.activeModes));
     const {sendCommand, isConnected} = useGRBL();
+
+    const handleUpdateRelative = async (axis: string, newRelativeValue: number) => {
+        try {
+            // Send G92 command to set the current machine position to the new relative value
+            await sendCommand(`G92 ${axis}${newRelativeValue.toFixed(3)}`);
+            await sendCommand(`$#`);
+        } catch (error) {
+            console.error('Error updating relative position:', error);
+        }
+    };
 
     const handleSetZero = async (axis: string) => {
         try {
@@ -184,7 +253,7 @@ export const StatusDisplay = () => {
                 </span>
 
             </div>
-            <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-1 mb-2 text-sm font-medium">
+            <div className="grid grid-cols-[auto_1fr_1fr_auto] gap-1 mb-2 text-sm font-medium">
                 <div className="flex items-center justify-center gap-1">
                     <button
                         onClick={() => handleHome(getActiveAxesForHome())}
@@ -241,6 +310,7 @@ export const StatusDisplay = () => {
                         g92Offset={gCodeOffsets.G92.x}
                         isSending={isSending}
                         status={status}
+                        onUpdateRelative={handleUpdateRelative}
                     />
                 )}
                 {machineConfig.activeAxes.y && (
@@ -255,6 +325,7 @@ export const StatusDisplay = () => {
                         g92Offset={gCodeOffsets.G92.y}
                         isSending={isSending}
                         status={status}
+                        onUpdateRelative={handleUpdateRelative}
                     />
                 )}
                 {machineConfig.activeAxes.z && (
@@ -269,6 +340,7 @@ export const StatusDisplay = () => {
                         g92Offset={gCodeOffsets.G92.z}
                         isSending={isSending}
                         status={status}
+                        onUpdateRelative={handleUpdateRelative}
                     />
                 )}
             </div>

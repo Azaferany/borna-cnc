@@ -27,7 +27,7 @@ export const CameraController = ({preset, boundingBox, machineCoordinate, follow
     const controlsRef = useRef<TrackballControlsImpl>(null);
     const [hasInitialized, setHasInitialized] = useState(false);
     const [lastToolheadPosition, setLastToolheadPosition] = useState<Vector3 | null>(null);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const lastExecutionTimeRef = useRef<number>(0);
 
     const calculateCameraDistance = (box: Box3, camera: PerspectiveCamera) => {
         const size = new Vector3();
@@ -148,37 +148,22 @@ export const CameraController = ({preset, boundingBox, machineCoordinate, follow
         }
     }, [preset, camera, boundingBox, machineCoordinate, onPresetComplete]);
 
-    // Follow toolhead logic with 3-second interval
+    // Follow toolhead logic with 3-second throttling
     useEffect(() => {
         if (followToolhead && machineCoordinate) {
-            // Clear any existing interval
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
+            const now = Date.now();
+            const timeSinceLastExecution = now - lastExecutionTimeRef.current;
 
-            // Set up interval to follow toolhead every 3 seconds
-            intervalRef.current = setInterval(() => {
+            // Only execute if 3 seconds have passed since last execution
+            if (timeSinceLastExecution >= 3000) {
                 handleFollowToolhead();
-            }, 5000);
-
-            // Initial follow
-            handleFollowToolhead();
-
-            // Cleanup function
-            return () => {
-                if (intervalRef.current) {
-                    clearInterval(intervalRef.current);
-                    intervalRef.current = null;
-                }
-            };
-        } else {
-            // Clear interval when not following
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
+                lastExecutionTimeRef.current = now;
             }
+        } else {
             // Reset last position when not following
             setLastToolheadPosition(null);
+            // Reset execution time when not following
+            lastExecutionTimeRef.current = 0;
         }
     }, [followToolhead, handleFollowToolhead, machineCoordinate]);
 
@@ -211,14 +196,6 @@ export const CameraController = ({preset, boundingBox, machineCoordinate, follow
         }
     }, [boundingBox, camera, hasInitialized]);
 
-    // Cleanup interval on unmount
-    useEffect(() => {
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
-        };
-    }, []);
 
     return <TrackballControls
         makeDefault

@@ -132,11 +132,13 @@
     "resetOffsetTooltip": "Reset {{axis}} offset",
     "setZeroAllTooltip": "Set zero for all active axes",
     "resetAllTooltip": "Reset all temporary work offsets for active axes",
+    "relativePositionTooltip": "Click to edit relative position for {{axis}} axis",
     "statusValues": {
       "Run": "Run",
       "Idle": "Idle",
       "Alarm": "Alarm",
       "Hold": "Hold",
+      "Home": "Home",
       "Door": "Door",
       "Jog": "Jog",
       "Unknown": "Unknown",
@@ -387,7 +389,8 @@
     },
     "relativeCoordinates": {
       "title": "Relative Coordinates",
-      "description": "These blue values show your position relative to the current work coordinate system (G54-G59). This is your \"working zero\" - the reference point for your current job."
+      "description": "These blue values show your position relative to the current work coordinate system (G54-G59). This is your \"working zero\" - the reference point for your current job.",
+      "editableNote": "You can click on these blue values to edit them directly! This allows you to set precise coordinates for your work positioning."
     },
     "absoluteCoordinates": {
       "title": "Absolute Coordinates",

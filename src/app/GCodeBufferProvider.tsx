@@ -86,14 +86,14 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
         const nextLineIndex = lastSentLine; // Calculate the index of the next line to send
 
         // Skip if we're waiting for more ok responses (okCount should equal lastSentLine)
-        if (okCount < lastSentLine && nextLineIndex > 10) {
+        if (okCount < (nextLineIndex - 10)) {
             console.debug('AttemptSendNextLine skipped:', {okCount, lastSentLine, availableBufferSlots});
             return;
         }
 
         const totalLines = bufferGCodesList?.length ?? 0;
 
-        if (Math.abs(lastSentLine - (selectedGCodeLine ?? 0)) > 15) {
+        if (Math.abs(lastSentLine - (selectedGCodeLine ?? 0)) > 10) {
             console.debug('AttemptSendNextLine skipped:', { buffered: (lastSentLine - (selectedGCodeLine ?? 0)), availableBufferSlots });
             return;
         }
@@ -210,10 +210,14 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
      * Callback for when an 'ok' response is received from GRBL.
      * Increments the ok count.
      */
-    const handleOkResponse = () => {
-        console.debug('Received OK response.');
-        setOkCount(prev => prev + 1); // Increment ok count
-    }; // No dependencies as it only sets a number state
+    const handleOkResponse = useCallback(() => {
+        console.log('Received OK response.');
+        setOkCount(prev => {
+            if (prev + 1 < lastSentLine)
+                return prev + 1;
+            return prev;
+        }); // Increment ok count
+    }, [lastSentLine]); // No dependencies as it only sets a number state
 
     /**
      * Shows the error modal with error details
@@ -235,9 +239,8 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
      * Listens for incoming lines from GRBL and handles 'ok' or 'error' responses.
      */
     useGRBLListener(line => {
-        if (!isSending || lastSentLine < 1)
+        if (!isSending)
             return;
-        console.log(line);
         if (line === 'ok') {
             handleOkResponse(); // Call the memoized handler
         } else if (line.includes('error')) {
@@ -249,7 +252,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             }, 500)
             // Find the error line based on ok count (the line that caused the error)
             // okCount represents the number of successfully processed lines
-            const errorLineNumber = okCount + 1; // Convert to 1-based line number
+            const errorLineNumber = okCount + 2; // Convert to 1-based line number
 
             // Show error modal with details
             const errorInfoData = {
@@ -260,7 +263,7 @@ export const GCodeBufferProvider: React.FC<GCodeBufferProviderProps> = ({
             
             stopSending(); // Stop sending on GRBL error (calls the memoized stopSending)
         }
-    }, [selectedGCodeLine]);
+    }, [selectedGCodeLine, isSending, handleOkResponse]);
 
     // Add effect to update active modes based on G-code history
     useEffect(() => {

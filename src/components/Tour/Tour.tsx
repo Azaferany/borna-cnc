@@ -122,6 +122,11 @@ const TourWrapper: React.FC<{ children: React.ReactNode }> = ({children}) => {
                 <div className="p-2">
                     <h3 className="text-lg font-semibold mb-2">{t('tour.relativeCoordinates.title')}</h3>
                     <p>{t('tour.relativeCoordinates.description')}</p>
+                    <div className="mt-3 p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                        <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                            💡 {t('tour.relativeCoordinates.editableNote')}
+                        </p>
+                    </div>
                 </div>
             ),
         },

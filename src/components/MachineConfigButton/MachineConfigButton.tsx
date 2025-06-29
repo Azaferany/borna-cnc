@@ -4,20 +4,16 @@ import {ROUTES} from '../../app/routes';
 import {useStore} from "../../app/store";
 
 export function MachineConfigButton() {
-    const isConnected = useStore(x => x.isConnected);
     const status = useStore(x => x.status);
     const isSending = useStore(x => x.isSending);
-    const isConfigEnabled = isConnected && (status === "Idle" || status == "Alarm") && !isSending;
+    const isConfigEnabled = (status === "Idle" || status == "Alarm" || status == "NotConnected") && !isSending;
 
-    if (!isConnected) {
-        return null;
-    }
 
     return (
         <Link
             to={ROUTES.MACHINE_CONFIG}
             className={`p-3 hover:bg-gradient-to-br hover:from-blue-400/30 hover:to-blue-600/20 active:bg-gradient-to-br active:from-blue-500/40 active:to-blue-700/30 transition-all duration-200 group relative rounded-sm border border-transparent hover:border-blue-400/30 active:border-blue-500/40 shadow-sm hover:shadow-md active:shadow-lg ${!isConfigEnabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={(e) => !isConfigEnabled && e.preventDefault()}
+
             title="Machine Configuration"
         >
             <div

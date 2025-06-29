@@ -1129,7 +1129,7 @@ function GrblConfigPage() {
                                 </button>
 
                                 <label
-                                    className="bg-blue-600/50 hover:bg-blue-500/50 disabled:bg-gray-600/30 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10 disabled:hover:shadow-none cursor-pointer">
+                                    className={`bg-blue-600/50 hover:bg-blue-500/50 ${!isConnected ? "bg-gray-600/30 hover:shadow-none cursor-not-allowed" : "cursor-pointer"} text-white px-3 py-2 rounded-lg flex items-center transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/10`}>
                                     <ArrowUpTrayIcon className="w-5 h-5 mr-2"/>
                                     <span className="hidden sm:inline">{t('config.import')}</span>
                                     <input

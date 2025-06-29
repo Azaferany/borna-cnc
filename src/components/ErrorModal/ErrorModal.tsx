@@ -213,18 +213,18 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
                         )}
 
 
-                        {/* Problematic Line */}
-                        {errorLine && (
-                            <div className="mb-3">
-                                <div
-                                    className=" text-yellow-400 text-white font-semibold mb-1">{t('errorModal.problematicGCode')}
-                                </div>
-                                <div
-                                    className="text-yellow-400 text-sm font-mono bg-gray-800 p-2 rounded console-text-selectable">
-                                    {errorLine}
-                                </div>
-                            </div>
-                        )}
+                        {/*/!* Problematic Line *!/*/}
+                        {/*{errorLine && (*/}
+                        {/*    <div className="mb-3">*/}
+                        {/*        <div*/}
+                        {/*            className=" text-yellow-400 text-white font-semibold mb-1">{t('errorModal.problematicGCode')}*/}
+                        {/*        </div>*/}
+                        {/*        <div*/}
+                        {/*            className="text-yellow-400 text-sm font-mono bg-gray-800 p-2 rounded console-text-selectable">*/}
+                        {/*            {errorLine}*/}
+                        {/*        </div>*/}
+                        {/*    </div>*/}
+                        {/*)}*/}
 
 
                     </div>
@@ -233,15 +233,15 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
                     {(machineCoordinate || workPlaceCoordinateOffset) && (
                         <div className="bg-gray-900/50 border border-gray-600 rounded-lg p-4">
                             {/* Selected G-Code Line */}
-                        {selectedGCodeLine && (
-                            <div className="mb-3">
-                                <div className="text-white font-semibold mb-1">{t('errorModal.stoppedDuringLine')}</div>
-                                <div
-                                    className="text-blue-400 text-sm font-mono bg-gray-800 p-2 rounded console-text-selectable">
-                                    {t('errorModal.line')} {selectedGCodeLine}: {selectedGCodeContent || t('errorModal.noContentAvailable')}
-                                </div>
-                            </div>
-                        )}
+                            {/*{selectedGCodeLine && (*/}
+                            {/*    <div className="mb-3">*/}
+                            {/*        <div className="text-white font-semibold mb-1">{t('errorModal.stoppedDuringLine')}</div>*/}
+                            {/*        <div*/}
+                            {/*            className="text-blue-400 text-sm font-mono bg-gray-800 p-2 rounded console-text-selectable">*/}
+                            {/*            {t('errorModal.line')} {selectedGCodeLine}: {selectedGCodeContent || t('errorModal.noContentAvailable')}*/}
+                            {/*        </div>*/}
+                            {/*    </div>*/}
+                            {/*)}*/}
                             {/* Machine Coordinates */}
                             {machineCoordinate && (
                                 <div className="mb-3">

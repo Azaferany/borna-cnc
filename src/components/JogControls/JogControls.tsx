@@ -335,7 +335,9 @@ export const JogControls = () => {
                                     id={"Feedrate"}
                                     type="number"
                                     defaultValue={feedrate}
+                                    step={500}
                                     onChange={(e) => setFeedrate(Number(e.target.value))}
+                                    onMouseEnter={(e) => (e.target as HTMLInputElement).focus()}
                                     className="w-full bg-gray-700 rounded px-4 py-2 text-white text-sm"
                                     min={1}
                                     max={10000}
@@ -349,9 +351,11 @@ export const JogControls = () => {
                                     id={"Distance"}
                                     defaultValue={stepSize}
                                     onChange={(e) => setStepSize(Number(e.target.value))}
+                                    onMouseEnter={(e) => (e.target as HTMLInputElement).focus()}
                                     className={`w-full bg-gray-700 rounded px-4 py-2 text-white text-sm ${continuousMode || isMachineRunning ? "cursor-not-allowed" : ""}`}
                                     disabled={continuousMode || isMachineRunning}
                                     min={0.001}
+                                    step={10}
                                     max={1000}/></>)
                                 }
                                 {continuousMode && (
